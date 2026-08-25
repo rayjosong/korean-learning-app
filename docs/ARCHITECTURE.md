@@ -96,13 +96,17 @@ export interface LanguageModel {
 
 Keep V0.1 explainable:
 - unknown / learning / known;
+- A learner item represents the clicked Korean word or phrase/form. Its dictionary form is supporting metadata when available, not the saved item identity.
+- Repeated encounters with the same word or phrase/form reuse one learner item rather than creating duplicates.
 - recognition confidence;
 - production confidence;
 - encounters;
 - successes/failures;
 - last seen;
 - next review;
-- source contexts.
+- source contexts. Each context preserves the source sentence, video, transcript segment, and timestamp.
+
+The word/phrase explanation card owns the learner-state action for the selected item. Saving replaces the action buttons with a persistent confirmation and `Undo` until the learner selects another item. Existing state is shown when an item is revisited: a `learning` item offers "I know this", while a `known` item offers "Learn this again".
 
 ## AI output
 

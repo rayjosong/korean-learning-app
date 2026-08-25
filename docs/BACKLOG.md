@@ -155,13 +155,13 @@ Depends on: #7, #8
 
 ## Milestone 2 — Personal learning state
 
-### [ ] #10 Word / phrase interaction
+### [x] #10 Word / phrase interaction
 
 Acceptance criteria:
-- [ ] Learner can select/click Korean word or phrase.
-- [ ] Contextual meaning shown.
-- [ ] Dictionary form shown when relevant.
-- [ ] Source sentence stored.
+- [x] Learner can select/click Korean word or phrase.
+- [x] Contextual meaning shown.
+- [x] Dictionary form shown when relevant.
+- [x] Source sentence stored.
 
 Depends on: #8, #9
 
@@ -174,6 +174,11 @@ Acceptance criteria:
 - [ ] State becomes `known`.
 - [ ] Persists locally.
 - [ ] UI updates immediately.
+- [ ] Action appears in the same word/phrase explanation card.
+- [ ] After saving, the card shows a persistent confirmation with an `Undo` action.
+- [ ] Confirmation remains until the learner selects another word or phrase.
+- [ ] `Undo` removes the saved state and restores the appropriate action.
+- [ ] Existing `learning` items offer "I know this" instead of duplicate save actions.
 
 Depends on: #10
 
@@ -186,6 +191,12 @@ Acceptance criteria:
 - [ ] Source sentence stored.
 - [ ] Source video/timestamp stored.
 - [ ] Initial review scheduled.
+- [ ] Action appears in the same word/phrase explanation card.
+- [ ] The clicked word or phrase/form is saved as the learner item.
+- [ ] Dictionary form is stored as supporting metadata when available.
+- [ ] Repeated encounters reuse the learner item and add source contexts.
+- [ ] Existing `known` items offer "Learn this again".
+- [ ] After saving, the card shows a persistent confirmation with an `Undo` action.
 
 Depends on: #10
 
