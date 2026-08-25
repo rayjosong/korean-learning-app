@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "pnpm --filter @korean-learning/web dev",
     "build": "pnpm --filter @korean-learning/web build",
-    "lint": "pnpm --filter @korean-learning/web lint",
-    "typecheck": "pnpm --filter @korean-learning/web typecheck",
-    "test": "pnpm --filter @korean-learning/web test"
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
   }
 }

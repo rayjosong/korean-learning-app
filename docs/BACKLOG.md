@@ -26,16 +26,16 @@ Depends on: none
 
 ---
 
-### [ ] #2 Define domain models
+### [x] #2 Define domain models
 
 Acceptance criteria:
-- [ ] `TranscriptSegment` defined.
-- [ ] `VideoContent` defined.
-- [ ] `SentenceExplanation` defined.
-- [ ] `LearningItem` defined.
-- [ ] `LearningContext` defined.
-- [ ] Types exported from owning packages.
-- [ ] Domain packages have no UI dependencies.
+- [x] `TranscriptSegment` defined.
+- [x] `VideoContent` defined.
+- [x] `SentenceExplanation` defined.
+- [x] `LearningItem` defined.
+- [x] `LearningContext` defined.
+- [x] Types exported from owning packages.
+- [x] Domain packages have no UI dependencies.
 
 Depends on: #1
 
