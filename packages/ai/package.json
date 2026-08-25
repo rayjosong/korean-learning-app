@@ -12,7 +12,8 @@
     "test": "node --experimental-strip-types --test ./test/*.test.mjs"
   },
   "dependencies": {
-    "@korean-learning/korean": "workspace:*"
+    "@korean-learning/korean": "workspace:*",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "typescript": "5.9.2"
