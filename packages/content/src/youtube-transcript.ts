@@ -12,7 +12,8 @@ export interface YouTubeCaptionProvider {
   fetchTrack(videoId: string, trackId: string): Promise<YouTubeCaptionSegment[]>;
 }
 export class TranscriptSourceError extends Error {
-  constructor(public readonly code: "NO_TRANSCRIPT" | "NO_KOREAN_TRANSCRIPT" | "INVALID_VIDEO" | "PROVIDER_ERROR", message: string) { super(message); this.name = "TranscriptSourceError"; }
+  readonly code: "NO_TRANSCRIPT" | "NO_KOREAN_TRANSCRIPT" | "INVALID_VIDEO" | "PROVIDER_ERROR";
+  constructor(code: "NO_TRANSCRIPT" | "NO_KOREAN_TRANSCRIPT" | "INVALID_VIDEO" | "PROVIDER_ERROR", message: string) { super(message); this.code = code; this.name = "TranscriptSourceError"; }
 }
 export class YouTubeTranscriptSource implements TranscriptSource {
   constructor(private readonly provider: YouTubeCaptionProvider) {}
