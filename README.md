@@ -1,31 +1,34 @@
 # Korean Learning App
 
-An open-source, local-first Korean learning app built around real Korean content.
+Learn Korean through real Korean content. This monorepo starts with a Next.js web app and is structured for the V0.1 learning loop described in [`docs/PRODUCT.md`](docs/PRODUCT.md).
 
-The first goal is simple:
+## Requirements
 
-> Paste a Korean YouTube video, understand its transcript in context, and turn difficult language into personalized learning.
+- Node.js 22+
+- pnpm 11+
 
-## Project docs
+## Getting started
 
-- [`docs/PRODUCT.md`](docs/PRODUCT.md) — what we are building and why.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — how the system should be structured.
-- [`docs/BACKLOG.md`](docs/BACKLOG.md) — implementation order and verified completion state.
-- [`AGENTS.md`](AGENTS.md) — mandatory workflow for coding agents, including multi-agent coordination.
-
-## First vertical slice
-
-```text
-Paste YouTube URL
--> Korean transcript
--> synced viewer
--> click sentence
--> contextual AI explanation
--> local cache
+```bash
+pnpm install
+pnpm dev
 ```
 
-## Development
+Open [http://localhost:3000](http://localhost:3000).
 
-This repository is intentionally designed for multi-agent development.
+## Verification commands
 
-Every coding agent must read `AGENTS.md` before modifying the repository.
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+## Layout
+
+```text
+apps/web       Next.js web application
+packages/*     future domain and adapter packages
+docs/          product, architecture, and implementation plan
+```
