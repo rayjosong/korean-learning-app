@@ -149,6 +149,36 @@ test("word explanation prompt covers real Korean and stays concise by default", 
   }
 });
 
+test("uses the ambient browser fetch when none is injected, without illegal invocation", async () => {
+  const originalFetch = globalThis.fetch;
+  let calledUrl;
+  globalThis.fetch = function (url, init) {
+    if (this !== globalThis) throw new TypeError("Illegal invocation (receiver check)");
+    calledUrl = url;
+    return Promise.resolve(contentResponse({
+      sentence: "안녕하세요.",
+      naturalMeaning: "Hello.",
+      breakdown: [{ text: "안녕하세요", meaning: "hello" }],
+      grammar: []
+    }));
+  };
+
+  try {
+    const languageModel = new OpenAICompatibleLanguageModel({
+      apiKey: "user-key",
+      model: "test-model",
+      baseUrl: "https://example.test/v1/"
+    });
+
+    const result = await languageModel.explainSentence({ sentence: "안녕하세요." });
+
+    assert.equal(calledUrl, "https://example.test/v1/chat/completions");
+    assert.equal(result.naturalMeaning, "Hello.");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("turns malformed model output into a controlled error", async () => {
   const languageModel = model(async () => Response.json({
     choices: [{ message: { content: "not JSON" } }]

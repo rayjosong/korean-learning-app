@@ -46,7 +46,8 @@ export class OpenAICompatibleLanguageModel implements LanguageModel {
     this.apiKey = options.apiKey;
     this.model = options.model;
     this.endpoint = `${(options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "")}/chat/completions`;
-    this.request = options.fetch ?? globalThis.fetch;
+    // Bind the ambient fetch: an unbound native fetch throws "Illegal invocation" in browsers.
+    this.request = (options.fetch ?? globalThis.fetch).bind(globalThis);
   }
 
   async explainSentence(input: ExplainSentenceInput): Promise<SentenceExplanation> {
