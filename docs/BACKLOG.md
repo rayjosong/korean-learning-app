@@ -10,17 +10,17 @@
 
 ## Milestone 0 — Project foundation
 
-### [ ] #1 Initialize monorepo
+### [x] #1 Initialize monorepo
 
 Acceptance criteria:
-- [ ] Next.js app runs locally.
-- [ ] TypeScript strict mode enabled.
-- [ ] Tailwind configured.
-- [ ] pnpm workspace configured.
-- [ ] lint script exists and passes.
-- [ ] typecheck script exists and passes.
-- [ ] test script exists and passes.
-- [ ] CI runs lint, typecheck, and tests.
+- [x] Next.js app runs locally.
+- [x] TypeScript strict mode enabled.
+- [x] Tailwind configured.
+- [x] pnpm workspace configured.
+- [x] lint script exists and passes.
+- [x] typecheck script exists and passes.
+- [x] test script exists and passes.
+- [x] CI runs lint, typecheck, and tests.
 
 Depends on: none
 
