@@ -16,7 +16,8 @@ export class TranscriptSourceError extends Error {
   constructor(code: "NO_TRANSCRIPT" | "NO_KOREAN_TRANSCRIPT" | "INVALID_VIDEO" | "PROVIDER_ERROR", message: string) { super(message); this.code = code; this.name = "TranscriptSourceError"; }
 }
 export class YouTubeTranscriptSource implements TranscriptSource {
-  constructor(private readonly provider: YouTubeCaptionProvider) {}
+  private readonly provider: YouTubeCaptionProvider;
+  constructor(provider: YouTubeCaptionProvider) { this.provider = provider; }
   async getTranscript(input: { videoUrl: string; preferredLanguage: "ko" }): Promise<TranscriptResult> {
     let videoId: string;
     try { videoId = parseYouTubeUrl(input.videoUrl).videoId; }
