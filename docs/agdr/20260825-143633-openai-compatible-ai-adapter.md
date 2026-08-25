@@ -5,6 +5,7 @@ model: GPT-5
 trigger: user-prompt
 status: executed
 ticket: no-ticket
+pr: 15
 ---
 
 # OpenAI-compatible AI adapter
