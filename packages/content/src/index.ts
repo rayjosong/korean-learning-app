@@ -29,3 +29,9 @@ export interface VideoContent {
   /** Thumbnail URL when provided by the source. */
   thumbnailUrl?: string;
 }
+
+export {
+  parseYouTubeUrl,
+  YouTubeUrlParseError,
+  type ParsedYouTubeUrl
+} from "./youtube-url.js";
