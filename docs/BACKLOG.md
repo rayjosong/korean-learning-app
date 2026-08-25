@@ -88,16 +88,16 @@ Depends on: #3, #4
 
 ---
 
-### [ ] #6 AI provider interface
+### [x] #6 AI provider interface
 
 Acceptance criteria:
-- [ ] `LanguageModel` interface defined.
-- [ ] OpenAI-compatible provider implemented first.
-- [ ] BYO API key supported.
-- [ ] Custom base URL supported where practical.
-- [ ] Provider code does not leak into UI.
-- [ ] Invalid model output becomes a controlled error.
-- [ ] Secrets are never logged.
+- [x] `LanguageModel` interface defined.
+- [x] OpenAI-compatible provider implemented first.
+- [x] BYO API key supported.
+- [x] Custom base URL supported where practical.
+- [x] Provider code does not leak into UI.
+- [x] Invalid model output becomes a controlled error.
+- [x] Secrets are never logged.
 
 Depends on: #1, #2
 

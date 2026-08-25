@@ -20,3 +20,11 @@ export interface SentenceExplanation {
   nuance?: string;
   speechLevel?: string;
 }
+
+/** Contextual help for one Korean word or phrase. */
+export interface WordExplanation {
+  word: string;
+  meaning: string;
+  dictionaryForm?: string;
+  nuance?: string;
+}

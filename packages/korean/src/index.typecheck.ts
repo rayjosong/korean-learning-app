@@ -1,4 +1,4 @@
-import type { SentenceExplanation } from "./index.js";
+import type { SentenceExplanation, WordExplanation } from "./index.js";
 
 const explanation: SentenceExplanation = {
   sentence: "지금 가고 있어요.",
@@ -12,3 +12,11 @@ const explanation: SentenceExplanation = {
 };
 
 void explanation;
+
+const word: WordExplanation = {
+  word: "날씨",
+  meaning: "weather",
+  dictionaryForm: "날씨"
+};
+
+void word;
