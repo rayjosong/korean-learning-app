@@ -55,20 +55,20 @@ Depends on: #1, #2
 
 ---
 
-### [ ] #4 YouTube transcript adapter
+### [x] #4 YouTube transcript adapter
 
 Acceptance criteria:
-- [ ] Behind `TranscriptSource`.
-- [ ] Returns normalized transcript segments.
-- [ ] Prefers Korean captions.
-- [ ] Preserves timestamps.
-- [ ] Handles manual captions where available.
-- [ ] Handles auto captions where supported.
-- [ ] Explicit no-transcript error.
-- [ ] Explicit no-Korean-transcript error.
-- [ ] Explicit invalid/unsupported-video error.
-- [ ] Explicit provider/rate-limit error.
-- [ ] Contract/unit tests exist.
+- [x] Behind `TranscriptSource`.
+- [x] Returns normalized transcript segments.
+- [x] Prefers Korean captions.
+- [x] Preserves timestamps.
+- [x] Handles manual captions where available.
+- [x] Handles auto captions where supported.
+- [x] Explicit no-transcript error.
+- [x] Explicit no-Korean-transcript error.
+- [x] Explicit invalid/unsupported-video error.
+- [x] Explicit provider/rate-limit error.
+- [x] Contract/unit tests exist.
 
 Depends on: #2, #3
 

@@ -9,9 +9,9 @@ export interface VideoContent {
   id: string; source: "youtube"; sourceVideoId: string; url: string; title: string;
   transcriptLanguage: "ko"; durationMs?: number; thumbnailUrl?: string;
 }
-export { parseYouTubeUrl, YouTubeUrlParseError, type ParsedYouTubeUrl } from "./youtube-url.js";
+export { parseYouTubeUrl, YouTubeUrlParseError, type ParsedYouTubeUrl } from "./youtube-url.ts";
 export {
-  YouTubeTranscriptSource, TranscriptSourceError, type TranscriptSource,
+  YouTubeTimedTextProvider, YouTubeTranscriptSource, TranscriptSourceError, type TranscriptSource,
   type TranscriptResult, type YouTubeCaptionProvider, type YouTubeCaptionTrack,
   type YouTubeCaptionSegment
-} from "./youtube-transcript.js";
+} from "./youtube-transcript.ts";
