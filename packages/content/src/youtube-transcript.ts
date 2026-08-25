@@ -1,4 +1,4 @@
-import { parseYouTubeUrl, YouTubeUrlParseError } from "./youtube-url.js";
+import { parseYouTubeUrl, YouTubeUrlParseError } from "./youtube-url.ts";
 import type { TranscriptSegment } from "./index.js";
 
 export interface TranscriptSource {
