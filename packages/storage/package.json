@@ -1,0 +1,22 @@
+{
+  "name": "@korean-learning/storage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "node ./scripts/lint.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test ./test/*.test.mjs"
+  },
+  "dependencies": {
+    "@korean-learning/korean": "workspace:*",
+    "dexie": "^4.2.1"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.2",
+    "typescript": "5.9.2"
+  }
+}

@@ -33,6 +33,12 @@ export const SENTENCE_EXPLANATION_SYSTEM_PROMPT = [
   "- be concise by default: short meanings, short grammar notes, no extra commentary, no markdown, no fields beyond the schema."
 ].join("\n");
 
+/**
+ * Version of the sentence explanation prompt. Cached explanations are keyed
+ * by this version, so bump it whenever the prompt changes meaningfully.
+ */
+export const SENTENCE_EXPLANATION_PROMPT_VERSION = "1";
+
 export const sentenceExplanationSchema: z.ZodType<SentenceExplanation> = z.object({
   sentence: z.string(),
   naturalMeaning: z.string(),

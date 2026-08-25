@@ -5,8 +5,10 @@ import { useMemo, useState } from "react";
 import { ExplanationPanel } from "@/components/explanation-panel";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
+import { withExplanationCache } from "@/lib/explanation-cache";
 import type { TranscriptSegment } from "@/lib/transcript";
 import { useSentenceExplanation } from "@/lib/use-sentence-explanation";
+import { clearExplanationCache, ExplanationDatabase } from "@korean-learning/storage";
 
 export interface StudySessionProps {
   videoId: string;
@@ -18,11 +20,19 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
   const [model, setModel] = useState("gpt-4o-mini");
   const [baseUrl, setBaseUrl] = useState("");
   const [selectedSegment, setSelectedSegment] = useState<TranscriptSegment>();
-
-  const languageModel = useMemo(
-    () => (apiKey.trim() && model.trim() ? createLanguageModel({ apiKey, model, baseUrl }) : null),
-    [apiKey, model, baseUrl]
+  const [cacheDatabase] = useState(
+    () => (typeof window === "undefined" ? undefined : new ExplanationDatabase())
   );
+
+  const languageModel = useMemo(() => {
+    if (!apiKey.trim() || !model.trim()) return null;
+    return withExplanationCache({
+      model: createLanguageModel({ apiKey, model, baseUrl }),
+      database: cacheDatabase,
+      provider: "openai-compatible",
+      modelName: model.trim()
+    });
+  }, [apiKey, model, baseUrl, cacheDatabase]);
   const { state, explain } = useSentenceExplanation(languageModel);
 
   async function explainSegment(segment: TranscriptSegment) {
@@ -34,6 +44,10 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
 
   function retryExplanation() {
     if (selectedSegment) void explainSegment(selectedSegment);
+  }
+
+  async function clearCachedExplanations() {
+    if (cacheDatabase) await clearExplanationCache(cacheDatabase);
   }
 
   return (
@@ -84,6 +98,14 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
             placeholder="https://api.openai.com/v1"
             className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-sky-400 focus:outline-none"
           />
+          <button
+            type="button"
+            disabled={!cacheDatabase}
+            onClick={() => void clearCachedExplanations()}
+            className="mt-4 w-full rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition-colors hover:border-rose-400 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Clear cached explanations
+          </button>
         </section>
 
         <ExplanationPanel segment={selectedSegment} state={state} onRetry={retryExplanation} />

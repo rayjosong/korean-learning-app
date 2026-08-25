@@ -17,6 +17,10 @@ export interface LanguageModel {
 
 export type { SentenceExplanation, WordExplanation } from "@korean-learning/korean";
 export {
+  SENTENCE_EXPLANATION_PROMPT_VERSION,
+  SENTENCE_EXPLANATION_SYSTEM_PROMPT
+} from "./sentence-explanation.ts";
+export {
   LanguageModelError,
   OpenAICompatibleLanguageModel,
   type OpenAICompatibleLanguageModelOptions
