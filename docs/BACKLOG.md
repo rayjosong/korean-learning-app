@@ -140,16 +140,16 @@ Depends on: #5, #7
 
 ---
 
-### [ ] #9 Cache explanations locally
+### [x] #9 Cache explanations locally
 
 Acceptance criteria:
-- [ ] Dexie configured.
-- [ ] Explanations persist locally.
-- [ ] Refresh preserves explanation.
-- [ ] Cached explanation avoids repeat model call.
-- [ ] Cache key includes prompt version.
-- [ ] Cache can be cleared.
-- [ ] API keys are not stored in explanation records.
+- [x] Dexie configured.
+- [x] Explanations persist locally.
+- [x] Refresh preserves explanation.
+- [x] Cached explanation avoids repeat model call.
+- [x] Cache key includes prompt version.
+- [x] Cache can be cleared.
+- [x] API keys are not stored in explanation records.
 
 Depends on: #7, #8
 
