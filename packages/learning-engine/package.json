@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "node ./scripts/lint.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "node --test ../content/test/domain-boundaries.test.mjs"
+    "test": "node --experimental-strip-types --test ./test/*.test.mjs ../content/test/domain-boundaries.test.mjs"
   },
   "devDependencies": {
     "typescript": "5.9.2"

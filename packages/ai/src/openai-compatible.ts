@@ -1,6 +1,7 @@
 import type { SentenceExplanation, WordExplanation } from "@korean-learning/korean";
 import type { ExplainSentenceInput, ExplainWordInput, LanguageModel } from "./index.js";
 import { SENTENCE_EXPLANATION_SYSTEM_PROMPT, sentenceExplanationSchema } from "./sentence-explanation.ts";
+import { WORD_EXPLANATION_SYSTEM_PROMPT, wordExplanationSchema } from "./word-explanation.ts";
 
 const DEFAULT_BASE_URL = "https://api.openai.com/v1";
 
@@ -71,18 +72,14 @@ export class OpenAICompatibleLanguageModel implements LanguageModel {
     }
 
     const content = await this.complete([
-      {
-        role: "system",
-        content:
-          "You are a concise Korean tutor. Return only a JSON object with word, meaning, and optional dictionaryForm and nuance."
-      },
+      { role: "system", content: WORD_EXPLANATION_SYSTEM_PROMPT },
       {
         role: "user",
         content: `Explain the Korean word or phrase "${input.word}" in this sentence: ${input.sentence}`
       }
     ]);
 
-    return parseWordExplanation(content);
+    return validateWordExplanation(content);
   }
 
   private async complete(messages: readonly ChatMessage[]): Promise<unknown> {
@@ -151,23 +148,13 @@ function validateSentenceExplanation(value: unknown): SentenceExplanation {
   return parsed.data;
 }
 
-function parseWordExplanation(value: unknown): WordExplanation {
-  if (
-    !isRecord(value) ||
-    typeof value.word !== "string" ||
-    typeof value.meaning !== "string" ||
-    (value.dictionaryForm !== undefined && typeof value.dictionaryForm !== "string") ||
-    (value.nuance !== undefined && typeof value.nuance !== "string")
-  ) {
+function validateWordExplanation(value: unknown): WordExplanation {
+  const parsed = wordExplanationSchema.safeParse(value);
+  if (!parsed.success) {
     throw new LanguageModelError("INVALID_OUTPUT", "The AI provider returned an invalid word explanation.");
   }
 
-  return {
-    word: value.word,
-    meaning: value.meaning,
-    ...(value.dictionaryForm === undefined ? {} : { dictionaryForm: value.dictionaryForm }),
-    ...(value.nuance === undefined ? {} : { nuance: value.nuance })
-  };
+  return parsed.data;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

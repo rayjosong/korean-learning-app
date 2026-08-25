@@ -21,6 +21,11 @@ export {
   SENTENCE_EXPLANATION_SYSTEM_PROMPT
 } from "./sentence-explanation.ts";
 export {
+  WORD_EXPLANATION_PROMPT_VERSION,
+  WORD_EXPLANATION_SYSTEM_PROMPT,
+  wordExplanationSchema
+} from "./word-explanation.ts";
+export {
   LanguageModelError,
   OpenAICompatibleLanguageModel,
   type OpenAICompatibleLanguageModelOptions

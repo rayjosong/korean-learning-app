@@ -6,6 +6,7 @@ import {
   OpenAICompatibleLanguageModel
 } from "../src/openai-compatible.ts";
 import { SENTENCE_EXPLANATION_SYSTEM_PROMPT } from "../src/sentence-explanation.ts";
+import { WORD_EXPLANATION_SYSTEM_PROMPT } from "../src/word-explanation.ts";
 
 function model(fetch) {
   return new OpenAICompatibleLanguageModel({
@@ -119,19 +120,33 @@ test("omits nuance and speechLevel when the model leaves them out", async () => 
 });
 
 test("supports word explanations through the same provider", async () => {
-  const languageModel = model(async () => Response.json({
-    choices: [{ message: { content: JSON.stringify({
-      word: "가고 있어요",
-      meaning: "am going",
-      dictionaryForm: "가다"
-    }) } }]
-  }));
+  let request;
+  const languageModel = model(async (url, init) => {
+    request = { url, init };
+    return Response.json({
+      choices: [{ message: { content: JSON.stringify({
+        word: "가고 있어요",
+        meaning: "am going",
+        dictionaryForm: "가다"
+      }) } }]
+    });
+  });
 
   assert.deepEqual(await languageModel.explainWord({ word: "가고 있어요", sentence: "지금 가고 있어요." }), {
     word: "가고 있어요",
     meaning: "am going",
     dictionaryForm: "가다"
   });
+  assert.deepEqual(JSON.parse(request.init.body).messages[0], {
+    role: "system",
+    content: WORD_EXPLANATION_SYSTEM_PROMPT
+  });
+});
+
+test("word explanation prompt covers real Korean and stays concise by default", () => {
+  for (const term of ["dictionaryForm", "contractions", "slang", "fillers", "honorific", "concise"]) {
+    assert.match(WORD_EXPLANATION_SYSTEM_PROMPT, new RegExp(term), `prompt should mention "${term}"`);
+  }
 });
 
 test("turns malformed model output into a controlled error", async () => {

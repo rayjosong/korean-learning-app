@@ -17,6 +17,8 @@ export interface LearningItem {
   kind: "word" | "phrase";
   text: string;
   state: LearningState;
+  /** Dictionary form is supporting metadata, never the item identity. */
+  dictionaryForm?: string;
   recognitionConfidence: number;
   productionConfidence: number;
   encounters: number;
@@ -25,4 +27,83 @@ export interface LearningItem {
   contextIds: readonly string[];
   lastSeenAt?: string;
   nextReviewAt?: string;
+}
+
+/** Infers whether a clicked form is a single word or a multi-word phrase. */
+export function inferLearnerItemKind(text: string): "word" | "phrase" {
+  return /\s/.test(text.trim()) ? "phrase" : "word";
+}
+
+/**
+ * Deterministic context id so re-clicking the same form in the same segment
+ * reuses one source context instead of duplicating it.
+ */
+export function learningContextId(input: {
+  text: string;
+  videoId: string;
+  transcriptSegmentId: string;
+}): string {
+  return `${input.videoId}:${input.transcriptSegmentId}:${input.text.replace(/\s+/g, " ").trim()}`;
+}
+
+export interface MarkKnownInput {
+  existing?: LearningItem;
+  text: string;
+  dictionaryForm?: string;
+  context: LearningContext;
+  now: string;
+}
+
+export interface MarkKnownResult {
+  item: LearningItem;
+  /** Snapshot to restore when the learner undoes the save. */
+  previousItem?: LearningItem;
+  isNew: boolean;
+}
+
+/**
+ * Marks a clicked word or phrase as known. The clicked surface form is the
+ * learner item identity; repeated encounters reuse the item and add contexts.
+ */
+export function markKnown(input: MarkKnownInput): MarkKnownResult {
+  const text = input.text.replace(/\s+/g, " ").trim();
+  const dictionaryForm = input.dictionaryForm?.trim() || undefined;
+  const existing = input.existing;
+
+  if (!existing) {
+    return {
+      item: {
+        id: crypto.randomUUID(),
+        kind: inferLearnerItemKind(text),
+        text,
+        state: "known",
+        ...(dictionaryForm ? { dictionaryForm } : {}),
+        recognitionConfidence: 0,
+        productionConfidence: 0,
+        encounters: 1,
+        successes: 0,
+        failures: 0,
+        contextIds: [input.context.id],
+        lastSeenAt: input.now
+      },
+      isNew: true
+    };
+  }
+
+  const contextIds = existing.contextIds.includes(input.context.id)
+    ? existing.contextIds
+    : [...existing.contextIds, input.context.id];
+
+  return {
+    item: {
+      ...existing,
+      state: "known",
+      ...(dictionaryForm && !existing.dictionaryForm ? { dictionaryForm } : {}),
+      encounters: existing.encounters + 1,
+      contextIds,
+      lastSeenAt: input.now
+    },
+    previousItem: existing,
+    isNew: false
+  };
 }

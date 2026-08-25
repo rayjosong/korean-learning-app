@@ -167,18 +167,18 @@ Depends on: #8, #9
 
 ---
 
-### [ ] #11 "I know this" action
+### [x] #11 "I know this" action
 
 Acceptance criteria:
-- [ ] Creates/updates learner item.
-- [ ] State becomes `known`.
-- [ ] Persists locally.
-- [ ] UI updates immediately.
-- [ ] Action appears in the same word/phrase explanation card.
-- [ ] After saving, the card shows a persistent confirmation with an `Undo` action.
-- [ ] Confirmation remains until the learner selects another word or phrase.
-- [ ] `Undo` removes the saved state and restores the appropriate action.
-- [ ] Existing `learning` items offer "I know this" instead of duplicate save actions.
+- [x] Creates/updates learner item.
+- [x] State becomes `known`.
+- [x] Persists locally.
+- [x] UI updates immediately.
+- [x] Action appears in the same word/phrase explanation card.
+- [x] After saving, the card shows a persistent confirmation with an `Undo` action.
+- [x] Confirmation remains until the learner selects another word or phrase.
+- [x] `Undo` removes the saved state and restores the appropriate action.
+- [x] Existing `learning` items offer "I know this" instead of duplicate save actions.
 
 Depends on: #10
 

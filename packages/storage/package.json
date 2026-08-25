@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@korean-learning/korean": "workspace:*",
-    "dexie": "^4.2.1"
+    "dexie": "^4.2.1",
+    "@korean-learning/learning-engine": "workspace:*"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.2.2",
