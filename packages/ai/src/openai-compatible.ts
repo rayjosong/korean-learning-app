@@ -1,5 +1,6 @@
 import type { SentenceExplanation, WordExplanation } from "@korean-learning/korean";
 import type { ExplainSentenceInput, ExplainWordInput, LanguageModel } from "./index.js";
+import { SENTENCE_EXPLANATION_SYSTEM_PROMPT, sentenceExplanationSchema } from "./sentence-explanation.ts";
 
 const DEFAULT_BASE_URL = "https://api.openai.com/v1";
 
@@ -54,18 +55,14 @@ export class OpenAICompatibleLanguageModel implements LanguageModel {
 
     const context = input.context?.trim();
     const content = await this.complete([
-      {
-        role: "system",
-        content:
-          "You are a concise Korean tutor. Return only a JSON object with sentence, naturalMeaning, breakdown, grammar, and optional nuance and speechLevel."
-      },
+      { role: "system", content: SENTENCE_EXPLANATION_SYSTEM_PROMPT },
       {
         role: "user",
         content: `Explain this Korean sentence in context.${context ? ` Context: ${context}` : ""}\nSentence: ${input.sentence}`
       }
     ]);
 
-    return parseSentenceExplanation(content);
+    return validateSentenceExplanation(content);
   }
 
   async explainWord(input: ExplainWordInput): Promise<WordExplanation> {
@@ -145,29 +142,13 @@ function getMessageContent(payload: unknown): string {
   return firstChoice.message.content;
 }
 
-function parseSentenceExplanation(value: unknown): SentenceExplanation {
-  if (
-    !isRecord(value) ||
-    typeof value.sentence !== "string" ||
-    typeof value.naturalMeaning !== "string" ||
-    !Array.isArray(value.breakdown) ||
-    !value.breakdown.every(isBreakdownItem) ||
-    !Array.isArray(value.grammar) ||
-    !value.grammar.every(isGrammarExplanation) ||
-    (value.nuance !== undefined && typeof value.nuance !== "string") ||
-    (value.speechLevel !== undefined && typeof value.speechLevel !== "string")
-  ) {
+function validateSentenceExplanation(value: unknown): SentenceExplanation {
+  const parsed = sentenceExplanationSchema.safeParse(value);
+  if (!parsed.success) {
     throw new LanguageModelError("INVALID_OUTPUT", "The AI provider returned an invalid sentence explanation.");
   }
 
-  return {
-    sentence: value.sentence,
-    naturalMeaning: value.naturalMeaning,
-    breakdown: value.breakdown,
-    grammar: value.grammar,
-    ...(value.nuance === undefined ? {} : { nuance: value.nuance }),
-    ...(value.speechLevel === undefined ? {} : { speechLevel: value.speechLevel })
-  };
+  return parsed.data;
 }
 
 function parseWordExplanation(value: unknown): WordExplanation {
@@ -187,19 +168,6 @@ function parseWordExplanation(value: unknown): WordExplanation {
     ...(value.dictionaryForm === undefined ? {} : { dictionaryForm: value.dictionaryForm }),
     ...(value.nuance === undefined ? {} : { nuance: value.nuance })
   };
-}
-
-function isBreakdownItem(value: unknown): value is { text: string; meaning: string; role?: string } {
-  return (
-    isRecord(value) &&
-    typeof value.text === "string" &&
-    typeof value.meaning === "string" &&
-    (value.role === undefined || typeof value.role === "string")
-  );
-}
-
-function isGrammarExplanation(value: unknown): value is { form: string; explanation: string } {
-  return isRecord(value) && typeof value.form === "string" && typeof value.explanation === "string";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

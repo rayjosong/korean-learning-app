@@ -103,21 +103,21 @@ Depends on: #1, #2
 
 ---
 
-### [ ] #7 Structured sentence explanation
+### [x] #7 Structured sentence explanation
 
 Acceptance criteria:
-- [ ] Returns natural meaning.
-- [ ] Returns word/phrase breakdown.
-- [ ] Returns grammar explanation.
-- [ ] Returns nuance when relevant.
-- [ ] Uses structured output.
-- [ ] Validated with Zod.
-- [ ] Handles contractions.
-- [ ] Handles slang/fillers.
-- [ ] Handles casual speech.
-- [ ] Handles honorifics/speech levels.
-- [ ] Default explanation is concise.
-- [ ] Tests cover invalid structured output.
+- [x] Returns natural meaning.
+- [x] Returns word/phrase breakdown.
+- [x] Returns grammar explanation.
+- [x] Returns nuance when relevant.
+- [x] Uses structured output.
+- [x] Validated with Zod.
+- [x] Handles contractions.
+- [x] Handles slang/fillers.
+- [x] Handles casual speech.
+- [x] Handles honorifics/speech levels.
+- [x] Default explanation is concise.
+- [x] Tests cover invalid structured output.
 
 Depends on: #6
 
