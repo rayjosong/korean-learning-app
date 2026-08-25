@@ -43,13 +43,13 @@ Depends on: #1
 
 > Paste a Korean YouTube video, click one sentence, understand it.
 
-### [ ] #3 YouTube URL parser
+### [x] #3 YouTube URL parser
 
 Acceptance criteria:
-- [ ] Supports `youtube.com/watch?v=...`.
-- [ ] Supports `youtu.be/...`.
-- [ ] Invalid URLs return a useful error.
-- [ ] Unit tests cover supported formats.
+- [x] Supports `youtube.com/watch?v=...`.
+- [x] Supports `youtu.be/...`.
+- [x] Invalid URLs return a useful error.
+- [x] Unit tests cover supported formats.
 
 Depends on: #1, #2
 
