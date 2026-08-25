@@ -74,15 +74,15 @@ Depends on: #2, #3
 
 ---
 
-### [ ] #5 Video + transcript viewer
+### [x] #5 Video + transcript viewer
 
 Acceptance criteria:
-- [ ] Video renders.
-- [ ] Timestamped transcript renders.
-- [ ] Clicking segment seeks video.
-- [ ] Current segment can be identified from playback position.
-- [ ] Long transcripts remain usable.
-- [ ] No AI is required for this feature.
+- [x] Video renders.
+- [x] Timestamped transcript renders.
+- [x] Clicking segment seeks video.
+- [x] Current segment can be identified from playback position.
+- [x] Long transcripts remain usable.
+- [x] No AI is required for this feature.
 
 Depends on: #3, #4
 
