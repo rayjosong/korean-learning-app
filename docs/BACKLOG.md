@@ -123,18 +123,18 @@ Depends on: #6
 
 ---
 
-### [ ] #8 Explanation panel
+### [x] #8 Explanation panel
 
 Acceptance criteria:
-- [ ] Selected sentence shown.
-- [ ] Natural meaning prioritized.
-- [ ] Breakdown shown.
-- [ ] Grammar shown.
-- [ ] Nuance shown when relevant.
-- [ ] Loading state.
-- [ ] Error state.
-- [ ] Integrates from transcript click.
-- [ ] Reasonably responsive.
+- [x] Selected sentence shown.
+- [x] Natural meaning prioritized.
+- [x] Breakdown shown.
+- [x] Grammar shown.
+- [x] Nuance shown when relevant.
+- [x] Loading state.
+- [x] Error state.
+- [x] Integrates from transcript click.
+- [x] Reasonably responsive.
 
 Depends on: #5, #7
 
