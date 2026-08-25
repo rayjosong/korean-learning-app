@@ -20,4 +20,4 @@ export {
   LanguageModelError,
   OpenAICompatibleLanguageModel,
   type OpenAICompatibleLanguageModelOptions
-} from "./openai-compatible.js";
+} from "./openai-compatible.ts";

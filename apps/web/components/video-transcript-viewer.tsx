@@ -67,12 +67,14 @@ export interface VideoTranscriptViewerProps {
   videoId: string;
   segments: readonly TranscriptSegment[];
   title?: string;
+  onSegmentClick?: (segment: TranscriptSegment) => void;
 }
 
 export function VideoTranscriptViewer({
   videoId,
   segments,
-  title = "Korean transcript"
+  title = "Korean transcript",
+  onSegmentClick
 }: VideoTranscriptViewerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
@@ -166,7 +168,10 @@ export function VideoTranscriptViewer({
                 type="button"
                 className={`mb-1 grid w-full grid-cols-[3rem_1fr] gap-3 rounded-xl px-3 py-3 text-left transition-colors ${isActive ? "bg-sky-400/15 text-white ring-1 ring-sky-300/40" : "text-slate-300 hover:bg-slate-800 hover:text-white"}`}
                 aria-current={isActive ? "true" : undefined}
-                onClick={() => seekToSegment(segment)}
+                onClick={() => {
+                  seekToSegment(segment);
+                  onSegmentClick?.(segment);
+                }}
               >
                 <span className="pt-0.5 text-xs tabular-nums text-sky-300">{formatTimestamp(segment.startTimeMs)}</span>
                 <span lang="ko" className="leading-6">{segment.text}</span>

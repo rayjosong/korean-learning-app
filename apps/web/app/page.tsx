@@ -1,4 +1,4 @@
-import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
+import { StudySession } from "@/components/study-session";
 import { appTagline } from "@/lib/site";
 
 const exampleSegments = [
@@ -15,7 +15,7 @@ export default function HomePage() {
         <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">Learn Korean through real content.</h1>
         <p className="mt-5 text-lg leading-8 text-slate-300">{appTagline}</p>
       </header>
-      <VideoTranscriptViewer videoId="9bZkp7q19f0" segments={exampleSegments} />
+      <StudySession videoId="9bZkp7q19f0" segments={exampleSegments} />
     </main>
   );
 }
