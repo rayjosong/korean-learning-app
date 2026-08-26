@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This repository is designed to be built by multiple coding agents without losing product intent, visual/UX consistency, architectural consistency, or backlog accuracy.
+This repository is designed to be built by multiple coding agents without losing product intent, visual/UX consistency, architectural consistency, backlog accuracy, or regression coverage.
 
-`docs/PRODUCT.md`, `DESIGN.md`, `docs/ARCHITECTURE.md`, and `docs/BACKLOG.md` are authoritative project documents.
+`docs/PRODUCT.md`, `DESIGN.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`, and `docs/BACKLOG.md` are authoritative project documents.
 
 ## Required reading
 
@@ -14,7 +14,8 @@ Before making changes, every coding agent MUST read, in order:
 2. `docs/PRODUCT.md`
 3. `DESIGN.md`
 4. `docs/ARCHITECTURE.md`
-5. `docs/BACKLOG.md`
+5. `docs/TESTING.md`
+6. `docs/BACKLOG.md`
 
 Do not begin implementation before doing this.
 
@@ -25,6 +26,7 @@ For user-facing work, explicitly identify which product surface/mode the change 
 - `docs/PRODUCT.md` defines what the product should become and what is in/out of scope.
 - `DESIGN.md` defines the canonical visual language, UX hierarchy, desktop reference layouts, responsive direction, and user-facing interaction rules.
 - `docs/ARCHITECTURE.md` defines architectural boundaries and engineering rules.
+- `docs/TESTING.md` defines the canonical regression-prevention strategy, test layers, browser/visual/a11y expectations, fixture policy, and merge-quality gates.
 - `docs/BACKLOG.md` defines implementation order, dependencies, acceptance criteria, and completion state.
 
 If implementation ideas conflict with these documents, follow the documents unless the user's current instruction explicitly overrides them.
@@ -80,14 +82,15 @@ If product/design direction changes after an older backlog item was completed, d
 Before changing an item from `[ ]` to `[x]`:
 
 1. Re-read the item's acceptance criteria.
-2. Re-read relevant product and design requirements.
+2. Re-read relevant product, design, architecture, and testing requirements.
 3. Verify each criterion against the implementation.
-4. Run all relevant tests.
+4. Run all relevant tests at the layers required by `docs/TESTING.md`.
 5. Run typecheck.
 6. Run lint.
 7. Run the relevant build when practical.
 8. Confirm no required criterion is only partially implemented.
 9. For user-visible work, inspect the rendered flow against `DESIGN.md`.
+10. For interaction-heavy user-visible work, confirm browser/visual/a11y regression coverage is appropriate for the risk.
 
 Only then update the backlog checkbox.
 
@@ -119,6 +122,9 @@ Backlog changes
 
 Verification
 - tests: pass/fail/not run
+- browser E2E: pass/fail/not required/not run
+- visual regression: pass/fail/not required/not run
+- accessibility: pass/fail/not required/not run
 - typecheck: pass/fail/not run
 - lint: pass/fail/not run
 - build: pass/fail/not run
@@ -217,12 +223,14 @@ Update documentation in the same change when implementation materially changes:
 - visual/design-system rules;
 - architecture;
 - domain interfaces;
+- regression/testing strategy;
 - backlog completion state.
 
 Use the appropriate source of truth:
 - product behavior/intent -> `docs/PRODUCT.md`;
 - visual/interaction design -> `DESIGN.md`;
 - implementation boundaries -> `docs/ARCHITECTURE.md`;
+- testing/regression strategy -> `docs/TESTING.md`;
 - execution status/remaining work -> `docs/BACKLOG.md`.
 
 Do not rewrite product direction without explicit instruction.
@@ -233,8 +241,9 @@ When two agents' changes conflict:
 1. preserve the behavior required by `PRODUCT.md`;
 2. preserve the UX/design rules in `DESIGN.md`;
 3. preserve the boundaries in `ARCHITECTURE.md`;
-4. preserve completed acceptance criteria from both tasks where compatible with current product direction;
-5. do not mark either task complete until the merged result is re-verified.
+4. preserve the regression contracts in `TESTING.md`;
+5. preserve completed acceptance criteria from both tasks where compatible with current product direction;
+6. do not mark either task complete until the merged result is re-verified.
 
 The merged branch, not an isolated agent branch, is the final truth.
 
@@ -250,6 +259,8 @@ pnpm typecheck
 pnpm test
 pnpm build
 ```
+
+These are the current baseline commands. For user-facing or interaction-heavy work, also run the applicable browser E2E, accessibility, and visual-regression commands defined by the repository as that infrastructure lands. Do not treat the absence of those scripts as proof that browser-level verification is unnecessary; follow `docs/TESTING.md` and the assigned backlog acceptance criteria.
 
 If a command cannot be run, state why in the PR and do not claim it passed.
 
@@ -276,10 +287,14 @@ After every CI failure:
 
 ### Regression and browser checks
 
-- Add a regression test in the package that owns every bug fix.
+- Follow `docs/TESTING.md` to select the lowest reliable regression layer and add higher-level coverage where real component/browser wiring is part of the risk.
+- Add a regression test for every bug fix at the lowest layer that would have caught it.
 - Test observable behavior rather than implementation details.
+- Do not make deterministic PR CI depend on live YouTube/provider behavior when a fixture/fake can prove the contract.
+- Keep a narrow real external-integration smoke path where mocks cannot prove integration health.
 - For user-visible flows, run the `.agents/skills/e2e-python-playwright` diagnostic when relevant and follow its cleanup rules.
 - Compare user-visible results against relevant `DESIGN.md` ASCII references and interaction rules; intentional deviations must be justified in the PR.
+- For canonical visual states, do not update screenshot baselines merely to make CI green; explain and review intentional visual changes.
 - Do not weaken or delete a failing test without explicit PR justification.
 
 ### PR readiness
@@ -287,9 +302,11 @@ After every CI failure:
 Every PR body must include:
 - the backlog item and acceptance-criteria mapping;
 - verification commands and results;
+- browser E2E / visual / accessibility verification when applicable;
 - omitted verification and why;
 - migrations, user-visible behavior, or compatibility risks;
 - UX/design impact for user-facing changes;
+- regression risks and the tests that cover them;
 - remaining work, if any.
 
 Do not merge your own PR unless the user explicitly asks.
