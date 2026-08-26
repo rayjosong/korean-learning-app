@@ -192,3 +192,43 @@ export async function deleteLearningItem(
     await database.learningContexts.where("itemId").equals(itemId).delete();
   });
 }
+
+
+/** One due learner item with the source sentence used to review it in context. */
+export interface DueReviewItem {
+  item: LearningItem;
+  context?: LearningContextRecord;
+}
+
+/**
+ * Due learning items ordered from the most overdue to the least overdue.
+ * A positive limit caps a review session without changing persisted state.
+ */
+export async function getDueReviewItems(
+  database: ExplanationDatabase,
+  options: { now: string; limit?: number }
+): Promise<DueReviewItem[]> {
+  const limit = Math.max(0, Math.floor(options.limit ?? 10));
+  if (limit === 0) return [];
+
+  const items = (await database.learningItems.toArray())
+    .filter(
+      (item) =>
+        item.state === "learning" &&
+        typeof item.nextReviewAt === "string" &&
+        item.nextReviewAt <= options.now
+    )
+    .sort((left, right) => {
+      const dueOrder = left.nextReviewAt!.localeCompare(right.nextReviewAt!);
+      return dueOrder !== 0 ? dueOrder : left.id.localeCompare(right.id);
+    })
+    .slice(0, limit);
+
+  return Promise.all(
+    items.map(async (item) => {
+      const contexts = await database.learningContexts.where("itemId").equals(item.id).toArray();
+      const context = contexts.sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0];
+      return context ? { item, context } : { item };
+    })
+  );
+}
