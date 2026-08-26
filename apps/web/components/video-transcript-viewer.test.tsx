@@ -56,6 +56,7 @@ test("VideoTranscriptViewer distinguishes active playback segment and selected s
   assert.match(html, /#C7654C/);
   // Check active segment styling (Highlight #F4E8B8)
   assert.match(html, /#F4E8B8/);
+  assert.match(html, /aria-pressed="true"/);
 });
 
 test("Assistance label is rendered read-only as Guided", () => {
@@ -149,10 +150,19 @@ test("Study renders nearby context and the persistent explanation hierarchy", ()
   assert.match(html, /Nice to meet you/);
   assert.match(html, /More examples/);
   assert.doesNotMatch(html, /Sentence explanation popover/);
+  assert.match(html, /role="listitem"/);
+  assert.match(html, /aria-pressed="true"/);
+  assert.doesNotMatch(html, /<button[^>]*role="listitem"/);
 });
 
 test("Study selection uses the paused seek baseline", async () => {
   const source = await (await import("node:fs/promises")).readFile(new URL("./video-transcript-viewer.tsx", import.meta.url), "utf8");
   assert.match(source, /function seekToSegment[\s\S]*?currentSeekTo\(segment\.startTimeMs \/ 1000\);[\s\S]*?currentPause\(\);/);
   assert.doesNotMatch(source, /function seekToSegment[\s\S]*?currentPlay\(\);/);
+});
+
+test("selected transcript pauses active-segment auto-scroll while the learner inspects", async () => {
+  const source = await (await import("node:fs/promises")).readFile(new URL("./video-transcript-viewer.tsx", import.meta.url), "utf8");
+  assert.match(source, /useEffect\(\(\) => \{\s*if \(selectedSegmentId\) return;/);
+  assert.match(source, /\}, \[currentActiveSegmentId, selectedSegmentId\]\);/);
 });
