@@ -174,3 +174,5 @@ export function markLearning(input: MarkLearningInput): MarkLearningResult {
     isNew: false
   };
 }
+
+export * from "./review-scheduler.ts";
