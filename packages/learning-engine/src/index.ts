@@ -175,4 +175,4 @@ export function markLearning(input: MarkLearningInput): MarkLearningResult {
   };
 }
 
-export * from "./review-scheduler.ts";
+export * from "./review-scheduler.js";
