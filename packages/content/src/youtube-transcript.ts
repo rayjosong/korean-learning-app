@@ -1,4 +1,3 @@
-pyenv: cannot rehash: /Users/raymondong/.pyenv/shims isn't writable
 import { parseYouTubeUrl, YouTubeUrlParseError } from "./youtube-url.ts";
 import type { TranscriptSegment } from "./index.ts";
 
