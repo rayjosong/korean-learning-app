@@ -79,6 +79,8 @@ jobs:
           echo "Commit: ${{ github.sha }}"
 
       - name: Run OpenCode with selected GLM model
+        id: opencode
+        continue-on-error: true
         shell: bash
         env:
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
@@ -86,6 +88,7 @@ jobs:
           MODEL: zai-coding-plan/${{ steps.model.outputs.model }}
           MENTIONS: /glm
           USE_GITHUB_TOKEN: "true"
+          RUN_LOG: ${{ runner.temp }}/opencode-run.log
           PROMPT: |
             Implement GitHub issue #${{ github.event.issue.number }}.
 
@@ -100,11 +103,48 @@ jobs:
             The command comment that started this run was:
             ${{ github.event.comment.body }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           echo "Starting OpenCode GitHub agent with DEBUG logs enabled"
-          opencode --print-logs --log-level DEBUG github run
+
+          opencode --print-logs --log-level DEBUG github run 2>&1 | tee "$RUN_LOG"
+          opencode_status=${PIPESTATUS[0]}
+
+          if grep -Eiq '(^|[^0-9])429([^0-9]|$)|usage limit|rate limit' "$RUN_LOG"; then
+            reset_time="$(sed -nE 's/.*Your limit will reset at (.*)/\1/p' "$RUN_LOG" | head -n1 | sed 's/[[:space:]]*$//')"
+            reset_time="${reset_time:-an unspecified time}"
+            echo "rate_limited=true" >> "$GITHUB_OUTPUT"
+            echo "reset_time=$reset_time" >> "$GITHUB_OUTPUT"
+            echo "::error::OpenCode provider usage limit reached; reset time: $reset_time"
+            exit 0
+          fi
+
+          echo "rate_limited=false" >> "$GITHUB_OUTPUT"
+          exit "$opencode_status"
+
+      - name: Report provider rate limit
+        if: steps.opencode.outputs.rate_limited == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RESET_TIME: ${{ steps.opencode.outputs.reset_time }}
+        run: |
+          set -euo pipefail
+
+          body="⚠️ @rayjosong, the GLM issue worker hit the provider usage limit (HTTP 429). No changes were published. The limit is expected to reset at ${RESET_TIME}. Please retry `/glm` after that time."
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
+          echo "Rate-limit notification posted to issue #$ISSUE_NUMBER."
+          exit 1
+
+      - name: Fail after OpenCode error
+        if: steps.opencode.outcome == 'failure' && steps.opencode.outputs.rate_limited != 'true'
+        shell: bash
+        run: |
+          echo "::error::OpenCode failed without a detected provider rate-limit response."
+          exit 1
 
       - name: Push agent work and open pull request
+        if: steps.opencode.outcome == 'success' && steps.opencode.outputs.rate_limited != 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,8 +198,17 @@ jobs:
       - name: Show OpenCode diagnostic log tail
         if: always()
         shell: bash
+        env:
+          RUN_LOG: ${{ runner.temp }}/opencode-run.log
         run: |
           set -euo pipefail
+
+          if [[ -f "$RUN_LOG" ]]; then
+            echo "::group::Captured OpenCode output"
+            tail -n 500 "$RUN_LOG"
+            echo "::endgroup::"
+          fi
+
           log_dir="$HOME/.local/share/opencode/log"
 
           if [[ ! -d "$log_dir" ]]; then
