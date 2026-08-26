@@ -1,6 +1,6 @@
 import type { LearnerProfileInput } from "@korean-learning/learning-engine/profile";
 
-import type { ExplanationDatabase } from "./index.ts";
+import type { ExplanationDatabase } from "./index";
 
 /**
  * Loads the local evidence needed by the learner-profile domain aggregator.
