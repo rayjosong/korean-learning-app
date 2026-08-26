@@ -6,7 +6,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./profile": "./src/profile.ts",
-    "./video-difficulty": "./src/video-difficulty.ts"
+    "./video-difficulty": "./src/video-difficulty.ts",
+    "./progress": "./src/progress.ts",
+    "./revisit": "./src/revisit.ts"
   },
   "scripts": {
     "lint": "node ./scripts/lint.mjs",

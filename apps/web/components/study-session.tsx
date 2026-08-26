@@ -6,6 +6,8 @@ import { ClozeReviewPanel } from "@/components/cloze-review-panel";
 import { AiProviderSettings } from "@/components/ai-provider-settings";
 import { ExplanationPanel } from "@/components/explanation-panel";
 import { LearnerProfilePanel } from "@/components/learner-profile-panel";
+import { ProgressDashboard } from "@/components/progress-dashboard";
+import { RevisitNotice } from "@/components/revisit-notice";
 import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
@@ -16,19 +18,22 @@ import type { TranscriptSegment } from "@/lib/transcript";
 import { useLearnerItem } from "@/lib/use-learner-item";
 import { useSentenceExplanation } from "@/lib/use-sentence-explanation";
 import { useWordExplanation } from "@/lib/use-word-explanation";
-import { clearExplanationCache, ExplanationDatabase } from "@korean-learning/storage";
+import { clearExplanationCache, ExplanationDatabase, recordStudiedContent } from "@korean-learning/storage";
 
 export interface StudySessionProps {
   videoId: string;
   segments: readonly TranscriptSegment[];
+  videoUrl?: string;
+  onReplay?: (videoUrl: string) => void;
 }
 
-export function StudySession({ videoId, segments }: StudySessionProps) {
+export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySessionProps) {
   const [settings, setSettings] = useState<AiSettings>({ apiKey: "", model: "gpt-4o-mini" });
   const [settingsReady, setSettingsReady] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [selectedSegment, setSelectedSegment] = useState<TranscriptSegment>();
   const [historyRevision, setHistoryRevision] = useState(0);
+  const [sessionId] = useState(() => crypto.randomUUID());
   const [cacheDatabase] = useState(
     () => (typeof window === "undefined" ? undefined : new ExplanationDatabase())
   );
@@ -53,6 +58,9 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
       modelName: settings.model.trim()
     });
   }, [settings, cacheDatabase]);
+  useEffect(() => {
+    if (cacheDatabase) void recordStudiedContent(cacheDatabase, { videoId, studiedAt: new Date().toISOString() });
+  }, [cacheDatabase, videoId]);
   const { state, explain } = useSentenceExplanation(languageModel);
   const {
     state: wordState,
@@ -98,7 +106,15 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="flex flex-col gap-6">
+        <RevisitNotice
+          database={cacheDatabase}
+          videoId={videoId}
+          segments={segments}
+          sessionId={sessionId}
+          onReplay={videoUrl && onReplay ? () => onReplay(videoUrl) : undefined}
+        />
         <VideoDifficultyEstimate
+          key={videoId}
           database={cacheDatabase}
           segments={segments}
           refreshKey={historyRevision}
@@ -179,6 +195,7 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
           onReviewComplete={() => setHistoryRevision((revision) => revision + 1)}
         />
         <LearnerProfilePanel database={cacheDatabase} refreshKey={historyRevision} />
+        <ProgressDashboard database={cacheDatabase} refreshKey={historyRevision} />
         <LearningHistoryPanel database={cacheDatabase} refreshKey={historyRevision} />
       </div>
     </div>

@@ -2,6 +2,7 @@ import Dexie, { type Table } from "dexie";
 
 import type { SentenceExplanation, WordExplanation } from "@korean-learning/korean";
 import type { LearningContext, LearningItem, ReviewMode, ReviewOutcome } from "@korean-learning/learning-engine";
+import type { ContentProgressSnapshot } from "@korean-learning/learning-engine/revisit";
 
 /**
  * A cached sentence explanation.
@@ -33,6 +34,8 @@ export class ExplanationDatabase extends Dexie {
   learningContexts!: Table<LearningContextRecord, string>;
   reviewRecords!: Table<ReviewRecord, string>;
   aiProviderSettings!: Table<import("./ai-settings.ts").AiProviderSettingsRecord, string>;
+  studiedContent!: Table<StudiedContentRecord, string>;
+  contentProgressSnapshots!: Table<ContentProgressSnapshot, string>;
 
   constructor(name = "korean-learning") {
     super(name);
@@ -58,6 +61,25 @@ export class ExplanationDatabase extends Dexie {
       learningItems: "id, text, lastSeenAt",
       learningContexts: "id, itemId, createdAt",
       reviewRecords: "id, itemId, reviewedAt, mode",
+      studiedContent: "videoId, firstStudiedAt, lastStudiedAt"
+    });
+    this.version(7).stores({
+      explanations: "key, createdAt",
+      wordExplanations: "key",
+      learningItems: "id, text, lastSeenAt",
+      learningContexts: "id, itemId, createdAt",
+      reviewRecords: "id, itemId, reviewedAt, mode",
+      studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+      contentProgressSnapshots: "id, videoId, capturedAt"
+    });
+    this.version(8).stores({
+      explanations: "key, createdAt",
+      wordExplanations: "key",
+      learningItems: "id, text, lastSeenAt",
+      learningContexts: "id, itemId, createdAt",
+      reviewRecords: "id, itemId, reviewedAt, mode",
+      studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+      contentProgressSnapshots: "id, videoId, capturedAt",
       aiProviderSettings: "id"
     });
   }
@@ -228,6 +250,68 @@ export interface ReviewRecord {
 
 export async function putReviewRecord(database: ExplanationDatabase, record: ReviewRecord): Promise<void> {
   await database.reviewRecords.put(record);
+}
+
+/** Local activity for a successfully loaded piece of study content. */
+export interface StudiedContentRecord {
+  videoId: string;
+  firstStudiedAt: string;
+  lastStudiedAt: string;
+}
+
+export async function recordStudiedContent(
+  database: ExplanationDatabase,
+  input: { videoId: string; studiedAt: string }
+): Promise<void> {
+  const existing = await database.studiedContent.get(input.videoId);
+  await database.studiedContent.put({
+    videoId: input.videoId,
+    firstStudiedAt: existing?.firstStudiedAt ?? input.studiedAt,
+    lastStudiedAt: input.studiedAt
+  });
+}
+
+export async function getContentProgressSnapshots(
+  database: ExplanationDatabase,
+  videoId: string
+): Promise<ContentProgressSnapshot[]> {
+  return database.contentProgressSnapshots
+    .where("videoId")
+    .equals(videoId)
+    .sortBy("capturedAt");
+}
+
+export async function putContentProgressSnapshot(
+  database: ExplanationDatabase,
+  snapshot: ContentProgressSnapshot
+): Promise<void> {
+  await database.contentProgressSnapshots.put(snapshot);
+}
+
+export interface ProgressSnapshotInput {
+  items: LearningItem[];
+  reviews: ReviewRecord[];
+  explanations: ExplanationRecord[];
+  studiedContent: StudiedContentRecord[];
+}
+
+/** Reads all progress inputs in one read transaction for a consistent snapshot. */
+export async function getProgressSnapshotInput(
+  database: ExplanationDatabase
+): Promise<ProgressSnapshotInput> {
+  return database.transaction(
+    "r",
+    database.learningItems,
+    database.reviewRecords,
+    database.explanations,
+    database.studiedContent,
+    async () => ({
+      items: await database.learningItems.toArray(),
+      reviews: await database.reviewRecords.toArray(),
+      explanations: await database.explanations.toArray(),
+      studiedContent: await database.studiedContent.toArray()
+    })
+  );
 }
 
 /**

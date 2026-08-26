@@ -18,13 +18,17 @@ export function StudySessionLoader() {
 
   async function loadTranscript(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    await loadVideo(videoUrl);
+  }
+
+  async function loadVideo(url: string) {
     setIsLoading(true);
     setError(undefined);
     try {
       const response = await fetch("/api/transcript", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ videoUrl })
+        body: JSON.stringify({ videoUrl: url })
       });
       const result = (await response.json()) as TranscriptResponse & { message?: string };
       if (!response.ok) throw new Error(result.message ?? "The transcript could not be loaded.");
@@ -59,7 +63,14 @@ export function StudySessionLoader() {
         </button>
       </form>
       {error ? <p className="mb-8 rounded-xl border border-rose-900/80 bg-rose-950/40 px-4 py-3 text-sm text-rose-200" role="alert">{error}</p> : null}
-      {session ? <StudySession videoId={session.videoId} segments={session.segments} /> : null}
+      {session ? (
+        <StudySession
+          videoId={session.videoId}
+          segments={session.segments}
+          videoUrl={videoUrl}
+          onReplay={(url) => void loadVideo(url)}
+        />
+      ) : null}
     </>
   );
 }

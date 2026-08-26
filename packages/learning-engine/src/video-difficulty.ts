@@ -17,6 +17,11 @@ export interface DifficultyEstimate {
   reasonCodes: readonly ("known-coverage" | "long-segments" | "repetition" | "new-learner")[];
 }
 
+/** Shows a calm prompt when the estimate indicates unusually demanding content. */
+export function shouldShowDifficultyWarning(estimate: DifficultyEstimate): boolean {
+  return estimate.band === "challenging";
+}
+
 const MIN_COMPREHENSION = 5;
 const MAX_COMPREHENSION = 95;
 
