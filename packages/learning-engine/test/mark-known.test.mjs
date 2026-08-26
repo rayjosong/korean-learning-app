@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { inferLearnerItemKind, learningContextId, markKnown } from "../src/index.ts";
+import { inferLearnerItemKind, learningContextId, markKnown, markLearning } from "../src/index.ts";
 
 const context = (overrides = {}) => ({
   id: "video-1:segment-3:뭐",
@@ -126,4 +126,56 @@ test("word and phrase kinds follow whitespace", () => {
   assert.equal(inferLearnerItemKind("뭐"), "word");
   assert.equal(inferLearnerItemKind("가고 있어요"), "phrase");
   assert.equal(inferLearnerItemKind("  뭐 "), "word");
+});
+
+
+test("learning an unseen form schedules its first review and stores source context", () => {
+  const { item, previousItem, isNew } = markLearning({
+    text: "뭐",
+    dictionaryForm: "무엇",
+    context: context(),
+    now: "2026-08-26T00:00:00.000Z",
+    initialReviewAt: "2026-08-27T00:00:00.000Z"
+  });
+
+  assert.equal(isNew, true);
+  assert.equal(previousItem, undefined);
+  assert.equal(item.state, "learning");
+  assert.equal(item.text, "뭐");
+  assert.equal(item.dictionaryForm, "무엇");
+  assert.deepEqual(item.contextIds, ["video-1:segment-3:뭐"]);
+  assert.equal(item.nextReviewAt, "2026-08-27T00:00:00.000Z");
+});
+
+test("learning a known item again retains its identity and refreshes the first review", () => {
+  const existing = learningItem({ state: "known", nextReviewAt: undefined });
+  const { item, previousItem, isNew } = markLearning({
+    existing,
+    text: "뭐",
+    context: context({ id: "video-2:segment-9:뭐", videoId: "video-2", transcriptSegmentId: "segment-9" }),
+    now: "2026-08-26T00:00:00.000Z",
+    initialReviewAt: "2026-08-27T00:00:00.000Z"
+  });
+
+  assert.equal(isNew, false);
+  assert.equal(item.id, existing.id);
+  assert.equal(item.state, "learning");
+  assert.equal(item.encounters, 3);
+  assert.deepEqual(item.contextIds, ["video-1:segment-1:뭐", "video-2:segment-9:뭐"]);
+  assert.equal(item.nextReviewAt, "2026-08-27T00:00:00.000Z");
+  assert.equal(previousItem, existing);
+});
+
+test("re-encountering a learning item does not duplicate its source context", () => {
+  const existing = learningItem({ contextIds: ["video-1:segment-3:뭐"] });
+  const { item } = markLearning({
+    existing,
+    text: "뭐",
+    context: context(),
+    now: "2026-08-26T00:00:00.000Z",
+    initialReviewAt: "2026-08-27T00:00:00.000Z"
+  });
+
+  assert.deepEqual(item.contextIds, ["video-1:segment-3:뭐"]);
+  assert.equal(item.encounters, 3);
 });

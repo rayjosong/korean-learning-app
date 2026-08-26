@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 
 import {
   learningContextId,
+  markLearning as markLearningItem,
   markKnown as markKnownItem,
   type LearningItem
 } from "@korean-learning/learning-engine";
@@ -19,6 +20,7 @@ import type { TranscriptSegment } from "@/lib/transcript";
 export type LearnerItemStatus = "idle" | "loading" | "ready" | "error";
 
 export interface SavedLearnerItem {
+  action: "known" | "learning";
   item: LearningItem;
   previousItem?: LearningItem;
   isNew: boolean;
@@ -109,6 +111,69 @@ export function useLearnerItem(options: UseLearnerItemOptions) {
           status: "ready",
           item: result.item,
           saved: {
+            action: "known",
+            item: result.item,
+            previousItem: result.previousItem,
+            isNew: result.isNew,
+            contextId: context.id
+          }
+        });
+      } catch {
+        if (latestRequestRef.current !== request) return;
+        setState({ status: "error", error: "The change could not be saved." });
+      }
+    },
+    [options.database, options.videoId]
+  );
+
+
+  const markLearning = useCallback(
+    async ({
+      text,
+      dictionaryForm,
+      segment
+    }: {
+      text: string;
+      dictionaryForm?: string;
+      segment: TranscriptSegment;
+    }) => {
+      if (!options.database) return;
+      const request = ++latestRequestRef.current;
+      const context = {
+        id: learningContextId({ text, videoId: options.videoId, transcriptSegmentId: segment.id }),
+        videoId: options.videoId,
+        transcriptSegmentId: segment.id,
+        sentence: segment.text,
+        startTimeMs: segment.startTimeMs,
+        endTimeMs: segment.endTimeMs
+      };
+
+      try {
+        const existing = await getLearningItemByText(options.database, text);
+        const now = new Date().toISOString();
+        const initialReviewAt = new Date(Date.parse(now) + 24 * 60 * 60 * 1000).toISOString();
+        const result = markLearningItem({
+          existing,
+          text,
+          dictionaryForm,
+          context,
+          now,
+          initialReviewAt
+        });
+
+        await putLearningItem(options.database, result.item);
+        await putLearningContext(options.database, {
+          ...context,
+          itemId: result.item.id,
+          createdAt: now
+        });
+
+        if (latestRequestRef.current !== request) return;
+        setState({
+          status: "ready",
+          item: result.item,
+          saved: {
+            action: "learning",
             item: result.item,
             previousItem: result.previousItem,
             isNew: result.isNew,
@@ -151,5 +216,5 @@ export function useLearnerItem(options: UseLearnerItemOptions) {
     setState(INITIAL_STATE);
   }, []);
 
-  return { state, load, markKnown, undo, reset };
+  return { state, load, markKnown, markLearning, undo, reset };
 }

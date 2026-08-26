@@ -107,3 +107,70 @@ export function markKnown(input: MarkKnownInput): MarkKnownResult {
     isNew: false
   };
 }
+
+
+export interface MarkLearningInput {
+  existing?: LearningItem;
+  text: string;
+  dictionaryForm?: string;
+  context: LearningContext;
+  now: string;
+  /** The first deterministic review due date, supplied by the application layer. */
+  initialReviewAt: string;
+}
+
+export interface MarkLearningResult {
+  item: LearningItem;
+  /** Snapshot to restore when the learner undoes the save. */
+  previousItem?: LearningItem;
+  isNew: boolean;
+}
+
+/**
+ * Adds a clicked form to learning. Surface form remains the learner-item
+ * identity; dictionary form is optional supporting metadata.
+ */
+export function markLearning(input: MarkLearningInput): MarkLearningResult {
+  const text = input.text.replace(/\s+/g, " ").trim();
+  const dictionaryForm = input.dictionaryForm?.trim() || undefined;
+  const existing = input.existing;
+
+  if (!existing) {
+    return {
+      item: {
+        id: crypto.randomUUID(),
+        kind: inferLearnerItemKind(text),
+        text,
+        state: "learning",
+        ...(dictionaryForm ? { dictionaryForm } : {}),
+        recognitionConfidence: 0,
+        productionConfidence: 0,
+        encounters: 1,
+        successes: 0,
+        failures: 0,
+        contextIds: [input.context.id],
+        lastSeenAt: input.now,
+        nextReviewAt: input.initialReviewAt
+      },
+      isNew: true
+    };
+  }
+
+  const contextIds = existing.contextIds.includes(input.context.id)
+    ? existing.contextIds
+    : [...existing.contextIds, input.context.id];
+
+  return {
+    item: {
+      ...existing,
+      state: "learning",
+      ...(dictionaryForm && !existing.dictionaryForm ? { dictionaryForm } : {}),
+      encounters: existing.encounters + 1,
+      contextIds,
+      lastSeenAt: input.now,
+      nextReviewAt: input.initialReviewAt
+    },
+    previousItem: existing,
+    isNew: false
+  };
+}

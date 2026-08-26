@@ -13,6 +13,7 @@ export interface ExplanationPanelProps {
   onWordClick?: (word: string) => void;
   learnerState?: LearnerItemState;
   onMarkKnown?: () => void;
+  onMarkLearning?: () => void;
   onUndo?: () => void;
 }
 
@@ -24,6 +25,7 @@ export function ExplanationPanel({
   onWordClick,
   learnerState,
   onMarkKnown,
+  onMarkLearning,
   onUndo
 }: ExplanationPanelProps) {
   return (
@@ -68,7 +70,7 @@ export function ExplanationPanel({
       ) : null}
 
       {wordState && wordState.status !== "idle" ? (
-        <WordCard state={wordState} learnerState={learnerState} onMarkKnown={onMarkKnown} onUndo={onUndo} />
+        <WordCard state={wordState} learnerState={learnerState} onMarkKnown={onMarkKnown} onMarkLearning={onMarkLearning} onUndo={onUndo} />
       ) : null}
     </section>
   );
@@ -149,11 +151,13 @@ function WordCard({
   state,
   learnerState,
   onMarkKnown,
+  onMarkLearning,
   onUndo
 }: {
   state: WordExplanationState;
   learnerState?: LearnerItemState;
   onMarkKnown?: () => void;
+  onMarkLearning?: () => void;
   onUndo?: () => void;
 }) {
   if (state.status === "loading") {
@@ -201,6 +205,7 @@ function WordCard({
       <LearnerAction
         learnerState={learnerState}
         onMarkKnown={onMarkKnown}
+        onMarkLearning={onMarkLearning}
         onUndo={onUndo}
       />
     </aside>
@@ -210,21 +215,24 @@ function WordCard({
 function LearnerAction({
   learnerState,
   onMarkKnown,
+  onMarkLearning,
   onUndo
 }: {
   learnerState?: LearnerItemState;
   onMarkKnown?: () => void;
+  onMarkLearning?: () => void;
   onUndo?: () => void;
 }) {
-  if (learnerState?.status !== "ready" || !onMarkKnown) return null;
+  if (learnerState?.status !== "ready") return null;
 
   if (learnerState.saved) {
+    const savedAsLearning = learnerState.saved.action === "learning";
     return (
       <div
         role="status"
         className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-emerald-400/10 px-3 py-2"
       >
-        <p className="text-xs text-emerald-300">Marked as known</p>
+        <p className="text-xs text-emerald-300">{savedAsLearning ? "Added to learning" : "Marked as known"}</p>
         {onUndo ? (
           <button
             type="button"
@@ -239,16 +247,51 @@ function LearnerAction({
   }
 
   if (learnerState.item?.state === "known") {
-    return <p className="mt-3 text-xs text-slate-500">You already marked this as known.</p>;
+    if (!onMarkLearning) return <p className="mt-3 text-xs text-slate-500">You already marked this as known.</p>;
+    return (
+      <button
+        type="button"
+        onClick={onMarkLearning}
+        className="mt-3 w-full rounded-lg border border-sky-500/40 px-3 py-1.5 text-sm text-sky-300 transition-colors hover:border-sky-400 hover:bg-sky-400/10 hover:text-sky-200"
+      >
+        Learn this again
+      </button>
+    );
+  }
+
+  if (learnerState.item?.state === "learning") {
+    if (!onMarkKnown) return null;
+    return (
+      <button
+        type="button"
+        onClick={onMarkKnown}
+        className="mt-3 w-full rounded-lg border border-emerald-500/40 px-3 py-1.5 text-sm text-emerald-300 transition-colors hover:border-emerald-400 hover:bg-emerald-400/10 hover:text-emerald-200"
+      >
+        I know this
+      </button>
+    );
   }
 
   return (
-    <button
-      type="button"
-      onClick={onMarkKnown}
-      className="mt-3 w-full rounded-lg border border-emerald-500/40 px-3 py-1.5 text-sm text-emerald-300 transition-colors hover:border-emerald-400 hover:bg-emerald-400/10 hover:text-emerald-200"
-    >
-      I know this
-    </button>
+    <div className="mt-3 grid grid-cols-2 gap-2">
+      {onMarkKnown ? (
+        <button
+          type="button"
+          onClick={onMarkKnown}
+          className="rounded-lg border border-emerald-500/40 px-3 py-1.5 text-sm text-emerald-300 transition-colors hover:border-emerald-400 hover:bg-emerald-400/10 hover:text-emerald-200"
+        >
+          I know this
+        </button>
+      ) : null}
+      {onMarkLearning ? (
+        <button
+          type="button"
+          onClick={onMarkLearning}
+          className="rounded-lg border border-sky-500/40 px-3 py-1.5 text-sm text-sky-300 transition-colors hover:border-sky-400 hover:bg-sky-400/10 hover:text-sky-200"
+        >
+          Learn this
+        </button>
+      ) : null}
+    </div>
   );
 }

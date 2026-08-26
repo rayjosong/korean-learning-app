@@ -51,6 +51,7 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
     state: learnerState,
     load: loadLearnerItem,
     markKnown: markWordKnown,
+    markLearning: markWordLearning,
     undo: undoMarkKnown,
     reset: resetLearnerItem
   } = useLearnerItem({ database: cacheDatabase, videoId });
@@ -144,6 +145,15 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
           onMarkKnown={() => {
             if (selectedSegment && wordState.word) {
               void markWordKnown({
+                text: wordState.word,
+                dictionaryForm: wordState.explanation?.dictionaryForm,
+                segment: selectedSegment
+              });
+            }
+          }}
+          onMarkLearning={() => {
+            if (selectedSegment && wordState.word) {
+              void markWordLearning({
                 text: wordState.word,
                 dictionaryForm: wordState.explanation?.dictionaryForm,
                 segment: selectedSegment
