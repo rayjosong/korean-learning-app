@@ -202,12 +202,12 @@ Depends on: #10
 
 ---
 
-### [ ] #13 Learning history
+### [x] #13 Learning history
 
 Acceptance criteria:
-- [ ] Recent explained sentences shown.
-- [ ] Recent learning items shown.
-- [ ] Source video/timestamp shown when available.
+- [x] Recent explained sentences shown.
+- [x] Recent learning items shown.
+- [x] Source video/timestamp shown when available.
 
 Depends on: #9, #11, #12
 

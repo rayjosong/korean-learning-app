@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { ExplanationPanel } from "@/components/explanation-panel";
+import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
 import { withExplanationCache } from "@/lib/explanation-cache";
@@ -22,6 +23,7 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
   const [model, setModel] = useState("gpt-4o-mini");
   const [baseUrl, setBaseUrl] = useState("");
   const [selectedSegment, setSelectedSegment] = useState<TranscriptSegment>();
+  const [historyRevision, setHistoryRevision] = useState(0);
   const [cacheDatabase] = useState(
     () => (typeof window === "undefined" ? undefined : new ExplanationDatabase())
   );
@@ -62,7 +64,11 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
     resetLearnerItem();
     const index = segments.indexOf(segment);
     const previous = index > 0 ? segments[index - 1].text : undefined;
-    await explain({ sentence: segment.text, context: previous });
+    try {
+      await explain({ sentence: segment.text, context: previous });
+    } finally {
+      setHistoryRevision((revision) => revision + 1);
+    }
   }
 
   function retryExplanation() {
@@ -148,7 +154,7 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
                 text: wordState.word,
                 dictionaryForm: wordState.explanation?.dictionaryForm,
                 segment: selectedSegment
-              });
+              }).then(() => setHistoryRevision((revision) => revision + 1));
             }
           }}
           onMarkLearning={() => {
@@ -157,11 +163,12 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
                 text: wordState.word,
                 dictionaryForm: wordState.explanation?.dictionaryForm,
                 segment: selectedSegment
-              });
+              }).then(() => setHistoryRevision((revision) => revision + 1));
             }
           }}
-          onUndo={() => void undoMarkKnown()}
+          onUndo={() => void undoMarkKnown().then(() => setHistoryRevision((revision) => revision + 1))}
         />
+        <LearningHistoryPanel database={cacheDatabase} refreshKey={historyRevision} />
       </div>
     </div>
   );
