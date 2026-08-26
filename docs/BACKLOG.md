@@ -372,6 +372,45 @@ Acceptance criteria:
 
 Depends on: #25
 
+## Milestone 7 — Open-source deployment
+
+### [ ] #27 Persistent AI provider configuration
+
+Acceptance criteria:
+- [x] AI provider settings are stored in IndexedDB through `@korean-learning/storage`.
+- [x] The stored profile supports provider type, model, optional base URL, and API key.
+- [x] The default profile is restored after refresh and browser restart.
+- [x] AI explanations use the restored profile without requiring re-entry.
+- [x] Settings can be edited and saved from a dedicated AI settings surface.
+- [x] The API key can be removed explicitly.
+- [x] API keys are not written to explanation, learner, history, or export records.
+- [x] API keys are never logged.
+- [x] The UI explains that browser persistence is local convenience, not a secure secret vault.
+- [x] Missing or invalid settings produce a controlled, actionable error.
+- [x] Existing users with in-memory settings continue to work during the session.
+- [x] IndexedDB schema migration from the current version is tested.
+- [x] Unit tests cover save, reload, update, removal, and missing-settings behavior.
+- [x] User-visible settings states have component tests.
+- [x] Browser verification confirms settings survive reload.
+
+Remaining: keep the top-level item unchecked until the default `pnpm build` command passes; the Webpack production-build fallback passes, while Turbopack currently fails with an environment-level port-permission panic.
+
+Depends on: #6, #9
+
+---
+
+### [ ] #28 Self-hosted deployment AI defaults
+
+Acceptance criteria:
+- [ ] A self-hosted deployment can configure a default OpenAI-compatible endpoint through environment variables.
+- [ ] Deployment configuration is never exposed in exportable learner data.
+- [ ] Users can use deployment defaults without entering an API key.
+- [ ] User-local BYOK settings override deployment defaults.
+- [ ] Missing deployment configuration produces a clear setup message.
+- [ ] Documentation covers environment variables and secret handling.
+
+Depends on: #27
+
 ## Later — not V0.1
 
 - AI conversation missions.

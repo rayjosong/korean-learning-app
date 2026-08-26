@@ -16,6 +16,14 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## AI provider setup
+
+The app uses a BYO-key OpenAI-compatible provider. Enter the provider model and API
+key in the AI provider settings; saved settings stay in the current browser and are
+restored on later visits. The key is not included in exports or explanation records.
+Browser persistence is local convenience, not a secure secret vault. Remove the key
+from shared or untrusted devices.
+
 ## Verification commands
 
 ```bash

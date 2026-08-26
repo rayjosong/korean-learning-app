@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./learner-profile": "./src/learner-profile.ts"
+    "./learner-profile": "./src/learner-profile.ts",
+    "./ai-settings": "./src/ai-settings.ts"
   },
   "scripts": {
     "lint": "node ./scripts/lint.mjs",

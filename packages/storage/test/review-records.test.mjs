@@ -36,3 +36,24 @@ test("version 5 upgrades a version 4 database and stores the completed review mo
   });
   await database.delete();
 });
+
+test("version 8 upgrades a version 7 database and adds AI provider settings", async () => {
+  const name = "ai-settings-migration-test";
+  const prior = new Dexie(name);
+  prior.version(7).stores({
+    explanations: "key, createdAt",
+    wordExplanations: "key",
+    learningItems: "id, text, lastSeenAt",
+    learningContexts: "id, itemId, createdAt",
+    reviewRecords: "id, itemId, reviewedAt, mode",
+    studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+    contentProgressSnapshots: "id, videoId, capturedAt"
+  });
+  await prior.open();
+  await prior.close();
+
+  const database = new ExplanationDatabase(name);
+  await database.open();
+  assert.ok(database.aiProviderSettings);
+  await database.delete();
+});

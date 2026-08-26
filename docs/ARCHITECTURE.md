@@ -125,7 +125,16 @@ Use IndexedDB/Dexie for:
 - reviews;
 - settings.
 
-API keys must never be exported or logged.
+AI provider settings are stored in the storage package behind application-level helpers.
+The current local-first credential resolution order is:
+
+```text
+saved local BYOK profile -> in-memory session settings -> no credentials
+```
+
+Local browser persistence is a convenience, not a secure secret vault. API keys must
+never be exported, copied into explanation records, or logged. Deployment-managed
+defaults and server-side credential handling are a separate future boundary.
 
 ## Review scheduling
 
