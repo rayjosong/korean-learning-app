@@ -8,6 +8,8 @@ import { createLanguageModel } from "@/lib/ai";
 import { withExplanationCache } from "@/lib/explanation-cache";
 import type { TranscriptSegment } from "@/lib/transcript";
 import { useSentenceExplanation } from "@/lib/use-sentence-explanation";
+import { useLearnerItem } from "@/lib/use-learner-item";
+import { useWordExplanation } from "@/lib/use-word-explanation";
 import { clearExplanationCache, ExplanationDatabase } from "@korean-learning/storage";
 
 export interface StudySessionProps {
@@ -34,9 +36,29 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
     });
   }, [apiKey, model, baseUrl, cacheDatabase]);
   const { state, explain } = useSentenceExplanation(languageModel);
+  const {
+    state: wordState,
+    explain: explainWord,
+    reset: resetWordExplanation
+  } = useWordExplanation({
+    model: languageModel,
+    database: cacheDatabase,
+    videoId,
+    provider: "openai-compatible",
+    modelName: model.trim()
+  });
+  const {
+    state: learnerState,
+    load: loadLearnerItem,
+    markKnown: markWordKnown,
+    undo: undoMarkKnown,
+    reset: resetLearnerItem
+  } = useLearnerItem({ database: cacheDatabase, videoId });
 
   async function explainSegment(segment: TranscriptSegment) {
     setSelectedSegment(segment);
+    resetWordExplanation();
+    resetLearnerItem();
     const index = segments.indexOf(segment);
     const previous = index > 0 ? segments[index - 1].text : undefined;
     await explain({ sentence: segment.text, context: previous });
@@ -108,7 +130,28 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
           </button>
         </section>
 
-        <ExplanationPanel segment={selectedSegment} state={state} onRetry={retryExplanation} />
+        <ExplanationPanel
+          segment={selectedSegment}
+          state={state}
+          onRetry={retryExplanation}
+          wordState={wordState}
+          onWordClick={(word) => {
+            if (!selectedSegment) return;
+            void explainWord({ word, segment: selectedSegment });
+            void loadLearnerItem(word);
+          }}
+          learnerState={learnerState}
+          onMarkKnown={() => {
+            if (selectedSegment && wordState.word) {
+              void markWordKnown({
+                text: wordState.word,
+                dictionaryForm: wordState.explanation?.dictionaryForm,
+                segment: selectedSegment
+              });
+            }
+          }}
+          onUndo={() => void undoMarkKnown()}
+        />
       </div>
     </div>
   );
