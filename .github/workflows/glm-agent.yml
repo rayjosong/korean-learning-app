@@ -4,6 +4,9 @@ on:
   issue_comment:
     types: [created]
 
+env:
+  OPENCODE_VERSION: "1.18.14"
+
 jobs:
   glm:
     if: >-
@@ -11,6 +14,7 @@ jobs:
       startsWith(github.event.comment.body, '/glm') &&
       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: write
       issues: write
@@ -46,16 +50,35 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Install pinned OpenCode
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://opencode.ai/install | bash -s -- --version "$OPENCODE_VERSION"
+          echo "$HOME/.opencode/bin" >> "$GITHUB_PATH"
+
+      - name: Show OpenCode run configuration
+        shell: bash
+        env:
+          SELECTED_MODEL: ${{ steps.model.outputs.model }}
+        run: |
+          set -euo pipefail
+          echo "OpenCode version: $("$HOME/.opencode/bin/opencode" --version)"
+          echo "OpenCode model: zai-coding-plan/$SELECTED_MODEL"
+          echo "Issue: #${{ github.event.issue.number }}"
+          echo "Trigger: ${{ github.event_name }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Commit: ${{ github.sha }}"
+
       - name: Run OpenCode with selected GLM model
-        uses: anomalyco/opencode/github@latest
+        shell: bash
         env:
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          model: zai-coding-plan/${{ steps.model.outputs.model }}
-          mentions: /glm
-          use_github_token: true
-          prompt: |
+          MODEL: zai-coding-plan/${{ steps.model.outputs.model }}
+          MENTIONS: /glm
+          USE_GITHUB_TOKEN: "true"
+          PROMPT: |
             Implement GitHub issue #${{ github.event.issue.number }}.
 
             Before making any changes, read and obey AGENTS.md, then read docs/PRODUCT.md,
@@ -68,3 +91,29 @@ jobs:
             The selected model for this run is ${{ steps.model.outputs.model }}.
             The command comment that started this run was:
             ${{ github.event.comment.body }}
+        run: |
+          set -euo pipefail
+          echo "Starting OpenCode GitHub agent with DEBUG logs enabled"
+          opencode --print-logs --log-level DEBUG github run
+
+      - name: Show OpenCode diagnostic log tail
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          log_dir="$HOME/.local/share/opencode/log"
+
+          if [[ ! -d "$log_dir" ]]; then
+            echo "No OpenCode log directory found at $log_dir"
+            exit 0
+          fi
+
+          latest_log="$(find "$log_dir" -maxdepth 1 -type f -printf '%T@ %p\n' | sort -nr | head -n1 | cut -d' ' -f2-)"
+          if [[ -z "$latest_log" ]]; then
+            echo "No OpenCode log files found in $log_dir"
+            exit 0
+          fi
+
+          echo "::group::OpenCode diagnostic log tail: $(basename "$latest_log")"
+          tail -n 500 "$latest_log"
+          echo "::endgroup::"
