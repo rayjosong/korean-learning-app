@@ -185,15 +185,13 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
         />
       </div>
 
-      {/* Clearly labeled temporary utility/settings area below the primary workspace */}
-      <hr className="border-slate-800 my-4" />
-      
-      <div className="rounded-2xl border border-slate-900/60 bg-slate-950 p-6">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-6">
-          Workspace Utilities & Settings
-        </h3>
-        
-        <div className="grid gap-6 md:grid-cols-2">
+      {/* Demoted utilities/settings area: collapsed by default so the media workspace stays dominant */}
+      <details className="rounded-xl border border-hairline bg-surface-subtle">
+        <summary className="cursor-pointer px-4 py-3 text-xs font-medium uppercase tracking-wider text-ink-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+          Workspace Utilities &amp; Settings
+        </summary>
+
+        <div className="grid gap-6 border-t border-hairline p-4 md:grid-cols-2">
           <div className="flex flex-col gap-6">
             <ClozeReviewPanel
               database={cacheDatabase}
@@ -223,12 +221,12 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
                 });
               }}
             />
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Explanation cache settings">
+            <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Explanation cache settings">
               <button
                 type="button"
                 disabled={!cacheDatabase}
                 onClick={() => void clearCachedExplanations()}
-                className="mt-4 w-full rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition-colors hover:border-rose-400 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-lg border border-hairline-strong px-3 py-1.5 text-sm text-ink-secondary transition-colors hover:border-error hover:text-error focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Clear cached explanations
               </button>
@@ -238,7 +236,7 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
             <LearningHistoryPanel database={cacheDatabase} refreshKey={historyRevision} />
           </div>
         </div>
-      </div>
+      </details>
     </div>
   );
 }

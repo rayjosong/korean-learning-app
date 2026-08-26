@@ -87,9 +87,9 @@ export function VideoTranscriptViewer({
     <div className="flex flex-col gap-4">
       {/* The main video and transcript grid */}
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]" aria-label={title}>
-        <div className={mode === "study" ? "overflow-hidden rounded-2xl border border-slate-800 bg-black shadow-2xl lg:col-start-1 lg:row-start-1" : "overflow-hidden rounded-2xl border border-slate-800 bg-black shadow-2xl"}>
+        <div className={mode === "study" ? "overflow-hidden rounded-xl border border-hairline bg-black lg:col-start-1 lg:row-start-1" : "overflow-hidden rounded-xl border border-hairline bg-black"}>
           <div ref={containerRef} className="aspect-video w-full" />
-          {currentError ? <p className="px-4 py-3 text-sm text-rose-300">{currentError}</p> : null}
+          {currentError ? <p className="px-4 py-3 text-sm text-error">{currentError}</p> : null}
         </div>
 
         {mode === "study" ? (
@@ -100,10 +100,10 @@ export function VideoTranscriptViewer({
             onSelect={onSegmentClick}
           />
         ) : (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl lg:col-start-1 lg:row-start-2">
+          <div className="rounded-xl border border-hairline bg-surface-elevated p-4 lg:col-start-1 lg:row-start-2">
           <div className="mb-3 flex items-baseline justify-between gap-4">
-            <h2 className="font-semibold text-white">{title}</h2>
-            <span className="text-xs text-slate-500">{segments.length} segments</span>
+            <h2 className="font-semibold text-ink">{title}</h2>
+            <span className="text-xs text-ink-muted">{segments.length} segments</span>
           </div>
           <div className="max-h-[28rem] overflow-y-auto pr-1" role="list" aria-label="Timestamped transcript">
             {segments.map((segment) => {
@@ -115,12 +115,12 @@ export function VideoTranscriptViewer({
                     id={`segment-btn-${segment.id}`}
                     ref={isActive ? activeSegmentRef : undefined}
                     type="button"
-                    className={`grid w-full grid-cols-[3rem_1fr] gap-3 rounded-xl px-3 py-3 text-left transition-all ${
+                    className={`grid w-full grid-cols-[3rem_1fr] gap-3 rounded-lg border-l-2 px-3 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
                       isSelected
-                        ? "bg-[#F4E1DA]/10 text-white ring-1 ring-[#C7654C]/40 border-l-2 border-l-[#C7654C]"
+                        ? "border-l-primary bg-primary-soft text-ink"
                         : isActive
-                          ? "bg-[#FAF4DA]/10 text-white ring-1 ring-[#F4E8B8]/30"
-                          : "text-slate-300 hover:bg-[#FAF9F5]/5 hover:text-white"
+                          ? "border-l-transparent bg-highlight-soft text-ink"
+                          : "border-l-transparent text-ink hover:bg-surface-subtle"
                     }`}
                     aria-current={isActive ? "true" : undefined}
                     aria-pressed={isSelected}
@@ -134,10 +134,10 @@ export function VideoTranscriptViewer({
                       onSegmentClick?.(segment);
                     }}
                   >
-                    <span className={`pt-0.5 text-xs tabular-nums ${isActive ? "text-[#C7654C]" : "text-sky-300"}`}>
+                    <span className={`pt-0.5 text-xs tabular-nums ${isActive || isSelected ? "font-semibold text-ink-secondary" : "text-ink-muted"}`}>
                       {formatTimestamp(segment.startTimeMs)}
                     </span>
-                    <span lang="ko" className="leading-6 font-medium text-[17px]">{segment.text}</span>
+                    <span lang="ko" className="text-[17px] font-medium leading-7">{segment.text}</span>
                   </button>
 
                   {mode === "watch" && isSelected && explanationState && onCloseExplanation && (
@@ -182,17 +182,17 @@ export function VideoTranscriptViewer({
       </section>
 
       {/* Workspace mode and settings bar */}
-      <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 shadow-md backdrop-blur-sm">
+      <div className="flex items-center justify-between rounded-xl border border-hairline bg-surface-elevated px-4 py-2.5">
         <div className="flex items-center gap-2" role="tablist" aria-label="Workspace mode">
           <button
             type="button"
             role="tab"
             aria-selected={mode === "watch"}
             onClick={() => onModeChange?.("watch")}
-            className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all ${
+            className={`rounded-lg px-4 py-1.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
               mode === "watch"
-                ? "bg-[#C7654C]/10 text-[#C7654C] ring-1 ring-[#C7654C]/30"
-                : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                ? "bg-primary-soft font-semibold text-primary-deep"
+                : "text-ink-muted hover:bg-surface-subtle hover:text-ink"
             }`}
           >
             Watch
@@ -202,19 +202,19 @@ export function VideoTranscriptViewer({
             role="tab"
             aria-selected={mode === "study"}
             onClick={() => onModeChange?.("study")}
-            className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all ${
+            className={`rounded-lg px-4 py-1.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
               mode === "study"
-                ? "bg-[#C7654C]/10 text-[#C7654C] ring-1 ring-[#C7654C]/30"
-                : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                ? "bg-primary-soft font-semibold text-primary-deep"
+                : "text-ink-muted hover:bg-surface-subtle hover:text-ink"
             }`}
           >
             Study
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-400">
+        <div className="flex items-center gap-2 text-xs text-ink-muted">
           <span>Assistance:</span>
-          <span className="font-semibold text-slate-300">Guided</span>
+          <span className="font-medium text-ink-secondary">Guided</span>
         </div>
       </div>
     </div>
@@ -238,10 +238,10 @@ function StudyTranscriptContext({
   const nearby = segments.slice(start, start + 3);
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Nearby transcript">
+    <div className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Nearby transcript">
       <div className="mb-3 flex items-baseline justify-between gap-4">
-        <h2 className="font-semibold text-white">Nearby transcript</h2>
-        <span className="text-xs text-slate-500">Study context</span>
+        <h2 className="font-semibold text-ink">Nearby transcript</h2>
+        <span className="text-xs text-ink-muted">Study context</span>
       </div>
       <div className="space-y-1" role="list" aria-label="Nearby transcript sentences">
         {nearby.map((segment) => {
@@ -253,16 +253,16 @@ function StudyTranscriptContext({
               type="button"
               aria-pressed={isSelected}
               onClick={() => onSelect?.(segment)}
-              className={`w-full rounded-xl border-l-2 px-3 py-3 text-left transition-colors ${
+              className={`w-full rounded-lg border-l-2 px-3 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
                 isSelected
-                  ? "border-l-[#C7654C] bg-[#F4E1DA]/10 text-white"
+                  ? "border-l-primary bg-primary-soft text-ink"
                   : isActive
-                    ? "border-l-[#F4E8B8] bg-[#FAF4DA]/10 text-white"
-                    : "border-l-transparent text-slate-400 hover:bg-[#FAF9F5]/5 hover:text-white"
+                    ? "border-l-transparent bg-highlight-soft text-ink"
+                    : "border-l-transparent text-ink-secondary hover:bg-surface-subtle hover:text-ink"
               }`}
             >
-              <span className="block text-xs text-sky-300">{formatTimestamp(segment.startTimeMs)}</span>
-              <span lang="ko" className="mt-1 block leading-6 font-medium">{segment.text}</span>
+              <span className={`block text-xs tabular-nums ${isActive || isSelected ? "font-semibold text-ink-secondary" : "text-ink-muted"}`}>{formatTimestamp(segment.startTimeMs)}</span>
+              <span lang="ko" className="mt-1 block text-[17px] font-medium leading-7">{segment.text}</span>
             </button>
             </div>
           );

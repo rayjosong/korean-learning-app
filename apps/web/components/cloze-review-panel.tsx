@@ -44,19 +44,19 @@ export function ClozeReviewPanel({ database, refreshKey, sessionLimit = 5, onRev
   }
 
   const prompt = mode === "production" ? "Produce the highlighted Korean from its meaning and context, then grade yourself." : mode === "recognition" ? "Recognize the Korean item from a real sentence, then grade yourself." : "Recall the missing word from a real sentence, then grade your answer.";
-  return <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Mixed review">
-    <h2 className="font-semibold text-white">Mixed review</h2>
+  return <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Mixed review">
+    <h2 className="font-semibold text-ink">Mixed review</h2>
     <fieldset className="mt-3 flex gap-2" aria-label="Review mode">
-      {(["recognition", "production", "cloze"] as const).map((reviewMode) => <button key={reviewMode} type="button" aria-pressed={mode === reviewMode} onClick={() => { setMode(reviewMode); setRevealed(false); }} className="rounded-lg border border-slate-700 px-2 py-1 text-xs capitalize text-slate-200 hover:border-sky-400">{reviewMode}</button>)}
+      {(["recognition", "production", "cloze"] as const).map((reviewMode) => <button key={reviewMode} type="button" aria-pressed={mode === reviewMode} onClick={() => { setMode(reviewMode); setRevealed(false); }} className={`rounded-lg border px-2 py-1 text-xs capitalize transition-colors focus-visible:ring-2 focus-visible:ring-primary ${mode === reviewMode ? "border-primary/50 bg-primary-soft font-semibold text-primary-deep" : "border-hairline-strong text-ink-secondary hover:border-primary hover:text-ink"}`}>{reviewMode}</button>)}
     </fieldset>
-    <p className="mt-2 text-xs leading-5 text-slate-500">{prompt}</p>
-    {status === "loading" ? <p role="status" className="mt-4 text-sm text-slate-400">Loading due reviews…</p> : null}
-    {status === "error" ? <p role="alert" className="mt-4 text-sm text-rose-300">Due reviews could not be loaded.</p> : null}
-    {status === "ready" && !review ? <p className="mt-4 text-sm text-slate-400">Nothing is due right now. Keep learning from real Korean content.</p> : null}
-    {status === "ready" && review ? <div className="mt-4 rounded-lg bg-slate-950/60 p-4">
-      {review.context ? <p lang="ko" className="text-lg leading-8 text-slate-100">{mode === "cloze" ? maskAnswer(review.context.sentence, review.item.text) : review.context.sentence}</p> : <p className="text-sm text-slate-400">No source sentence is available. Reveal the item to review it.</p>}
-      {revealed ? <p lang="ko" className="mt-4 rounded-md border border-sky-900/70 bg-sky-950/30 px-3 py-2 text-base text-sky-100">{mode === "production" ? "Produce" : "Answer"}: {review.item.text}</p> : <button type="button" onClick={() => setRevealed(true)} className="mt-4 rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 hover:border-sky-400">Reveal answer</button>}
-      {revealed ? <div className="mt-4 flex gap-2"><button type="button" disabled={isSaving} onClick={() => void finish("failure")} className="rounded-lg border border-rose-800 px-3 py-2 text-sm text-rose-200 disabled:opacity-50">I missed it</button><button type="button" disabled={isSaving} onClick={() => void finish("success")} className="rounded-lg bg-sky-400 px-3 py-2 text-sm font-medium text-slate-950 disabled:opacity-50">I got it</button></div> : null}
+    <p className="mt-2 text-xs leading-5 text-ink-muted">{prompt}</p>
+    {status === "loading" ? <p role="status" className="mt-4 text-sm text-ink-muted">Loading due reviews…</p> : null}
+    {status === "error" ? <p role="alert" className="mt-4 text-sm text-error">Due reviews could not be loaded.</p> : null}
+    {status === "ready" && !review ? <p className="mt-4 text-sm text-ink-muted">Nothing is due right now. Keep learning from real Korean content.</p> : null}
+    {status === "ready" && review ? <div className="mt-4 rounded-lg bg-surface-subtle p-4">
+      {review.context ? <p lang="ko" className="text-lg leading-8 text-ink">{mode === "cloze" ? maskAnswer(review.context.sentence, review.item.text) : review.context.sentence}</p> : <p className="text-sm text-ink-secondary">No source sentence is available. Reveal the item to review it.</p>}
+      {revealed ? <p lang="ko" className="mt-4 rounded-md border border-hairline bg-surface-elevated px-3 py-2 text-base text-ink">{mode === "production" ? "Produce" : "Answer"}: {review.item.text}</p> : <button type="button" onClick={() => setRevealed(true)} className="mt-4 rounded-lg border border-hairline-strong px-3 py-2 text-sm text-ink-secondary transition-colors hover:border-primary hover:text-ink focus-visible:ring-2 focus-visible:ring-primary">Reveal answer</button>}
+      {revealed ? <div className="mt-4 flex gap-2"><button type="button" disabled={isSaving} onClick={() => void finish("failure")} className="rounded-lg border border-error/40 px-3 py-2 text-sm text-error transition-colors hover:border-error disabled:opacity-50">I missed it</button><button type="button" disabled={isSaving} onClick={() => void finish("success")} className="rounded-lg bg-primary-hover px-3 py-2 text-sm font-medium text-on-primary transition hover:brightness-95 disabled:opacity-50">I got it</button></div> : null}
     </div> : null}
   </section>;
 }

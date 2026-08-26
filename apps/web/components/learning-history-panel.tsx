@@ -59,17 +59,17 @@ export function LearningHistoryPanel({ database, refreshKey }: LearningHistoryPa
   }, [database, refreshKey]);
 
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Learning history">
-      <h2 className="font-semibold text-white">Learning history</h2>
-      <p className="mt-1 text-xs leading-5 text-slate-500">
+    <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Learning history">
+      <h2 className="font-semibold text-ink">Learning history</h2>
+      <p className="mt-1 text-xs leading-5 text-ink-muted">
         Your latest explanations and words, stored only on this device.
       </p>
 
       {state.status === "loading" ? (
-        <p role="status" className="mt-4 text-sm text-slate-400">Loading recent activity…</p>
+        <p role="status" className="mt-4 text-sm text-ink-muted">Loading recent activity…</p>
       ) : null}
       {state.status === "error" ? (
-        <p role="alert" className="mt-4 text-sm text-rose-300">Recent learning activity could not be loaded.</p>
+        <p role="alert" className="mt-4 text-sm text-error">Recent learning activity could not be loaded.</p>
       ) : null}
       {state.status === "ready" ? <HistoryContent explanations={state.explanations} items={state.items} /> : null}
     </section>
@@ -86,15 +86,15 @@ function HistoryContent({
   return (
     <div className="mt-4 space-y-5">
       <section aria-label="Recent explained sentences">
-        <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-sky-300">Recent explanations</h3>
+        <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-ink-muted">Recent explanations</h3>
         {explanations.length === 0 ? (
-          <p className="mt-2 text-sm leading-6 text-slate-400">Explain a sentence to see it here.</p>
+          <p className="mt-2 text-sm leading-6 text-ink-muted">Explain a sentence to see it here.</p>
         ) : (
           <ol className="mt-2 space-y-2">
             {explanations.map((record) => (
-              <li key={record.key} className="rounded-lg bg-slate-950/60 p-3">
-                <p lang="ko" className="text-sm font-medium text-slate-100">{record.sentence}</p>
-                <p className="mt-1 text-sm leading-5 text-slate-400">{record.explanation.naturalMeaning}</p>
+              <li key={record.key} className="rounded-lg bg-surface-subtle p-3">
+                <p lang="ko" className="text-sm font-medium text-ink">{record.sentence}</p>
+                <p className="mt-1 text-sm leading-5 text-ink-secondary">{record.explanation.naturalMeaning}</p>
               </li>
             ))}
           </ol>
@@ -102,28 +102,28 @@ function HistoryContent({
       </section>
 
       <section aria-label="Recent learning items">
-        <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-sky-300">Recent learning items</h3>
+        <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-ink-muted">Recent learning items</h3>
         {items.length === 0 ? (
-          <p className="mt-2 text-sm leading-6 text-slate-400">Save a word or phrase to start your learning history.</p>
+          <p className="mt-2 text-sm leading-6 text-ink-muted">Save a word or phrase to start your learning history.</p>
         ) : (
           <ol className="mt-2 space-y-2">
             {items.map(({ item, context }) => (
-              <li key={item.id} className="rounded-lg bg-slate-950/60 p-3">
+              <li key={item.id} className="rounded-lg bg-surface-subtle p-3">
                 <div className="flex items-baseline justify-between gap-3">
-                  <p lang="ko" className="text-sm font-medium text-slate-100">{item.text}</p>
-                  <span className="text-xs capitalize text-slate-500">{item.state}</span>
+                  <p lang="ko" className="text-sm font-medium text-ink">{item.text}</p>
+                  <span className="text-xs capitalize text-ink-secondary">{item.state}</span>
                 </div>
                 {item.dictionaryForm ? (
-                  <p className="mt-1 text-xs text-slate-500">
-                    Dictionary form: <span lang="ko" className="text-slate-400">{item.dictionaryForm}</span>
+                  <p className="mt-1 text-xs text-ink-secondary">
+                    Dictionary form: <span lang="ko" className="text-ink-secondary">{item.dictionaryForm}</span>
                   </p>
                 ) : null}
                 {context ? (
-                  <p className="mt-2 text-xs leading-5 text-slate-500">
-                    <span className="text-slate-400">{context.videoId}</span>
-                    <span className="text-slate-600"> · </span>
+                  <p className="mt-2 text-xs leading-5 text-ink-secondary">
+                    <span className="text-ink-secondary">{context.videoId}</span>
+                    <span className="text-ink-muted"> · </span>
                     {formatTimestamp(context.startTimeMs)}
-                    <span className="text-slate-600"> · </span>
+                    <span className="text-ink-muted"> · </span>
                     <span lang="ko">{context.sentence}</span>
                   </p>
                 ) : null}

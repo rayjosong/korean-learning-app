@@ -52,11 +52,12 @@ test("VideoTranscriptViewer distinguishes active playback segment and selected s
 
   // Check the active segment s1 contains the active class/highlights
   assert.match(html, /안녕하세요/);
-  // Check the selected segment s2 contains the selected class/highlights (with persimmon accent #C7654C)
-  assert.match(html, /#C7654C/);
-  // Check active segment styling (Highlight #F4E8B8)
-  assert.match(html, /#F4E8B8/);
+  // Check the selected segment s2 contains the selected treatment (persimmon selection tokens)
+  assert.match(html, /bg-primary-soft/);
+  // Check active segment styling (warm playback highlight token)
+  assert.match(html, /bg-highlight-soft/);
   assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /aria-current="true"/);
 });
 
 test("Assistance label is rendered read-only as Guided", () => {
