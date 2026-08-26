@@ -4,4 +4,9 @@
 
 :root { color-scheme: light; }
 
-body { @apply min-h-screen bg-slate-950 text-slate-100 antialiased; }
+body {
+  @apply min-h-screen bg-canvas text-ink antialiased;
+  font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Inter, system-ui, sans-serif;
+}
+
+button, input { font: inherit; }

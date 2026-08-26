@@ -19,8 +19,8 @@ const EMPTY_SNAPSHOT: ProgressSnapshot = {
 };
 
 export function ProgressDashboardView({ state }: { state: ProgressDashboardState }) {
-  if (state.status === "loading") return <p role="status" className="text-sm text-slate-400">Loading progress…</p>;
-  if (state.status === "error") return <p role="alert" className="rounded-lg border border-rose-900/80 bg-rose-950/40 px-3 py-2 text-sm text-rose-200">Progress unavailable: {state.message}</p>;
+  if (state.status === "loading") return <p role="status" className="text-sm text-ink-muted">Loading progress…</p>;
+  if (state.status === "error") return <p role="alert" className="rounded-lg border border-error/30 bg-surface-elevated px-3 py-2 text-sm text-error">Progress unavailable: {state.message}</p>;
 
   const { snapshot } = state;
   const reviewText = snapshot.reviewSuccess.percentage === null
@@ -33,16 +33,16 @@ export function ProgressDashboardView({ state }: { state: ProgressDashboardState
       <Metric label="Learning items" value={snapshot.learningItems} />
       <Metric label="Review success" value={reviewText} />
       <Metric label="Content studied" value={snapshot.contentStudied} />
-      <div className="col-span-2 rounded-xl bg-slate-950/70 p-3">
-        <p className="text-xs uppercase tracking-wide text-slate-500">Explanation activity</p>
-        <p className="mt-1 text-sm text-slate-200">{snapshot.explanationFrequency.count} in the last {snapshot.explanationFrequency.windowDays} days</p>
+      <div className="col-span-2 rounded-lg bg-surface-subtle p-3">
+        <p className="text-xs uppercase tracking-wide text-ink-secondary">Explanation activity</p>
+        <p className="mt-1 text-sm text-ink">{snapshot.explanationFrequency.count} in the last {snapshot.explanationFrequency.windowDays} days</p>
       </div>
     </div>
   );
 }
 
 function Metric({ label, value }: { label: string; value: number | string }) {
-  return <div className="rounded-xl bg-slate-950/70 p-3"><p className="text-xs uppercase tracking-wide text-slate-500">{label}</p><p className="mt-1 text-lg font-semibold text-white">{value}</p></div>;
+  return <div className="rounded-lg bg-surface-subtle p-3"><p className="text-xs uppercase tracking-wide text-ink-secondary">{label}</p><p className="mt-1 text-lg font-semibold text-ink">{value}</p></div>;
 }
 
 export function ProgressDashboard({ database, refreshKey }: { database?: ExplanationDatabase; refreshKey: number }) {
@@ -59,9 +59,9 @@ export function ProgressDashboard({ database, refreshKey }: { database?: Explana
   }, [database, refreshKey]);
 
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Progress dashboard">
-      <h2 className="font-semibold text-white">Progress</h2>
-      <p className="mb-4 mt-1 text-xs leading-5 text-slate-500">Activity from this device. Review success includes its denominator.</p>
+    <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Progress dashboard">
+      <h2 className="font-semibold text-ink">Progress</h2>
+      <p className="mb-4 mt-1 text-xs leading-5 text-ink-muted">Activity from this device. Review success includes its denominator.</p>
       <ProgressDashboardView state={state} />
     </section>
   );

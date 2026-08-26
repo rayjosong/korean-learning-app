@@ -504,6 +504,19 @@ Highlight Soft      #FAF4DA
 
 Useful for current transcript playback and temporary annotation.
 
+### State inks (AA text variants)
+
+Small state text needs ≥4.5:1 on light surfaces, so the same families have darker text inks:
+
+```text
+Primary Deep        #9C4630  persimmon emphasis text and labels
+Jade Deep           #3E6A5C  success / known text
+Error               #A03722  error text
+Warning             #8A6510  warning / needs-review text
+```
+
+Solid primary buttons use Primary Hover #B75943 under white text to keep AA contrast.
+
 Never make this a Korean-flag red/blue theme.
 
 ## Learning-state presentation

@@ -51,23 +51,23 @@ export function ReviewQueuePanel({
   }, [database, refreshKey, sessionLimit]);
 
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Review queue">
-      <h2 className="font-semibold text-white">Review queue</h2>
-      <p className="mt-1 text-xs leading-5 text-slate-500">Up to {sessionLimit} due items, starting with the oldest review.</p>
-      {state.status === "loading" ? <p role="status" className="mt-4 text-sm text-slate-400">Loading due reviews…</p> : null}
-      {state.status === "error" ? <p role="alert" className="mt-4 text-sm text-rose-300">Due reviews could not be loaded.</p> : null}
-      {state.status === "ready" && state.items.length === 0 ? <p className="mt-4 text-sm leading-6 text-slate-400">Nothing is due right now. Keep learning from real Korean content.</p> : null}
+    <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Review queue">
+      <h2 className="font-semibold text-ink">Review queue</h2>
+      <p className="mt-1 text-xs leading-5 text-ink-muted">Up to {sessionLimit} due items, starting with the oldest review.</p>
+      {state.status === "loading" ? <p role="status" className="mt-4 text-sm text-ink-muted">Loading due reviews…</p> : null}
+      {state.status === "error" ? <p role="alert" className="mt-4 text-sm text-error">Due reviews could not be loaded.</p> : null}
+      {state.status === "ready" && state.items.length === 0 ? <p className="mt-4 text-sm leading-6 text-ink-muted">Nothing is due right now. Keep learning from real Korean content.</p> : null}
       {state.status === "ready" && state.items.length > 0 ? (
         <ol className="mt-4 space-y-3">
           {state.items.map(({ item, context }) => (
-            <li key={item.id} className="rounded-lg bg-slate-950/60 p-3">
-              <p lang="ko" className="text-base font-medium text-slate-100">{item.text}</p>
+            <li key={item.id} className="rounded-lg bg-surface-subtle p-3">
+              <p lang="ko" className="text-base font-medium text-ink">{item.text}</p>
               {context ? (
-                <p lang="ko" className="mt-2 text-sm leading-6 text-slate-300">{context.sentence}</p>
+                <p lang="ko" className="mt-2 text-sm leading-6 text-ink-secondary">{context.sentence}</p>
               ) : (
-                <p className="mt-2 text-sm text-slate-500">No source sentence is available for this item.</p>
+                <p className="mt-2 text-sm text-ink-secondary">No source sentence is available for this item.</p>
               )}
-              {context ? <p className="mt-2 text-xs text-slate-500">{context.videoId} · {formatTimestamp(context.startTimeMs)}</p> : null}
+              {context ? <p className="mt-2 text-xs text-ink-secondary">{context.videoId} · {formatTimestamp(context.startTimeMs)}</p> : null}
             </li>
           ))}
         </ol>

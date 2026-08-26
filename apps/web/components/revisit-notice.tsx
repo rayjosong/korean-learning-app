@@ -18,8 +18,8 @@ export function RevisitNoticeView({
   state: RevisitProgressLoadResult | { status: "loading" };
   onReplay?: () => void;
 }) {
-  if (state.status === "loading") return <p role="status" className="text-sm text-slate-400">Checking your study history…</p>;
-  if (state.status === "error") return <p role="alert" className="text-sm text-rose-200">Revisit history unavailable: {state.message}</p>;
+  if (state.status === "loading") return <p role="status" className="text-sm text-ink-muted">Checking your study history…</p>;
+  if (state.status === "error") return <p role="alert" className="text-sm text-error">Revisit history unavailable: {state.message}</p>;
 
   const comparison = state.comparison;
   const { current, previous } = comparison;
@@ -32,25 +32,25 @@ export function RevisitNoticeView({
         : "Your estimated comprehension is unchanged so far.";
 
   return (
-    <section className="rounded-2xl border border-emerald-900/70 bg-emerald-950/25 p-4" aria-label="Revisit progress">
+    <section className="rounded-xl border border-jade/30 bg-jade-soft/50 p-4" aria-label="Revisit progress">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-semibold text-white">
+          <h2 className="font-semibold text-ink">
             {previous ? "You studied this video before" : "Study history saved"}
           </h2>
-          <p className="mt-1 text-sm text-emerald-100">{comparisonText}</p>
+          <p className="mt-1 text-sm text-ink-secondary">{comparisonText}</p>
         </div>
         {onReplay ? (
-          <button type="button" onClick={onReplay} className="rounded-lg border border-emerald-700 px-3 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-900/50">
+          <button type="button" onClick={onReplay} className="rounded-lg border border-jade/50 px-3 py-2 text-sm font-semibold text-jade-deep transition-colors hover:bg-jade-soft focus-visible:ring-2 focus-visible:ring-primary">
             Replay video
           </button>
         ) : null}
       </div>
       {previous ? (
-        <div className="mt-3 grid gap-2 text-sm text-slate-300 sm:grid-cols-3">
-          <p><span className="text-slate-500">Then</span> {previous.likelyComprehension.min}–{previous.likelyComprehension.max}% · {dateLabel(previous.capturedAt)}</p>
-          <p><span className="text-slate-500">Now</span> {current.likelyComprehension.min}–{current.likelyComprehension.max}%</p>
-          <p><span className="text-slate-500">Elapsed</span> {formatElapsed(comparison)}</p>
+        <div className="mt-3 grid gap-2 text-sm text-ink sm:grid-cols-3">
+          <p><span className="text-ink-secondary">Then</span> {previous.likelyComprehension.min}–{previous.likelyComprehension.max}% · {dateLabel(previous.capturedAt)}</p>
+          <p><span className="text-ink-secondary">Now</span> {current.likelyComprehension.min}–{current.likelyComprehension.max}%</p>
+          <p><span className="text-ink-secondary">Elapsed</span> {formatElapsed(comparison)}</p>
         </div>
       ) : null}
     </section>

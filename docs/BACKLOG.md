@@ -492,19 +492,21 @@ Apply the existing `DESIGN.md` Warm Korean Editorial direction consistently acro
 GitHub issue: [#65](https://github.com/rayjosong/korean-learning-app/issues/65)
 
 Acceptance criteria:
-- [ ] Named semantic tokens cover canvas, surfaces, text, borders, primary actions, selection, current playback, success/known, warning, and error states.
-- [ ] User-facing components use semantic tokens or documented design-system utilities instead of mixing legacy dark-theme `slate`, `sky`, `emerald`, and repeated raw hex colours.
-- [ ] Watch keeps the video and Korean transcript visually dominant, with English and supporting guidance subordinate.
-- [ ] Selected and currently playing transcript sentences remain visually distinct and are not communicated by colour alone.
-- [ ] Persimmon is reserved for primary actions, focus, selection, and learning emphasis; jade is reserved for success/known states; warm yellow is reserved for current playback or temporary highlights.
-- [ ] Revisit, difficulty, review, progress, history, provider settings, and learner-profile surfaces share the same light-theme text, surface, border, radius, and depth rules.
-- [ ] Cards and shadows follow `DESIGN.md`: whitespace and hairlines provide normal grouping, while stronger shadows are limited to temporary overlays/popovers.
-- [ ] Loading, empty, success, warning, and error states meet WCAG AA contrast where applicable and retain clear non-colour cues.
-- [ ] Existing Watch/Study session, transcript, explanation, learning-action, review, progress, and settings behavior does not regress during the visual migration.
+- [x] Named semantic tokens cover canvas, surfaces, text, borders, primary actions, selection, current playback, success/known, warning, and error states.
+- [x] User-facing components use semantic tokens or documented design-system utilities instead of mixing legacy dark-theme `slate`, `sky`, `emerald`, and repeated raw hex colours.
+- [x] Watch keeps the video and Korean transcript visually dominant, with English and supporting guidance subordinate.
+- [x] Selected and currently playing transcript sentences remain visually distinct and are not communicated by colour alone.
+- [x] Persimmon is reserved for primary actions, focus, selection, and learning emphasis; jade is reserved for success/known states; warm yellow is reserved for current playback or temporary highlights.
+- [x] Revisit, difficulty, review, progress, history, provider settings, and learner-profile surfaces share the same light-theme text, surface, border, radius, and depth rules.
+- [x] Cards and shadows follow `DESIGN.md`: whitespace and hairlines provide normal grouping, while stronger shadows are limited to temporary overlays/popovers.
+- [x] Loading, empty, success, warning, and error states meet WCAG AA contrast where applicable and retain clear non-colour cues.
+- [x] Existing Watch/Study session, transcript, explanation, learning-action, review, progress, and settings behavior does not regress during the visual migration.
 - [ ] Deterministic visual coverage protects Home, Watch default, Watch selected sentence, expanded explanation, Study, long transcript, compact desktop, Review, Progress, and Settings states where implemented.
-- [ ] Accessibility verification covers contrast, visible focus, keyboard operation, and selected-versus-playing state communication.
-- [ ] Rendered desktop flows are inspected against the canonical `DESIGN.md` references.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` pass before the item is marked complete.
+- [x] Accessibility verification covers contrast, visible focus, keyboard operation, and selected-versus-playing state communication.
+- [x] Rendered desktop flows are inspected against the canonical `DESIGN.md` references.
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` pass before the item is marked complete.
+
+Remaining: permanent browser-level visual-regression infrastructure (Playwright screenshot baselines in CI) does not exist in this repository yet; current protection is component-layer token assertions plus the deterministic fixture screenshots and temporary-browser checks recorded in the #32 PR, following the convention from the #58 gate. Utilities were demoted into a collapsed `Workspace Utilities & Settings` disclosure. AA state inks (`primary-deep`, `jade-deep`, `error`, `warning`) were added to the palette and documented in `DESIGN.md`.
 
 Implementation plan:
 1. Reconcile any in-progress palette migration and preserve unrelated work.

@@ -33,35 +33,35 @@ export function ExplanationPanel({
 }: ExplanationPanelProps) {
   const [openSection, setOpenSection] = useState<"grammar" | "nuance" | "examples">();
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Sentence explanation">
-      <h2 className="mb-3 font-semibold text-white">Explanation</h2>
+    <section className="rounded-xl border border-hairline bg-surface-elevated p-5" aria-label="Sentence explanation">
+      <h2 className="mb-3 font-semibold text-ink">Explanation</h2>
 
       {state.status === "idle" ? (
-        <p className="text-sm leading-6 text-slate-400">
+        <p className="text-sm leading-6 text-ink-muted">
           Click a Korean sentence in the transcript to see its natural meaning, breakdown, and grammar.
         </p>
       ) : null}
 
       {state.status === "loading" ? (
         <div role="status" aria-live="polite">
-          <p className="animate-pulse text-sm font-medium text-sky-300">Explaining the sentence…</p>
-          {segment ? <p lang="ko" className="mt-3 text-sm leading-6 text-slate-300">{segment.text}</p> : null}
+          <p className="animate-pulse text-sm font-medium text-primary-deep">Explaining the sentence…</p>
+          {segment ? <p lang="ko" className="mt-3 text-sm leading-6 text-ink-secondary">{segment.text}</p> : null}
           <div className="mt-4 space-y-2">
-            <div className="h-4 w-11/12 animate-pulse rounded bg-slate-800" />
-            <div className="h-4 w-9/12 animate-pulse rounded bg-slate-800" />
-            <div className="h-4 w-10/12 animate-pulse rounded bg-slate-800" />
+            <div className="h-4 w-11/12 animate-pulse rounded bg-surface" />
+            <div className="h-4 w-9/12 animate-pulse rounded bg-surface" />
+            <div className="h-4 w-10/12 animate-pulse rounded bg-surface" />
           </div>
         </div>
       ) : null}
 
       {state.status === "error" ? (
         <div role="alert">
-          <p className="text-sm leading-6 text-rose-300">{state.error}</p>
+          <p className="text-sm leading-6 text-error">{state.error}</p>
           {onRetry ? (
             <button
               type="button"
               onClick={onRetry}
-              className="mt-3 rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:border-sky-400 hover:text-white"
+              className="mt-3 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm text-ink-secondary transition-colors hover:border-primary hover:text-ink focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
             >
               Try again
             </button>
@@ -101,27 +101,27 @@ function ExplanationContent({
 }) {
   return (
     <article>
-      <p lang="ko" className="text-base font-semibold leading-7 text-white">{explanation.sentence}</p>
+      <p lang="ko" className="text-[24px] font-medium leading-[1.65] text-ink">{explanation.sentence}</p>
       {explanation.speechLevel ? (
-        <p className="mt-1 inline-block rounded-full bg-sky-400/15 px-2.5 py-0.5 text-xs text-sky-300">{explanation.speechLevel}</p>
+        <p className="mt-1.5 inline-block rounded-full bg-primary-soft px-2.5 py-0.5 text-xs text-primary-deep">{explanation.speechLevel}</p>
       ) : null}
 
       <section className="mt-4" aria-label="Natural meaning">
-        <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-sky-300">Natural meaning</h3>
-        <p className="mt-1.5 text-lg font-medium leading-7 text-white">{explanation.naturalMeaning}</p>
+        <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-primary-deep">Natural meaning</h3>
+        <p className="mt-1.5 text-base font-medium leading-7 text-ink">{explanation.naturalMeaning}</p>
       </section>
 
       <section className="mt-4" aria-label="Breakdown">
-        <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-slate-500">Breakdown</h3>
+        <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-ink-muted">Breakdown</h3>
         <dl className="mt-1.5 space-y-1.5">
           {explanation.breakdown.map((item) => (
             <div key={`${item.text}-${item.meaning}`} className="grid grid-cols-[auto_1fr] items-baseline gap-x-3">
-              <dt lang="ko" className="text-sm font-medium text-slate-100">
+              <dt lang="ko" className="text-sm font-medium text-ink">
                 {onWordClick ? (
                   <button
                     type="button"
                     onClick={() => onWordClick(item.text)}
-                    className="rounded font-medium text-slate-100 underline decoration-slate-700 underline-offset-4 transition-colors hover:text-sky-300 hover:decoration-sky-400"
+                    className="rounded font-medium text-ink underline decoration-hairline-strong underline-offset-4 transition-colors hover:text-primary-deep focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {item.text}
                   </button>
@@ -129,9 +129,9 @@ function ExplanationContent({
                   item.text
                 )}
               </dt>
-              <dd className="text-sm leading-6 text-slate-400">
+              <dd className="text-sm leading-6 text-ink-secondary">
                 {item.meaning}
-                {item.role ? <span className="text-slate-500"> · {item.role}</span> : null}
+                {item.role ? <span className="text-ink-muted"> · {item.role}</span> : null}
               </dd>
             </div>
           ))}
@@ -139,7 +139,7 @@ function ExplanationContent({
       </section>
 
       {progressive ? (
-        <div className="mt-4 flex flex-wrap gap-3 border-t border-slate-800 pt-3 text-xs">
+        <div className="mt-4 flex flex-wrap gap-3 border-t border-hairline pt-3 text-xs">
           {explanation.grammar.length > 0 ? (
             <DisclosureButton label="Grammar" open={openSection === "grammar"} onClick={() => onToggleSection("grammar")} />
           ) : null}
@@ -152,12 +152,12 @@ function ExplanationContent({
 
       {!progressive && explanation.grammar.length > 0 ? (
         <section className="mt-4" aria-label="Grammar">
-          <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-slate-500">Grammar</h3>
+          <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-ink-muted">Grammar</h3>
           <ul className="mt-1.5 space-y-1.5">
             {explanation.grammar.map((item) => (
-              <li key={`${item.form}-${item.explanation}`} className="text-sm leading-6 text-slate-300">
-                <span lang="ko" className="font-medium text-slate-100">{item.form}</span>
-                <span className="text-slate-500"> — </span>
+              <li key={`${item.form}-${item.explanation}`} className="text-sm leading-6 text-ink-secondary">
+                <span lang="ko" className="font-medium text-ink">{item.form}</span>
+                <span className="text-ink-muted"> — </span>
                 {item.explanation}
               </li>
             ))}
@@ -167,30 +167,30 @@ function ExplanationContent({
 
       {!progressive && explanation.nuance ? (
         <section className="mt-4" aria-label="Nuance">
-          <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-slate-500">Nuance</h3>
-          <p className="mt-1.5 text-sm leading-6 text-slate-300">{explanation.nuance}</p>
+          <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-ink-muted">Nuance</h3>
+          <p className="mt-1.5 text-sm leading-6 text-ink-secondary">{explanation.nuance}</p>
         </section>
       ) : null}
 
       {progressive && openSection === "grammar" && explanation.grammar.length > 0 ? (
-        <section className="mt-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3" aria-label="Grammar">
+        <section className="mt-3 rounded-lg border border-hairline bg-surface-subtle p-3" aria-label="Grammar">
           <ul className="space-y-1.5">
-            {explanation.grammar.map((item) => <li key={`${item.form}-${item.explanation}`} className="text-sm leading-6 text-slate-300"><span lang="ko" className="font-medium text-slate-100">{item.form}</span><span className="text-slate-500"> — </span>{item.explanation}</li>)}
+            {explanation.grammar.map((item) => <li key={`${item.form}-${item.explanation}`} className="text-sm leading-6 text-ink-secondary"><span lang="ko" className="font-medium text-ink">{item.form}</span><span className="text-ink-muted"> — </span>{item.explanation}</li>)}
           </ul>
         </section>
       ) : null}
       {progressive && openSection === "nuance" && explanation.nuance ? (
-        <section className="mt-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3" aria-label="Nuance"><p className="text-sm leading-6 text-slate-300">{explanation.nuance}</p></section>
+        <section className="mt-3 rounded-lg border border-hairline bg-surface-subtle p-3" aria-label="Nuance"><p className="text-sm leading-6 text-ink-secondary">{explanation.nuance}</p></section>
       ) : null}
       {progressive && openSection === "examples" ? (
-        <section className="mt-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3" aria-label="More examples"><p className="text-sm leading-6 text-slate-400">More examples will stay tied to this sentence and its spoken patterns.</p></section>
+        <section className="mt-3 rounded-lg border border-hairline bg-surface-subtle p-3" aria-label="More examples"><p className="text-sm leading-6 text-ink-muted">More examples will stay tied to this sentence and its spoken patterns.</p></section>
       ) : null}
     </article>
   );
 }
 
 function DisclosureButton({ label, open, onClick }: { label: string; open: boolean; onClick: () => void }) {
-  return <button type="button" aria-expanded={open} onClick={onClick} className={`font-semibold transition-colors hover:text-white ${open ? "text-[#C7654C]" : "text-slate-400"}`}>{open ? `Hide ${label}` : label}</button>;
+  return <button type="button" aria-expanded={open} onClick={onClick} className={`font-semibold transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-primary ${open ? "text-primary-deep" : "text-ink-muted"}`}>{open ? `Hide ${label}` : label}</button>;
 }
 
 function WordCard({
@@ -212,9 +212,9 @@ function WordCard({
         role="status"
         aria-live="polite"
         aria-label="Word explanation"
-        className="mt-4 rounded-xl border border-slate-800 bg-slate-950/60 p-3"
+        className="mt-4 rounded-lg border border-hairline bg-surface-subtle p-3"
       >
-        <p className="animate-pulse text-sm font-medium text-sky-300">
+        <p className="animate-pulse text-sm font-medium text-primary-deep">
           Looking up <span lang="ko">{state.word}</span>…
         </p>
       </aside>
@@ -226,9 +226,9 @@ function WordCard({
       <aside
         role="alert"
         aria-label="Word explanation"
-        className="mt-4 rounded-xl border border-slate-800 bg-slate-950/60 p-3"
+        className="mt-4 rounded-lg border border-hairline bg-surface-subtle p-3"
       >
-        <p className="text-sm leading-6 text-rose-300">{state.error}</p>
+        <p className="text-sm leading-6 text-error">{state.error}</p>
       </aside>
     );
   }
@@ -237,16 +237,16 @@ function WordCard({
   if (!explanation) return null;
 
   return (
-    <aside aria-label="Word explanation" className="mt-4 rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-      <p lang="ko" className="text-sm font-semibold text-white">{explanation.word}</p>
-      <p className="mt-1 text-sm leading-6 text-slate-200">{explanation.meaning}</p>
+    <aside aria-label="Word explanation" className="mt-4 rounded-lg border border-hairline bg-surface-subtle p-3">
+      <p lang="ko" className="text-sm font-semibold text-ink">{explanation.word}</p>
+      <p className="mt-1 text-sm leading-6 text-ink-secondary">{explanation.meaning}</p>
       {explanation.dictionaryForm ? (
-        <p className="mt-1 text-xs text-slate-500">
-          Dictionary form: <span lang="ko" className="text-slate-400">{explanation.dictionaryForm}</span>
+        <p className="mt-1 text-xs text-ink-secondary">
+          Dictionary form: <span lang="ko" className="text-ink-secondary">{explanation.dictionaryForm}</span>
         </p>
       ) : null}
       {explanation.nuance ? (
-        <p className="mt-1 text-xs leading-5 text-slate-500">{explanation.nuance}</p>
+        <p className="mt-1 text-xs leading-5 text-ink-secondary">{explanation.nuance}</p>
       ) : null}
       <LearnerAction
         learnerState={learnerState}
@@ -276,14 +276,14 @@ function LearnerAction({
     return (
       <div
         role="status"
-        className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-emerald-400/10 px-3 py-2"
+        className="mt-3 flex items-center justify-between gap-3 rounded-md bg-jade-soft px-3 py-2"
       >
-        <p className="text-xs text-emerald-300">{savedAsLearning ? "Added to learning" : "Marked as known"}</p>
+        <p className="text-xs text-jade-deep">{savedAsLearning ? "Added to learning" : "Marked as known"}</p>
         {onUndo ? (
           <button
             type="button"
             onClick={onUndo}
-            className="rounded text-xs text-slate-400 underline decoration-slate-600 underline-offset-4 transition-colors hover:text-white hover:decoration-slate-300"
+            className="rounded text-xs text-ink-secondary underline decoration-hairline-strong underline-offset-4 transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-primary"
           >
             Undo
           </button>
@@ -293,12 +293,12 @@ function LearnerAction({
   }
 
   if (learnerState.item?.state === "known") {
-    if (!onMarkLearning) return <p className="mt-3 text-xs text-slate-500">You already marked this as known.</p>;
+    if (!onMarkLearning) return <p className="mt-3 text-xs text-ink-secondary">You already marked this as known.</p>;
     return (
       <button
         type="button"
         onClick={onMarkLearning}
-        className="mt-3 w-full rounded-lg border border-sky-500/40 px-3 py-1.5 text-sm text-sky-300 transition-colors hover:border-sky-400 hover:bg-sky-400/10 hover:text-sky-200"
+        className="mt-3 w-full rounded-lg border border-primary/40 px-3 py-1.5 text-sm text-primary-deep transition-colors hover:border-primary hover:bg-primary-soft focus-visible:ring-2 focus-visible:ring-primary"
       >
         Learn this again
       </button>
@@ -311,7 +311,7 @@ function LearnerAction({
       <button
         type="button"
         onClick={onMarkKnown}
-        className="mt-3 w-full rounded-lg border border-emerald-500/40 px-3 py-1.5 text-sm text-emerald-300 transition-colors hover:border-emerald-400 hover:bg-emerald-400/10 hover:text-emerald-200"
+        className="mt-3 w-full rounded-lg border border-jade/50 px-3 py-1.5 text-sm text-jade-deep transition-colors hover:border-jade hover:bg-jade-soft focus-visible:ring-2 focus-visible:ring-primary"
       >
         I know this
       </button>
@@ -324,7 +324,7 @@ function LearnerAction({
         <button
           type="button"
           onClick={onMarkKnown}
-          className="rounded-lg border border-emerald-500/40 px-3 py-1.5 text-sm text-emerald-300 transition-colors hover:border-emerald-400 hover:bg-emerald-400/10 hover:text-emerald-200"
+          className="rounded-lg border border-jade/50 px-3 py-1.5 text-sm text-jade-deep transition-colors hover:border-jade hover:bg-jade-soft focus-visible:ring-2 focus-visible:ring-primary"
         >
           I know this
         </button>
@@ -333,7 +333,7 @@ function LearnerAction({
         <button
           type="button"
           onClick={onMarkLearning}
-          className="rounded-lg border border-sky-500/40 px-3 py-1.5 text-sm text-sky-300 transition-colors hover:border-sky-400 hover:bg-sky-400/10 hover:text-sky-200"
+          className="rounded-lg bg-primary-hover px-3 py-1.5 text-sm font-medium text-on-primary transition hover:brightness-95 focus-visible:ring-2 focus-visible:ring-primary"
         >
           Learn this
         </button>

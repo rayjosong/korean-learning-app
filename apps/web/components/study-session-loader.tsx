@@ -52,17 +52,17 @@ export function StudySessionLoader() {
           value={videoUrl}
           onChange={(event) => setVideoUrl(event.target.value)}
           placeholder="Paste a Korean YouTube URL"
-          className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none"
+          className="min-w-0 flex-1 rounded-lg border border-hairline-strong bg-surface-elevated px-4 py-3 text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
         <button
           type="submit"
           disabled={isLoading}
-          className="rounded-xl bg-sky-400 px-5 py-3 font-semibold text-slate-950 transition-colors hover:bg-sky-300 disabled:cursor-wait disabled:opacity-60"
+          className="rounded-lg bg-primary-hover px-5 py-3 font-semibold text-on-primary transition hover:brightness-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-wait disabled:opacity-60"
         >
           {isLoading ? "Loading transcript…" : "Load video"}
         </button>
       </form>
-      {error ? <p className="mb-8 rounded-xl border border-rose-900/80 bg-rose-950/40 px-4 py-3 text-sm text-rose-200" role="alert">{error}</p> : null}
+      {error ? <p className="mb-8 rounded-lg border border-error/30 bg-surface-elevated px-4 py-3 text-sm text-error" role="alert">{error}</p> : null}
       {session ? (
         <StudySession
           videoId={session.videoId}
