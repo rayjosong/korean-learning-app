@@ -6,6 +6,7 @@ import { ClozeReviewPanel } from "@/components/cloze-review-panel";
 import { ExplanationPanel } from "@/components/explanation-panel";
 import { LearnerProfilePanel } from "@/components/learner-profile-panel";
 import { LearningHistoryPanel } from "@/components/learning-history-panel";
+import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
 import { withExplanationCache } from "@/lib/explanation-cache";
@@ -83,11 +84,18 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-      <VideoTranscriptViewer
-        videoId={videoId}
-        segments={segments}
-        onSegmentClick={(segment) => void explainSegment(segment)}
-      />
+      <div className="flex flex-col gap-6">
+        <VideoDifficultyEstimate
+          database={cacheDatabase}
+          segments={segments}
+          refreshKey={historyRevision}
+        />
+        <VideoTranscriptViewer
+          videoId={videoId}
+          segments={segments}
+          onSegmentClick={(segment) => void explainSegment(segment)}
+        />
+      </div>
 
       <div className="flex flex-col gap-6">
         <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="AI provider settings">
@@ -95,9 +103,7 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
           <p className="mb-3 text-xs leading-5 text-slate-500">
             Bring your own key for an OpenAI-compatible provider. The key stays in this tab and is never stored.
           </p>
-          <label className="block text-xs font-medium text-slate-400" htmlFor="ai-api-key">
-            API key
-          </label>
+          <label className="block text-xs font-medium text-slate-400" htmlFor="ai-api-key">API key</label>
           <input
             id="ai-api-key"
             type="password"
@@ -107,9 +113,7 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
             placeholder="sk-…"
             className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-sky-400 focus:outline-none"
           />
-          <label className="mt-3 block text-xs font-medium text-slate-400" htmlFor="ai-model">
-            Model
-          </label>
+          <label className="mt-3 block text-xs font-medium text-slate-400" htmlFor="ai-model">Model</label>
           <input
             id="ai-model"
             type="text"
