@@ -43,7 +43,7 @@ export function VideoDifficultyEstimateView({ state }: { state: VideoDifficultyE
       <ul className="mt-2 flex flex-wrap gap-2 text-xs text-slate-300">
         {estimate.reasonCodes.map((reason) => <li key={reason} className="rounded-full bg-slate-900/70 px-2 py-1">{reasonLabel(reason)}</li>)}
       </ul>
-      <p className="mt-3 text-xs text-slate-500">This is guidance only. You can study the full video and transcript at any difficulty.</p>
+      <p className="mt-3 text-xs text-slate-500">This is guidance only. The full video and transcript remain available for study.</p>
     </section>
   );
 }
