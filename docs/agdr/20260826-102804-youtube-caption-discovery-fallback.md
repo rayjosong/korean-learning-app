@@ -5,6 +5,7 @@ model: active-llm
 trigger: user-prompt
 status: executed
 ticket: no-ticket
+pr: 51
 ---
 
 # YouTube caption discovery fallback
@@ -37,4 +38,5 @@ Chosen: **Parse watch-page caption tracks as a fallback**, because the live fail
 
 ## Artifacts
 
+- Pull request: https://github.com/rayjosong/korean-learning-app/pull/51
 - Branch: https://github.com/rayjosong/korean-learning-app/tree/agent/4-youtube-caption-fallback
