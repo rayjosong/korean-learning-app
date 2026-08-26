@@ -60,7 +60,7 @@ test("the same transcript span is not double-counted", () => {
   });
   const two = estimateVideoDifficulty({
     segments: [{ text: "오늘 정말 좋아요." }],
-    items: [item({ text: "오늘 정말" }), item({ id: "other", text: "좋아요" })]
+    items: [item({ text: "오늘 정말" }), item({ id: "other", text: "오늘" })]
   });
 
   assert.equal(one.likelyComprehension.max, two.likelyComprehension.max);
