@@ -1,0 +1,70 @@
+name: GLM issue worker
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  glm:
+    if: >-
+      github.event.issue.pull_request == null &&
+      startsWith(github.event.comment.body, '/glm') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Select GLM model
+        id: model
+        shell: bash
+        env:
+          COMMENT: ${{ github.event.comment.body }}
+        run: |
+          set -euo pipefail
+
+          requested="$(printf '%s\n' "$COMMENT" | head -n1 | awk '{print $2}')"
+          model="${requested:-glm-5.3}"
+
+          case "$model" in
+            glm-5.3|glm-5.2|glm-5-turbo|glm-4.7|glm-4.5-air)
+              ;;
+            *)
+              echo "Unsupported model: $model"
+              echo "Supported: glm-5.3, glm-5.2, glm-5-turbo, glm-4.7, glm-4.5-air"
+              exit 1
+              ;;
+          esac
+
+          echo "model=$model" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Run OpenCode with selected GLM model
+        uses: anomalyco/opencode/github@latest
+        env:
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: zai-coding-plan/${{ steps.model.outputs.model }}
+          mentions: /glm
+          use_github_token: true
+          prompt: |
+            Implement GitHub issue #${{ github.event.issue.number }}.
+
+            Before making any changes, read and obey AGENTS.md, then read docs/PRODUCT.md,
+            docs/ARCHITECTURE.md, and docs/BACKLOG.md in that order.
+
+            Treat the issue body and its acceptance criteria as the assigned task. Do not implement
+            unrelated backlog items. Follow the repository branch, verification, backlog-update,
+            and end-of-task-report rules in AGENTS.md exactly.
+
+            The selected model for this run is ${{ steps.model.outputs.model }}.
+            The command comment that started this run was:
+            ${{ github.event.comment.body }}
