@@ -535,24 +535,41 @@ Never paint every known word green.
 
 Korean readability has priority over novelty.
 
-### Korean
+### Canonical family
 
-Preferred `Pretendard`; fallback `Noto Sans KR`, `Apple SD Gothic Neo`, `system-ui`, `sans-serif`.
+Use **`Pretendard Variable` across both Korean and Latin/UI text on core product surfaces**. This is the canonical product typeface for the Warm Korean Editorial direction.
 
-### Latin/UI
+The implementation MUST load the actual webfont. Declaring `Pretendard` or `Pretendard Variable` in a CSS fallback list without loading it is not sufficient because different machines can otherwise render materially different Korean typography.
 
-Use one consistent sans such as Inter or Geist.
+Preferred consistent fallback stack:
+
+```text
+"Pretendard Variable", Pretendard,
+-apple-system, BlinkMacSystemFont, system-ui,
+Roboto, "Helvetica Neue", "Segoe UI",
+"Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+sans-serif
+```
+
+Prefer a locally bundled/self-hosted font or a version-pinned official webfont source. Do not use an unpinned remote font URL.
+
+Do not pair a separate Inter/Geist UI family with Pretendard by default. Pretendard should carry both Hangul and Latin so mixed strings, phrase breakdowns, navigation, and transcript UI feel like one system rather than two adjacent typefaces.
 
 A restrained serif may appear in occasional editorial headings outside core study surfaces, never transcript/phrase controls.
 
-### Baseline sizes
+### Baseline sizes and weights
+
+Canonical targets:
 
 ```text
-Korean study sentence  22–28px / 500 / 1.55–1.7
-Transcript             17–19px / 400–500 / 1.65
-Translation            15–16px / 400 / Secondary Ink
-UI body                16px / 1.55
+Korean study sentence  26px / 550 / 1.60
+Transcript             18px / 475 / 1.70
+Translation            15–16px / 400–450 / Secondary Ink
+UI body                15–16px / 450–550 / ~1.55
+Headings               650–720; avoid blunt 800-heavy hierarchy
 ```
+
+Variable-weight values are intentional. If a fallback font cannot render the exact weight, use the nearest sensible static weight without making Korean visually heavier than necessary.
 
 Korean must remain visually primary beside English.
 

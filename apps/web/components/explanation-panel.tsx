@@ -45,7 +45,7 @@ export function ExplanationPanel({
       {state.status === "loading" ? (
         <div role="status" aria-live="polite">
           <p className="animate-pulse text-sm font-medium text-primary-deep">Explaining the sentence…</p>
-          {segment ? <p lang="ko" className="mt-3 text-sm leading-6 text-ink-secondary">{segment.text}</p> : null}
+          {segment ? <p lang="ko" className="mt-3 text-[26px] font-[550] leading-[1.6] text-ink-secondary">{segment.text}</p> : null}
           <div className="mt-4 space-y-2">
             <div className="h-4 w-11/12 animate-pulse rounded bg-surface" />
             <div className="h-4 w-9/12 animate-pulse rounded bg-surface" />
@@ -101,7 +101,7 @@ function ExplanationContent({
 }) {
   return (
     <article>
-      <p lang="ko" className="text-[24px] font-medium leading-[1.65] text-ink">{explanation.sentence}</p>
+      <p lang="ko" className="text-[26px] font-[550] leading-[1.6] text-ink">{explanation.sentence}</p>
       {explanation.speechLevel ? (
         <p className="mt-1.5 inline-block rounded-full bg-primary-soft px-2.5 py-0.5 text-xs text-primary-deep">{explanation.speechLevel}</p>
       ) : null}
