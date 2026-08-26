@@ -49,7 +49,7 @@ Stable selectors the app already exposes (aria labels / roles): `list "Timestamp
 
 ## Template
 
-Copy `scripts/template.py` from this skill's directory to the repo root, adapt the flow section, run. It already implements the full harness (dev server, mock provider with sentence/word fixtures, transcript interception, YouTube blocking, PASS/FAIL accounting, cleanup).
+Copy `scripts/template.py` from this skill's directory to the repo root, adapt the flow section, run. It already implements the full harness (dev server, mock provider with sentence/word fixtures, transcript interception, YouTube blocking, PASS/FAIL accounting, cleanup, and **automatic checkpoint screenshot saving to `docs/qa/` (plus automatic `failure.png` capture on test exceptions)**).
 
 ## Cleanup after the run
 
