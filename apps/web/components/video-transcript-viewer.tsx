@@ -7,6 +7,10 @@ import {
   type TranscriptSegment
 } from "@/lib/transcript";
 import { useYouTubePlayer } from "@/lib/use-youtube-player";
+import type { SentenceExplanationState } from "@/lib/use-sentence-explanation";
+import type { WordExplanationState } from "@/lib/use-word-explanation";
+import type { LearnerItemState } from "@/lib/use-learner-item";
+import { SentenceBreakdownPopover } from "./sentence-breakdown-popover";
 
 export interface VideoTranscriptViewerProps {
   videoId: string;
@@ -23,6 +27,16 @@ export interface VideoTranscriptViewerProps {
   pause?: () => void;
   mode?: "watch" | "study";
   onModeChange?: (mode: "watch" | "study") => void;
+  // Props for Watch-mode anchored popover
+  explanationState?: SentenceExplanationState;
+  onRetryExplanation?: () => void;
+  wordExplanationState?: WordExplanationState;
+  onWordClick?: (word: string) => void;
+  learnerItemState?: LearnerItemState;
+  onMarkKnown?: () => void;
+  onMarkLearning?: () => void;
+  onUndoMarkKnown?: () => void;
+  onCloseExplanation?: () => void;
 }
 
 export function VideoTranscriptViewer({
@@ -38,7 +52,16 @@ export function VideoTranscriptViewer({
   play,
   pause,
   mode = "watch",
-  onModeChange
+  onModeChange,
+  explanationState,
+  onRetryExplanation,
+  wordExplanationState,
+  onWordClick,
+  learnerItemState,
+  onMarkKnown,
+  onMarkLearning,
+  onUndoMarkKnown,
+  onCloseExplanation
 }: VideoTranscriptViewerProps) {
   const internalPlayer = useYouTubePlayer({ videoId, segments });
 
@@ -47,6 +70,7 @@ export function VideoTranscriptViewer({
   const currentError = playerError ?? internalPlayer.playerError;
   const currentSeekTo = seekTo ?? internalPlayer.seekTo;
   const currentPlay = play ?? internalPlayer.play;
+  const currentPause = pause ?? internalPlayer.pause;
 
   const activeSegmentRef = useRef<HTMLButtonElement>(null);
 
@@ -78,28 +102,52 @@ export function VideoTranscriptViewer({
               const isActive = segment.id === currentActiveSegmentId;
               const isSelected = segment.id === selectedSegmentId;
               return (
-                <button
-                  ref={isActive ? activeSegmentRef : undefined}
-                  key={segment.id}
-                  type="button"
-                  className={`mb-1 grid w-full grid-cols-[3rem_1fr] gap-3 rounded-xl px-3 py-3 text-left transition-all ${
-                    isSelected
-                      ? "bg-[#F4E1DA]/10 text-white ring-1 ring-[#C7654C]/40 border-l-2 border-l-[#C7654C]"
-                      : isActive
-                        ? "bg-[#FAF4DA]/10 text-white ring-1 ring-[#F4E8B8]/30"
-                        : "text-slate-300 hover:bg-[#FAF9F5]/5 hover:text-white"
-                  }`}
-                  aria-current={isActive ? "true" : undefined}
-                  onClick={() => {
-                    seekToSegment(segment);
-                    onSegmentClick?.(segment);
-                  }}
-                >
-                  <span className={`pt-0.5 text-xs tabular-nums ${isActive ? "text-[#C7654C]" : "text-sky-300"}`}>
-                    {formatTimestamp(segment.startTimeMs)}
-                  </span>
-                  <span lang="ko" className="leading-6 font-medium text-[17px]">{segment.text}</span>
-                </button>
+                <div key={segment.id} className="relative mb-1">
+                  <button
+                    id={`segment-btn-${segment.id}`}
+                    ref={isActive ? activeSegmentRef : undefined}
+                    type="button"
+                    className={`grid w-full grid-cols-[3rem_1fr] gap-3 rounded-xl px-3 py-3 text-left transition-all ${
+                      isSelected
+                        ? "bg-[#F4E1DA]/10 text-white ring-1 ring-[#C7654C]/40 border-l-2 border-l-[#C7654C]"
+                        : isActive
+                          ? "bg-[#FAF4DA]/10 text-white ring-1 ring-[#F4E8B8]/30"
+                          : "text-slate-300 hover:bg-[#FAF9F5]/5 hover:text-white"
+                    }`}
+                    aria-current={isActive ? "true" : undefined}
+                    onClick={() => {
+                      if (mode === "watch") {
+                        currentSeekTo(segment.startTimeMs / 1000);
+                        currentPause();
+                      } else {
+                        seekToSegment(segment);
+                      }
+                      onSegmentClick?.(segment);
+                    }}
+                  >
+                    <span className={`pt-0.5 text-xs tabular-nums ${isActive ? "text-[#C7654C]" : "text-sky-300"}`}>
+                      {formatTimestamp(segment.startTimeMs)}
+                    </span>
+                    <span lang="ko" className="leading-6 font-medium text-[17px]">{segment.text}</span>
+                  </button>
+
+                  {mode === "watch" && isSelected && explanationState && onCloseExplanation && (
+                    <div className="mt-2 pl-3">
+                      <SentenceBreakdownPopover
+                        segment={segment}
+                        state={explanationState}
+                        onRetry={onRetryExplanation}
+                        wordState={wordExplanationState}
+                        onWordClick={onWordClick}
+                        learnerState={learnerItemState}
+                        onMarkKnown={onMarkKnown}
+                        onMarkLearning={onMarkLearning}
+                        onUndo={onUndoMarkKnown}
+                        onClose={onCloseExplanation}
+                      />
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>

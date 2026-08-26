@@ -69,3 +69,52 @@ test("Assistance label is rendered read-only as Guided", () => {
   assert.match(html, /Assistance:/);
   assert.match(html, /Guided/);
 });
+
+test("VideoTranscriptViewer renders SentenceBreakdownPopover in watch mode when selected", () => {
+  const html = renderToString(
+    <VideoTranscriptViewer
+      videoId="test-video"
+      segments={mockSegments}
+      mode="watch"
+      selectedSegmentId="s1"
+      explanationState={{ status: "loading" }}
+      onCloseExplanation={() => {}}
+    />
+  ).replaceAll("<!-- -->", "");
+
+  // Popover section is rendered
+  assert.match(html, /aria-label="Sentence explanation popover"/);
+  // Status "loading" is reflected inside the popover
+  assert.match(html, /Explaining the sentence…/);
+});
+
+test("VideoTranscriptViewer renders popover ready state with progressive disclosure triggers", () => {
+  const mockExplanation = {
+    sentence: "안녕하세요",
+    naturalMeaning: "Hello",
+    breakdown: [{ text: "안녕하세요", meaning: "hello", role: "greeting" }],
+    grammar: [{ form: "-세요", explanation: "Polite honorific ending" }],
+    nuance: "Standard polite greeting.",
+    speechLevel: "해요체"
+  };
+
+  const html = renderToString(
+    <VideoTranscriptViewer
+      videoId="test-video"
+      segments={mockSegments}
+      mode="watch"
+      selectedSegmentId="s1"
+      explanationState={{ status: "ready", explanation: mockExplanation }}
+      onCloseExplanation={() => {}}
+    />
+  ).replaceAll("<!-- -->", "");
+
+  // Popover renders meaning
+  assert.match(html, /Hello/);
+  // Popover renders phrases/breakdown
+  assert.match(html, /안녕하세요/);
+  // Popover renders grammar toggle trigger
+  assert.match(html, /Grammar/);
+  // Popover renders nuance toggle trigger
+  assert.match(html, /Nuance/);
+});
