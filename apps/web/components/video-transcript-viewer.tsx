@@ -137,7 +137,7 @@ export function VideoTranscriptViewer({
                     <span className={`pt-0.5 text-xs tabular-nums ${isActive || isSelected ? "font-semibold text-ink-secondary" : "text-ink-muted"}`}>
                       {formatTimestamp(segment.startTimeMs)}
                     </span>
-                    <span lang="ko" className="text-[17px] font-medium leading-7">{segment.text}</span>
+                    <span lang="ko" className="text-[18px] font-[475] leading-[1.7]">{segment.text}</span>
                   </button>
 
                   {mode === "watch" && isSelected && explanationState && onCloseExplanation && (
@@ -262,7 +262,7 @@ function StudyTranscriptContext({
               }`}
             >
               <span className={`block text-xs tabular-nums ${isActive || isSelected ? "font-semibold text-ink-secondary" : "text-ink-muted"}`}>{formatTimestamp(segment.startTimeMs)}</span>
-              <span lang="ko" className="mt-1 block text-[17px] font-medium leading-7">{segment.text}</span>
+              <span lang="ko" className="mt-1 block text-[18px] font-[475] leading-[1.7]">{segment.text}</span>
             </button>
             </div>
           );
