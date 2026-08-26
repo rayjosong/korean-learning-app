@@ -8,8 +8,11 @@ test("masks the selected Korean word in its source sentence", () => {
   assert.equal(maskAnswer("저는 김밥을 먹어요.", "김밥"), "저는 ____을 먹어요.");
 });
 
-test("cloze review has a bounded empty state", () => {
+test("mixed review exposes recognition, production, and cloze modes", () => {
   const html = renderToString(<ClozeReviewPanel refreshKey={0} sessionLimit={3} onReviewComplete={() => {}} />).replaceAll("<!-- -->", "");
-  assert.match(html, /Cloze review/);
+  assert.match(html, /Mixed review/);
+  assert.match(html, /recognition/);
+  assert.match(html, /production/);
+  assert.match(html, /cloze/);
   assert.match(html, /Recall the missing word/);
 });

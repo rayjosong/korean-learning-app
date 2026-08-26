@@ -31,6 +31,19 @@ test("a successful cloze-style recall increases recognition confidence and recor
   assert.equal(result.nextReviewAt, "2026-08-28T10:00:00.000Z");
 });
 
+test("a production review updates production confidence without changing recognition confidence", () => {
+  const result = applyReviewOutcome({
+    item,
+    mode: "production",
+    outcome: "success",
+    now: "2026-08-26T10:00:00.000Z",
+    schedule: { intervalDays: 2, nextReviewAt: "2026-08-28T10:00:00.000Z" }
+  });
+
+  assert.equal(result.recognitionConfidence, 40);
+  assert.equal(result.productionConfidence, 25);
+});
+
 test("a failed cloze-style recall lowers confidence without going below zero", () => {
   const result = applyReviewOutcome({
     item: { ...item, recognitionConfidence: 5 },

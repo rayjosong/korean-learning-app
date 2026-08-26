@@ -1,7 +1,7 @@
 import Dexie, { type Table } from "dexie";
 
 import type { SentenceExplanation, WordExplanation } from "@korean-learning/korean";
-import type { LearningContext, LearningItem } from "@korean-learning/learning-engine";
+import type { LearningContext, LearningItem, ReviewMode, ReviewOutcome } from "@korean-learning/learning-engine";
 
 /**
  * A cached sentence explanation.
@@ -31,6 +31,7 @@ export class ExplanationDatabase extends Dexie {
   wordExplanations!: Table<WordExplanationRecord, string>;
   learningItems!: Table<LearningItem, string>;
   learningContexts!: Table<LearningContextRecord, string>;
+  reviewRecords!: Table<ReviewRecord, string>;
 
   constructor(name = "korean-learning") {
     super(name);
@@ -42,6 +43,13 @@ export class ExplanationDatabase extends Dexie {
       wordExplanations: "key",
       learningItems: "id, text, lastSeenAt",
       learningContexts: "id, itemId, createdAt"
+    });
+    this.version(5).stores({
+      explanations: "key, createdAt",
+      wordExplanations: "key",
+      learningItems: "id, text, lastSeenAt",
+      learningContexts: "id, itemId, createdAt",
+      reviewRecords: "id, itemId, reviewedAt, mode"
     });
   }
 }
@@ -198,6 +206,19 @@ export async function deleteLearningItem(
 export interface DueReviewItem {
   item: LearningItem;
   context?: LearningContextRecord;
+}
+
+/** A durable audit of how the learner practised an item. */
+export interface ReviewRecord {
+  id: string;
+  itemId: string;
+  mode: ReviewMode;
+  outcome: ReviewOutcome;
+  reviewedAt: string;
+}
+
+export async function putReviewRecord(database: ExplanationDatabase, record: ReviewRecord): Promise<void> {
+  await database.reviewRecords.put(record);
 }
 
 /**
