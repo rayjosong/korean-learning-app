@@ -110,7 +110,7 @@ jobs:
           opencode_status=${PIPESTATUS[0]}
 
           if grep -Eiq '(^|[^0-9])429([^0-9]|$)|usage limit|rate limit' "$RUN_LOG"; then
-            reset_time="$(sed -nE 's/.*Your limit will reset at (.*)/\1/p' "$RUN_LOG" | head -n1 | sed 's/$//')"
+            reset_time="$(sed -nE 's/.*Your limit will reset at (.*)/\1/p' "$RUN_LOG" | head -n1 | sed 's/[[:space:]]*$//')"
             reset_time="${reset_time:-an unspecified time}"
             echo "rate_limited=true" >> "$GITHUB_OUTPUT"
             echo "reset_time=$reset_time" >> "$GITHUB_OUTPUT"
