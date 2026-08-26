@@ -225,13 +225,13 @@ Depends on: #12
 
 ---
 
-### [ ] #15 Review queue
+### [x] #15 Review queue
 
 Acceptance criteria:
-- [ ] Due items shown in sensible order.
-- [ ] Empty state exists.
-- [ ] Session length can be capped.
-- [ ] Context sentence displayed.
+- [x] Due items shown in sensible order.
+- [x] Empty state exists.
+- [x] Session length can be capped.
+- [x] Context sentence displayed.
 
 Depends on: #14
 
