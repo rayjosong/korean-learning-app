@@ -185,3 +185,58 @@ When two agents' changes conflict:
 4. do not mark either task complete until the merged result is re-verified.
 
 The merged branch, not an isolated agent branch, is the final truth.
+
+
+## Repository operating rules
+
+### Exact verification commands
+
+Run these from the repository root before claiming an item complete:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+If a command cannot be run, state why in the PR and do not claim it passed.
+
+After every CI failure:
+1. read the failing job log;
+2. fix the root cause, not only the symptom;
+3. push the fix;
+4. wait for a green CI run on the latest commit before marking the backlog complete.
+
+### TypeScript and test-runtime compatibility
+
+- Keep production source in `.ts` or `.tsx`; keep Node test files valid JavaScript when they are `.mjs`.
+- Before adding a module or barrel export, verify its import path works in both `tsc --noEmit` and the repository's Node test runtime.
+- Do not use TypeScript-only syntax in `.mjs` files.
+- Do not alter TypeScript module resolution, `tsconfig`, or test-runner configuration merely to accommodate one feature unless the change is separately justified and tested.
+
+### Domain, persistence, and boundary rules
+
+- Put learner-state transitions, review scheduling, and other learning rules in `packages/learning-engine`; keep them pure and unit-tested.
+- UI coordinates use cases and rendering only. It must not calculate review schedules, mutate learner state, or access Dexie tables directly.
+- Validate all external or provider data at the adapter boundary before it enters domain code.
+- Put IndexedDB/Dexie schema changes and persistence helpers in `packages/storage`. A schema change must include an upgrade/migration test using a prior database version.
+- New public domain fields or interfaces require a test for their intended transition or invariant.
+
+### Regression and browser checks
+
+- Add a regression test in the package that owns every bug fix.
+- Test observable behavior rather than implementation details.
+- For user-visible flows, run the `.agents/skills/e2e-python-playwright` diagnostic when relevant and follow its cleanup rules.
+- Do not weaken or delete a failing test without explicit PR justification.
+
+### PR readiness
+
+Every PR body must include:
+- the backlog item and acceptance-criteria mapping;
+- verification commands and results;
+- omitted verification and why;
+- migrations, user-visible behavior, or compatibility risks;
+- remaining work, if any.
+
+Do not merge your own PR unless the user explicitly asks.
