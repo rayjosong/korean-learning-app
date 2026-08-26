@@ -5,7 +5,8 @@
 
 DELETE after the run; never commit. Harness: dev server on :3100, mocked
 OpenAI-compatible provider on :9462, intercepted /api/transcript, blocked
-YouTube embeds, real IndexedDB per browser context.
+YouTube embeds, real IndexedDB per browser context. Automatically captures
+screenshots to `docs/qa/` at checkpoints and on failures.
 """
 import json
 import os
@@ -22,6 +23,7 @@ from playwright.sync_api import sync_playwright
 APP = "http://localhost:3100"
 AI_PORT = 9462
 AI = f"http://127.0.0.1:{AI_PORT}"
+SCREENSHOT_DIR = "docs/qa"
 
 # --- fixtures ---------------------------------------------------------------
 SENTENCE_EXPLANATION = {
@@ -103,6 +105,8 @@ def main():
     ai_server = ThreadingHTTPServer(("127.0.0.1", AI_PORT), FakeAIHandler)
     threading.Thread(target=ai_server.serve_forever, daemon=True).start()
 
+    os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+
     dev = subprocess.Popen(
         ["pnpm", "--filter", "@korean-learning/web", "dev"],
         env={**os.environ, "PORT": "3100"},
@@ -144,42 +148,58 @@ def main():
                 page.fill("#ai-model", "e2e-model")
                 page.fill("#ai-base-url", f"{AI}/v1")
 
-            # ---- FLOW: adapt from here ------------------------------------
-            load_video()
-            fill_ai_settings()
+            def take_screenshot(name):
+                path = f"{SCREENSHOT_DIR}/{name}.png"
+                page.screenshot(path=path)
+                print(f"Screenshot saved: {path}")
 
-            # Sentence explanation -> word card.
-            page.get_by_role("button", name=re.compile(r"뭐 해\?")).click()
-            page.get_by_label("Natural meaning").wait_for()
-            page.get_by_role("button", name="뭐", exact=True).click()
-            page.get_by_text("what (casual)").wait_for()
+            try:
+                # ---- FLOW: adapt from here ------------------------------------
+                load_video()
+                fill_ai_settings()
+                take_screenshot("default-loaded")
 
-            # Action -> confirmation with Undo.
-            page.get_by_role("button", name="I know this").click()
-            page.get_by_text("Marked as known").wait_for()
-            ok(page.get_by_role("button", name="Undo").is_visible(), "confirmation shows Undo")
-            ok(page.get_by_role("button", name="I know this").count() == 0, "action replaced by confirmation")
+                # Sentence explanation -> word card.
+                page.get_by_role("button", name=re.compile(r"뭐 해\?")).click()
+                page.get_by_label("Natural meaning").wait_for()
+                take_screenshot("sentence-explained")
 
-            # Undo restores the action.
-            page.get_by_role("button", name="Undo").click()
-            page.get_by_role("button", name="I know this").wait_for()
-            ok(page.get_by_text("Marked as known").count() == 0, "undo removes saved state")
+                page.get_by_role("button", name="뭐", exact=True).click()
+                page.get_by_text("what (casual)").wait_for()
+                take_screenshot("word-lookup")
 
-            # Persist across reload (same context keeps IndexedDB).
-            page.get_by_role("button", name="I know this").click()
-            page.get_by_text("Marked as known").wait_for()
-            page.reload()
-            load_video()
-            fill_ai_settings()  # form resets on reload
-            page.get_by_role("button", name=re.compile(r"뭐 해\?")).click()
-            page.get_by_label("Natural meaning").wait_for()
-            page.get_by_role("button", name="뭐", exact=True).click()
-            page.get_by_text("what (casual)").wait_for()
-            ok(
-                page.get_by_text("You already marked this as known.").is_visible(),
-                "known item persists across reload",
-            )
-            # ---- end FLOW ---------------------------------------------------
+                # Action -> confirmation with Undo.
+                page.get_by_role("button", name="I know this").click()
+                page.get_by_text("Marked as known").wait_for()
+                take_screenshot("marked-known")
+                ok(page.get_by_role("button", name="Undo").is_visible(), "confirmation shows Undo")
+                ok(page.get_by_role("button", name="I know this").count() == 0, "action replaced by confirmation")
+
+                # Undo restores the action.
+                page.get_by_role("button", name="Undo").click()
+                page.get_by_role("button", name="I know this").wait_for()
+                take_screenshot("undone")
+                ok(page.get_by_text("Marked as known").count() == 0, "undo removes saved state")
+
+                # Persist across reload (same context keeps IndexedDB).
+                page.get_by_role("button", name="I know this").click()
+                page.get_by_text("Marked as known").wait_for()
+                page.reload()
+                load_video()
+                fill_ai_settings()  # form resets on reload
+                page.get_by_role("button", name=re.compile(r"뭐 해\?")).click()
+                page.get_by_label("Natural meaning").wait_for()
+                page.get_by_role("button", name="뭐", exact=True).click()
+                page.get_by_text("what (casual)").wait_for()
+                take_screenshot("reloaded-persistence")
+                ok(
+                    page.get_by_text("You already marked this as known.").is_visible(),
+                    "known item persists across reload",
+                )
+                # ---- end FLOW ---------------------------------------------------
+            except Exception as e:
+                take_screenshot("failure")
+                raise e
 
             browser.close()
     finally:
