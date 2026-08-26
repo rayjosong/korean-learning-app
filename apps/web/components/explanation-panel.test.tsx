@@ -296,6 +296,7 @@ test("saving shows a persistent confirmation with Undo", () => {
           contextIds: ["video-1:one:뭐"]
         },
         saved: {
+          action: "known",
           item: {
             id: "item-1",
             kind: "word",
@@ -320,4 +321,99 @@ test("saving shows a persistent confirmation with Undo", () => {
   assert.match(html, /Marked as known/);
   assert.match(html, /Undo/);
   assert.doesNotMatch(html, /I know this/);
+});
+
+
+test("an unseen word offers a learn-this action beside I know this", () => {
+  const html = render(
+    <ExplanationPanel
+      segment={segment}
+      state={{ status: "ready", explanation }}
+      wordState={{ status: "ready", word: "뭐", explanation: { word: "뭐", meaning: "what" } }}
+      learnerState={{ status: "ready" }}
+      onMarkKnown={() => {}}
+      onMarkLearning={() => {}}
+    />
+  );
+
+  assert.match(html, /I know this/);
+  assert.match(html, /Learn this/);
+});
+
+test("known items offer Learn this again", () => {
+  const html = render(
+    <ExplanationPanel
+      segment={segment}
+      state={{ status: "ready", explanation }}
+      wordState={{ status: "ready", word: "뭐", explanation: { word: "뭐", meaning: "what" } }}
+      learnerState={{
+        status: "ready",
+        item: {
+          id: "item-1",
+          kind: "word",
+          text: "뭐",
+          state: "known",
+          recognitionConfidence: 1,
+          productionConfidence: 0,
+          encounters: 3,
+          successes: 2,
+          failures: 0,
+          contextIds: []
+        }
+      }}
+      onMarkLearning={() => {}}
+    />
+  );
+
+  assert.match(html, /Learn this again/);
+  assert.doesNotMatch(html, /I know this/);
+});
+
+test("saving to learning shows a persistent confirmation with Undo", () => {
+  const html = render(
+    <ExplanationPanel
+      segment={segment}
+      state={{ status: "ready", explanation }}
+      wordState={{ status: "ready", word: "뭐", explanation: { word: "뭐", meaning: "what" } }}
+      learnerState={{
+        status: "ready",
+        item: {
+          id: "item-1",
+          kind: "word",
+          text: "뭐",
+          state: "learning",
+          recognitionConfidence: 0,
+          productionConfidence: 0,
+          encounters: 1,
+          successes: 0,
+          failures: 0,
+          contextIds: ["video-1:one:뭐"],
+          nextReviewAt: "2026-08-27T00:00:00.000Z"
+        },
+        saved: {
+          action: "learning",
+          item: {
+            id: "item-1",
+            kind: "word",
+            text: "뭐",
+            state: "learning",
+            recognitionConfidence: 0,
+            productionConfidence: 0,
+            encounters: 1,
+            successes: 0,
+            failures: 0,
+            contextIds: ["video-1:one:뭐"],
+            nextReviewAt: "2026-08-27T00:00:00.000Z"
+          },
+          isNew: true,
+          contextId: "video-1:one:뭐"
+        }
+      }}
+      onUndo={() => {}}
+    />
+  );
+
+  assert.match(html, /Added to learning/);
+  assert.match(html, /Undo/);
+  assert.doesNotMatch(html, /Learn this/);
 });
