@@ -184,19 +184,19 @@ Depends on: #10
 
 ---
 
-### [ ] #12 "Learn this" action
+### [x] #12 "Learn this" action
 
 Acceptance criteria:
-- [ ] State becomes `learning`.
-- [ ] Source sentence stored.
-- [ ] Source video/timestamp stored.
-- [ ] Initial review scheduled.
-- [ ] Action appears in the same word/phrase explanation card.
-- [ ] The clicked word or phrase/form is saved as the learner item.
-- [ ] Dictionary form is stored as supporting metadata when available.
-- [ ] Repeated encounters reuse the learner item and add source contexts.
-- [ ] Existing `known` items offer "Learn this again".
-- [ ] After saving, the card shows a persistent confirmation with an `Undo` action.
+- [x] State becomes `learning`.
+- [x] Source sentence stored.
+- [x] Source video/timestamp stored.
+- [x] Initial review scheduled.
+- [x] Action appears in the same word/phrase explanation card.
+- [x] The clicked word or phrase/form is saved as the learner item.
+- [x] Dictionary form is stored as supporting metadata when available.
+- [x] Repeated encounters reuse the learner item and add source contexts.
+- [x] Existing `known` items offer "Learn this again".
+- [x] After saving, the card shows a persistent confirmation with an `Undo` action.
 
 Depends on: #10
 
