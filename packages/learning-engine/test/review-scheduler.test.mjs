@@ -2,11 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  DeterministicReviewScheduler,
-  type ReviewScheduler
+  DeterministicReviewScheduler
 } from "../src/index.ts";
 
-const scheduler: ReviewScheduler = new DeterministicReviewScheduler();
+const scheduler = new DeterministicReviewScheduler();
 const now = "2026-08-26T10:00:00.000Z";
 
 test("successful review increases the interval and moves the due date forward", () => {
