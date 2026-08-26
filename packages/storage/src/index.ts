@@ -37,6 +37,12 @@ export class ExplanationDatabase extends Dexie {
     this.version(1).stores({ explanations: "key" });
     this.version(2).stores({ wordExplanations: "key" });
     this.version(3).stores({ learningItems: "id, text", learningContexts: "id, itemId" });
+    this.version(4).stores({
+      explanations: "key, createdAt",
+      wordExplanations: "key",
+      learningItems: "id, text, lastSeenAt",
+      learningContexts: "id, itemId, createdAt"
+    });
   }
 }
 
@@ -53,6 +59,14 @@ export async function putCachedExplanation(
   record: ExplanationRecord
 ): Promise<void> {
   await database.explanations.put(record);
+}
+
+/** Most recently created sentence explanations, newest first. */
+export async function getRecentExplanationRecords(
+  database: ExplanationDatabase,
+  limit = 10
+): Promise<ExplanationRecord[]> {
+  return database.explanations.orderBy("createdAt").reverse().limit(limit).toArray();
 }
 
 export async function clearExplanationCache(database: ExplanationDatabase): Promise<void> {
@@ -137,6 +151,28 @@ export async function putLearningContext(
   context: LearningContextRecord
 ): Promise<void> {
   await database.learningContexts.put(context);
+}
+
+export interface RecentLearningItem {
+  item: LearningItem;
+  /** The most recently saved source context, if one is still available. */
+  context?: LearningContextRecord;
+}
+
+/** Most recently encountered learning items with their latest source context. */
+export async function getRecentLearningItems(
+  database: ExplanationDatabase,
+  limit = 10
+): Promise<RecentLearningItem[]> {
+  const items = await database.learningItems.orderBy("lastSeenAt").reverse().limit(limit).toArray();
+
+  return Promise.all(
+    items.map(async (item) => {
+      const contexts = await database.learningContexts.where("itemId").equals(item.id).toArray();
+      const context = contexts.sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0];
+      return context ? { item, context } : { item };
+    })
+  );
 }
 
 export async function deleteLearningContext(
