@@ -289,12 +289,12 @@ Depends on: #18
 
 ---
 
-### [ ] #20 Difficult-content warning
+### [x] #20 Difficult-content warning
 
 Acceptance criteria:
-- [ ] Warning is non-blocking.
-- [ ] Learner can continue.
-- [ ] Wording is informative, not discouraging.
+- [x] Warning is non-blocking.
+- [x] Learner can continue.
+- [x] Wording is informative, not discouraging.
 
 Depends on: #19
 

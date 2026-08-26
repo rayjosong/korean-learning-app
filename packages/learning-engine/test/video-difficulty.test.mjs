@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { estimateVideoDifficulty } from "../src/video-difficulty.ts";
+import { estimateVideoDifficulty, shouldShowDifficultyWarning } from "../src/video-difficulty.ts";
 
 function item(overrides = {}) {
   return {
@@ -64,4 +64,19 @@ test("the same transcript span is not double-counted", () => {
   });
 
   assert.equal(one.likelyComprehension.max, two.likelyComprehension.max);
+});
+
+test("only challenging estimates trigger the non-blocking warning policy", () => {
+  assert.equal(shouldShowDifficultyWarning({
+    band: "challenging",
+    likelyComprehension: { min: 5, max: 25 },
+    source: "fallback",
+    reasonCodes: ["new-learner"]
+  }), true);
+  assert.equal(shouldShowDifficultyWarning({
+    band: "intermediate",
+    likelyComprehension: { min: 30, max: 50 },
+    source: "fallback",
+    reasonCodes: ["new-learner"]
+  }), false);
 });

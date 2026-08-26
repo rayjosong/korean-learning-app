@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 
 import { loadVideoDifficulty, type VideoDifficultyLoadResult } from "@/lib/load-video-difficulty";
-import type { DifficultyEstimate } from "@korean-learning/learning-engine/video-difficulty";
+import { shouldShowDifficultyWarning, type DifficultyEstimate } from "@korean-learning/learning-engine/video-difficulty";
 import type { ExplanationDatabase } from "@korean-learning/storage";
+
+import { DifficultContentWarning } from "./difficult-content-warning";
 
 export type VideoDifficultyEstimateState =
   | { status: "loading" }
@@ -58,6 +60,7 @@ export function VideoDifficultyEstimate({
   refreshKey: number;
 }) {
   const [state, setState] = useState<VideoDifficultyEstimateState>({ status: "loading" });
+  const [warningDismissed, setWarningDismissed] = useState(false);
 
   useEffect(() => {
     if (!database) return;
@@ -69,5 +72,16 @@ export function VideoDifficultyEstimate({
     return () => { cancelled = true; };
   }, [database, segments, refreshKey]);
 
-  return <VideoDifficultyEstimateView state={state} />;
+  return (
+    <div className="flex flex-col gap-4">
+      <VideoDifficultyEstimateView state={state} />
+      {state.status === "ready" && shouldShowDifficultyWarning(state.estimate) && !warningDismissed ? (
+        <DifficultContentWarning
+          estimate={state.estimate}
+          onContinue={() => setWarningDismissed(true)}
+          onDismiss={() => setWarningDismissed(true)}
+        />
+      ) : null}
+    </div>
+  );
 }
