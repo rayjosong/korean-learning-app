@@ -213,13 +213,13 @@ Depends on: #9, #11, #12
 
 ## Milestone 3 — Contextual review
 
-### [ ] #14 Review scheduler
+### [x] #14 Review scheduler
 
 Acceptance criteria:
-- [ ] Scheduler behind an interface.
-- [ ] Success increases interval.
-- [ ] Failure shortens interval.
-- [ ] Unit tests cover transitions.
+- [x] Scheduler behind an interface.
+- [x] Success increases interval.
+- [x] Failure shortens interval.
+- [x] Unit tests cover transitions.
 
 Depends on: #12
 
