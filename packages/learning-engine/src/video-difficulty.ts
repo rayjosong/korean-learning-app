@@ -1,5 +1,7 @@
 import type { LearningItem } from "./index";
 
+export type { LearningItem } from "./index";
+
 export type VideoDifficultyBand = "beginner-friendly" | "intermediate" | "challenging";
 export type DifficultyEstimateSource = "personalized" | "fallback";
 
@@ -23,11 +25,11 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function normalize(value: string): string {
-  return value.replace(/\\s+/g, " ").trim();
+  return value.replace(/\s+/g, " ").trim();
 }
 
 function koreanCharacterCount(text: string): number {
-  return [...text].filter((character) => /[\\uAC00-\\uD7A3]/u.test(character)).length;
+  return [...text].filter((character) => /[\uAC00-\uD7A3]/u.test(character)).length;
 }
 
 function segmentStats(segments: readonly { text: string }[]) {
@@ -51,8 +53,6 @@ function coverage(
   const occupied = new Set<number>();
   let weightedCharacters = 0;
 
-  // Match longer saved phrases first so a phrase and its component word cannot
-  // claim the same transcript span twice.
   const candidates = [...items]
     .filter((item) => item.state !== "unknown")
     .map((item) => ({ text: normalize(item.text), item }))
