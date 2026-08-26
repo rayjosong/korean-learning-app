@@ -1,3 +1,4 @@
+pyenv: cannot rehash: /Users/raymondong/.pyenv/shims isn't writable
 import { parseYouTubeUrl, YouTubeUrlParseError } from "./youtube-url.ts";
 import type { TranscriptSegment } from "./index.ts";
 
@@ -25,7 +26,7 @@ export class YouTubeTimedTextProvider implements YouTubeCaptionProvider {
   }
 
   async listTracks(videoId: string): Promise<YouTubeCaptionTrack[]> {
-    const response = await this.fetcher(\`\${this.endpoint}?type=list&v=\${encodeURIComponent(videoId)}\`);
+    const response = await this.fetcher(`${this.endpoint}?type=list&v=${encodeURIComponent(videoId)}`);
     if (!response.ok) throw providerResponseError(response.status);
     const xml = await response.text();
     const tracks = parseTrackList(xml);
@@ -33,7 +34,7 @@ export class YouTubeTimedTextProvider implements YouTubeCaptionProvider {
   }
 
   private async listWatchPageTracks(videoId: string): Promise<YouTubeCaptionTrack[]> {
-    const response = await this.fetcher(\`https://www.youtube.com/watch?v=\${encodeURIComponent(videoId)}\`);
+    const response = await this.fetcher(`https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`);
     if (!response.ok) throw providerResponseError(response.status);
     return parseWatchPageTracks(await response.text());
   }
@@ -91,7 +92,7 @@ function normalize(caption: YouTubeCaptionSegment, index: number): TranscriptSeg
 }
 function providerError(error: unknown): TranscriptSourceError {
   const message = error instanceof Error ? error.message : "Unknown provider failure.";
-  return new TranscriptSourceError("PROVIDER_ERROR", \`YouTube caption provider failed: \${message}\`);
+  return new TranscriptSourceError("PROVIDER_ERROR", `YouTube caption provider failed: ${message}`);
 }
 
 interface TimedTextTrack {
@@ -217,5 +218,5 @@ function decodeTrackId(trackId: string): TimedTextTrack {
 
 function providerResponseError(status: number): Error {
   if (status === 429) return new Error("YouTube caption provider rate limited the request.");
-  return new Error(\`YouTube caption provider returned HTTP \${status}.\`);
+  return new Error(`YouTube caption provider returned HTTP ${status}.`);
 }
