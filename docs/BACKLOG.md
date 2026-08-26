@@ -5,8 +5,10 @@
 - The top-level checkbox is the canonical completion state.
 - A top-level item may be checked only when every acceptance criterion is checked and verified.
 - Agents must follow `/AGENTS.md`.
+- User-facing work must also follow `/DESIGN.md`.
 - Multiple agents must work on different assigned items.
 - Work in dependency order unless explicitly overridden.
+- If newer product/design direction refines an already-completed feature, keep the historical item complete and create a new refinement item for the remaining delta.
 
 ## Milestone 0 — Project foundation
 
@@ -136,6 +138,8 @@ Acceptance criteria:
 - [x] Integrates from transcript click.
 - [x] Reasonably responsive.
 
+Note: this item records the original explanation UI. The newer canonical Watch/Study interaction model is tracked separately in #27 rather than rewriting this completed item's history.
+
 Depends on: #5, #7
 
 ---
@@ -260,6 +264,67 @@ Acceptance criteria:
 
 Depends on: #16
 
+## Milestone 3.5 — Canonical desktop learning UX
+
+> Consolidate the already-built capabilities into the intended desktop-first Watch -> Study -> Review experience from `PRODUCT.md` and `DESIGN.md`.
+
+### [ ] #27 Watch / Study media workspace
+
+Acceptance criteria:
+- [ ] Desktop Watch layout follows `DESIGN.md`: persistent video + Korean transcript as the dominant surfaces.
+- [ ] Watch is the default mode when opening a video.
+- [ ] English translation is not persistently shown in default Guided Watch mode.
+- [ ] Clicking a transcript sentence pauses playback automatically.
+- [ ] Selected sentence opens a contextual anchored breakdown popover/overlay in Watch mode.
+- [ ] Opening the explanation preserves nearby transcript context rather than replacing the entire transcript.
+- [ ] Natural meaning is prioritized over literal translation.
+- [ ] Meaningful phrase chunks are presented before morphology-first decomposition.
+- [ ] Grammar, nuance, and examples use progressive disclosure.
+- [ ] Learner can explicitly switch between Watch and Study without losing current video/transcript context.
+- [ ] Study mode gives persistent space to the selected sentence and deeper explanation.
+- [ ] `Learn this` / `I know this` remain available in the relevant phrase context.
+- [ ] Saving a learning action gives low-friction confirmation without a modal configuration flow.
+- [ ] Long transcripts remain usable in both Watch and Study.
+- [ ] Keyboard/focus behavior and accessible selected/current-playback states are verified.
+- [ ] Desktop rendered flow is verified against `DESIGN.md` ASCII references.
+
+Depends on: #5, #8, #10, #11, #12
+
+---
+
+### [ ] #28 Assistance levels
+
+Acceptance criteria:
+- [ ] Assistance preference supports `full`, `guided`, and `immersion`.
+- [ ] Guided is the default.
+- [ ] Assistance controls presentation rather than mutating learner knowledge state.
+- [ ] Full makes translation/help easier to reveal while keeping Korean primary.
+- [ ] Guided keeps Korean first and reveals concise English/explanation after interaction.
+- [ ] Immersion is Korean-only by default and requires intentional requests for English help.
+- [ ] Assistance remains learner-driven; no level proactively pauses playback because content appears difficult.
+- [ ] Preference persists locally.
+- [ ] Provider settings remain separate from assistance settings.
+
+Depends on: #27
+
+---
+
+### [ ] #29 Original-context video review
+
+Acceptance criteria:
+- [ ] Review item resolves its stored source video, transcript segment, and timestamp when available.
+- [ ] Review attempts to present/replay a short original source clip around the learned context.
+- [ ] Korean sentence/phrase is shown before answer reveal.
+- [ ] Learner is prompted to recall meaning before reveal.
+- [ ] Reveal shows natural meaning and useful source context.
+- [ ] Learner can mark at least `Again` / `Got it` (or equivalent failure/success actions).
+- [ ] Scheduler updates remain independent from whether clip playback succeeds.
+- [ ] If source video/clip playback is unavailable, review gracefully falls back to sentence + source timestamp/context.
+- [ ] Existing cloze review behavior is not silently removed unless intentionally replaced and migration/compatibility is documented.
+- [ ] Rendered Review flow is verified against `DESIGN.md`.
+
+Depends on: #15, #27
+
 ## Milestone 4 — Difficulty and progress
 
 ### [ ] #18 Simple learner profile
@@ -308,6 +373,8 @@ Acceptance criteria:
 - [ ] Review success.
 - [ ] Explanation frequency.
 - [ ] Content studied.
+- [ ] Comprehension-oriented information is visually prioritized over vanity metrics.
+- [ ] Layout follows the restrained Progress direction in `DESIGN.md` rather than a generic KPI-card dashboard.
 
 Depends on: #18
 
@@ -319,6 +386,7 @@ Acceptance criteria:
 - [ ] Previously studied content detected.
 - [ ] Progress can be compared across time.
 - [ ] Replay offered.
+- [ ] Comparison can communicate a comprehension change such as `Then` vs `Now` when data supports it.
 
 Depends on: #19, #21
 
@@ -327,10 +395,14 @@ Depends on: #19, #21
 ### [ ] #23 Continue-learning home screen
 
 Acceptance criteria:
-- [ ] Resume unfinished video.
-- [ ] Due review surfaced.
-- [ ] Recent content surfaced.
+- [ ] Resume unfinished/recent video is the primary continuation affordance.
+- [ ] Due review is surfaced.
+- [ ] Recent content is surfaced.
+- [ ] Recommended content can be surfaced when recommendation data exists.
 - [ ] New-content entry point exists.
+- [ ] Home mixes continuation, review, and content discovery in one calm feed/hierarchy.
+- [ ] Home answers "What should I do next?" and does not become a generic metrics dashboard.
+- [ ] Desktop layout follows `DESIGN.md` reference hierarchy.
 
 Depends on: #13, #15
 
@@ -377,16 +449,23 @@ Depends on: #25
 - AI conversation missions.
 - Post-conversation correction and retry.
 - Pronunciation flagging only when misunderstanding is likely.
-- Recommended Korean content feed.
+- Rich recommended Korean content feed beyond the V0.1 home guidance surface.
 - Browser extension.
 - Music/lyrics ingestion.
-- Mobile app.
+- Native mobile app.
+- Mobile-first redesign beyond functional responsive web.
 - Optional sync.
 - More AI providers.
 - Advanced learner model / FSRS.
 
-## Recommended first implementation order
+## Current product integration priority
 
-`#1 -> #2 -> #3/#6 -> #4/#7 -> #5 -> #8 -> #9`
+The foundational capabilities through contextual learning/review largely exist. The next product-integration priority is to make them feel like one coherent learning experience:
 
-After #9, stop and use the product on a real Korean video before expanding scope.
+```text
+#27 Watch / Study media workspace
+ -> #28 Assistance levels
+ -> #29 Original-context video review
+```
+
+In parallel, complete blocked/dependent learner-profile work according to milestone dependencies. Do not mark UX refinement complete merely because the older underlying capabilities already exist.
