@@ -222,3 +222,30 @@ export class DeterministicReviewScheduler implements ReviewScheduler {
     };
   }
 }
+
+
+export interface ApplyReviewOutcomeInput {
+  item: LearningItem;
+  outcome: ReviewOutcome;
+  schedule: ReviewSchedule;
+  now: string;
+}
+
+/**
+ * Applies a completed recognition-style review without coupling learner state
+ * to a particular UI or scheduler implementation. Confidence is kept on a
+ * small 0–100 scale so the learner model remains explainable in V0.1.
+ */
+export function applyReviewOutcome(input: ApplyReviewOutcomeInput): LearningItem {
+  const recognitionDelta = input.outcome === "success" ? 10 : -10;
+
+  return {
+    ...input.item,
+    recognitionConfidence: Math.max(0, Math.min(100, input.item.recognitionConfidence + recognitionDelta)),
+    successes: input.item.successes + (input.outcome === "success" ? 1 : 0),
+    failures: input.item.failures + (input.outcome === "failure" ? 1 : 0),
+    encounters: input.item.encounters + 1,
+    lastSeenAt: input.now,
+    nextReviewAt: input.schedule.nextReviewAt
+  };
+}
