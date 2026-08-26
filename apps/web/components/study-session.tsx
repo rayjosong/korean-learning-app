@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { ExplanationPanel } from "@/components/explanation-panel";
 import { LearningHistoryPanel } from "@/components/learning-history-panel";
-import { ReviewQueuePanel } from "@/components/review-queue-panel";
+import { ClozeReviewPanel } from "@/components/cloze-review-panel";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
 import { withExplanationCache } from "@/lib/explanation-cache";
@@ -169,7 +169,7 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
           }}
           onUndo={() => void undoMarkKnown().then(() => setHistoryRevision((revision) => revision + 1))}
         />
-        <ReviewQueuePanel database={cacheDatabase} refreshKey={historyRevision} />\n        <LearningHistoryPanel database={cacheDatabase} refreshKey={historyRevision} />
+        <ClozeReviewPanel database={cacheDatabase} refreshKey={historyRevision} onReviewComplete={() => setHistoryRevision((revision) => revision + 1)} />\n        <LearningHistoryPanel database={cacheDatabase} refreshKey={historyRevision} />
       </div>
     </div>
   );

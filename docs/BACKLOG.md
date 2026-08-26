@@ -237,13 +237,13 @@ Depends on: #14
 
 ---
 
-### [ ] #16 Cloze review
+### [x] #16 Cloze review
 
 Acceptance criteria:
-- [ ] Uses source sentence.
-- [ ] Supports answer reveal.
-- [ ] Learner marks success/failure.
-- [ ] Confidence updates.
+- [x] Uses source sentence.
+- [x] Supports answer reveal.
+- [x] Learner marks success/failure.
+- [x] Confidence updates.
 
 Depends on: #15
 
