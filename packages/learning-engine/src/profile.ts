@@ -1,4 +1,4 @@
-import type { LearningItem } from "./index.ts";
+import type { LearningItem } from "./index";
 
 export interface GrammarObservation {
   form: string;
