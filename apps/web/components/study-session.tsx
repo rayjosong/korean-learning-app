@@ -108,6 +108,12 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
     }
   }
 
+  function closeExplanation() {
+    setSelectedSegment(undefined);
+    resetWordExplanation();
+    resetLearnerItem();
+  }
+
   function retryExplanation() {
     if (selectedSegment) void explainSegment(selectedSegment);
   }
@@ -145,7 +151,41 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
           play={play}
           pause={pause}
           mode={mode}
-          onModeChange={setMode}
+          onModeChange={(nextMode) => {
+            setMode(nextMode);
+            setSelectedSegment(undefined);
+            resetWordExplanation();
+            resetLearnerItem();
+          }}
+          explanationState={state}
+          onRetryExplanation={retryExplanation}
+          wordExplanationState={wordState}
+          onWordClick={(word) => {
+            if (!selectedSegment) return;
+            void explainWord({ word, segment: selectedSegment });
+            void loadLearnerItem(word);
+          }}
+          learnerItemState={learnerState}
+          onMarkKnown={() => {
+            if (selectedSegment && wordState.word) {
+              void markWordKnown({
+                text: wordState.word,
+                dictionaryForm: wordState.explanation?.dictionaryForm,
+                segment: selectedSegment
+              }).then(() => setHistoryRevision((revision) => revision + 1));
+            }
+          }}
+          onMarkLearning={() => {
+            if (selectedSegment && wordState.word) {
+              void markWordLearning({
+                text: wordState.word,
+                dictionaryForm: wordState.explanation?.dictionaryForm,
+                segment: selectedSegment
+              }).then(() => setHistoryRevision((revision) => revision + 1));
+            }
+          }}
+          onUndoMarkKnown={() => void undoMarkKnown().then(() => setHistoryRevision((revision) => revision + 1))}
+          onCloseExplanation={closeExplanation}
         />
       </div>
 
@@ -159,37 +199,39 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
         
         <div className="grid gap-6 md:grid-cols-2">
           <div className="flex flex-col gap-6">
-            <ExplanationPanel
-              segment={selectedSegment}
-              state={state}
-              onRetry={retryExplanation}
-              wordState={wordState}
-              onWordClick={(word) => {
-                if (!selectedSegment) return;
-                void explainWord({ word, segment: selectedSegment });
-                void loadLearnerItem(word);
-              }}
-              learnerState={learnerState}
-              onMarkKnown={() => {
-                if (selectedSegment && wordState.word) {
-                  void markWordKnown({
-                    text: wordState.word,
-                    dictionaryForm: wordState.explanation?.dictionaryForm,
-                    segment: selectedSegment
-                  }).then(() => setHistoryRevision((revision) => revision + 1));
-                }
-              }}
-              onMarkLearning={() => {
-                if (selectedSegment && wordState.word) {
-                  void markWordLearning({
-                    text: wordState.word,
-                    dictionaryForm: wordState.explanation?.dictionaryForm,
-                    segment: selectedSegment
-                  }).then(() => setHistoryRevision((revision) => revision + 1));
-                }
-              }}
-              onUndo={() => void undoMarkKnown().then(() => setHistoryRevision((revision) => revision + 1))}
-            />
+            {mode === "study" && (
+              <ExplanationPanel
+                segment={selectedSegment}
+                state={state}
+                onRetry={retryExplanation}
+                wordState={wordState}
+                onWordClick={(word) => {
+                  if (!selectedSegment) return;
+                  void explainWord({ word, segment: selectedSegment });
+                  void loadLearnerItem(word);
+                }}
+                learnerState={learnerState}
+                onMarkKnown={() => {
+                  if (selectedSegment && wordState.word) {
+                    void markWordKnown({
+                      text: wordState.word,
+                      dictionaryForm: wordState.explanation?.dictionaryForm,
+                      segment: selectedSegment
+                    }).then(() => setHistoryRevision((revision) => revision + 1));
+                  }
+                }}
+                onMarkLearning={() => {
+                  if (selectedSegment && wordState.word) {
+                    void markWordLearning({
+                      text: wordState.word,
+                      dictionaryForm: wordState.explanation?.dictionaryForm,
+                      segment: selectedSegment
+                    }).then(() => setHistoryRevision((revision) => revision + 1));
+                  }
+                }}
+                onUndo={() => void undoMarkKnown().then(() => setHistoryRevision((revision) => revision + 1))}
+              />
+            )}
             <ClozeReviewPanel
               database={cacheDatabase}
               refreshKey={historyRevision}

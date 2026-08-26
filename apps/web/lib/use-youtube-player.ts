@@ -89,6 +89,7 @@ export function useYouTubePlayer({ videoId, segments }: UseYouTubePlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const pendingSeekRef = useRef<number | null>(null);
+  const pendingPlayStateRef = useRef<"play" | "pause" | null>(null);
   const [activeSegmentId, setActiveSegmentId] = useState<string>();
   const [playerError, setPlayerError] = useState<string>();
   const [isReady, setIsReady] = useState(false);
@@ -111,8 +112,20 @@ export function useYouTubePlayer({ videoId, segments }: UseYouTubePlayerProps) {
               setIsReady(true);
               if (pendingSeekRef.current !== null) {
                 target.seekTo(pendingSeekRef.current / 1000, true);
-                target.playVideo();
+                if (pendingPlayStateRef.current === "pause") {
+                  target.pauseVideo();
+                } else {
+                  target.playVideo();
+                }
                 pendingSeekRef.current = null;
+                pendingPlayStateRef.current = null;
+              } else if (pendingPlayStateRef.current !== null) {
+                if (pendingPlayStateRef.current === "pause") {
+                  target.pauseVideo();
+                } else if (pendingPlayStateRef.current === "play") {
+                  target.playVideo();
+                }
+                pendingPlayStateRef.current = null;
               }
             }
           }
@@ -156,6 +169,8 @@ export function useYouTubePlayer({ videoId, segments }: UseYouTubePlayerProps) {
     const player = playerRef.current;
     if (player && typeof player.playVideo === "function") {
       player.playVideo();
+    } else {
+      pendingPlayStateRef.current = "play";
     }
   };
 
@@ -163,6 +178,8 @@ export function useYouTubePlayer({ videoId, segments }: UseYouTubePlayerProps) {
     const player = playerRef.current;
     if (player && typeof player.pauseVideo === "function") {
       player.pauseVideo();
+    } else {
+      pendingPlayStateRef.current = "pause";
     }
   };
 

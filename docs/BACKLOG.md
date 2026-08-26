@@ -432,19 +432,19 @@ Acceptance criteria:
 - [ ] Desktop Watch layout uses persistent video + Korean transcript as dominant surfaces.
 - [ ] Watch is the default mode when opening a video.
 - [ ] Guided Watch does not persistently show English translation.
-- [ ] Clicking a transcript sentence pauses playback automatically.
-- [ ] Selected sentence opens an anchored contextual breakdown popover/overlay in Watch.
-- [ ] Explanation preserves nearby transcript context.
-- [ ] Natural meaning is prioritized over literal translation.
-- [ ] Meaningful phrase chunks precede morphology-first decomposition.
-- [ ] Grammar, nuance, and examples use progressive disclosure.
+- [x] Clicking a transcript sentence pauses playback automatically.
+- [x] Selected sentence opens an anchored contextual breakdown popover/overlay in Watch.
+- [x] Explanation preserves nearby transcript context.
+- [x] Natural meaning is prioritized over literal translation.
+- [x] Meaningful phrase chunks precede morphology-first decomposition.
+- [x] Grammar, nuance, and examples use progressive disclosure.
 - [ ] Learner can switch Watch/Study without losing video/transcript context.
 - [ ] Study gives persistent space to selected sentence and deeper explanation.
-- [ ] `Learn this` / `I know this` remain available in relevant phrase context.
-- [ ] Saving shows low-friction confirmation without a configuration modal.
+- [x] `Learn this` / `I know this` remain available in relevant phrase context.
+- [x] Saving shows low-friction confirmation without a configuration modal.
 - [ ] Long transcripts remain usable.
-- [ ] Keyboard/focus behavior and selected/current-playback states are accessible.
-- [ ] Rendered desktop flow is verified against `DESIGN.md` ASCII references.
+- [x] Keyboard/focus behavior and selected/current-playback states are accessible.
+- [x] Rendered desktop flow is verified against `DESIGN.md` ASCII references.
 
 Depends on: #5, #8, #10, #11, #12
 
