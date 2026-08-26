@@ -51,8 +51,8 @@ test("learner profile renders vocabulary, confidence, grammar, and speech exposu
 
 test("learner profile renders controlled loading and error states", () => {
   assert.match(renderToString(<LearnerProfileView state={{ status: "loading" }} />), /Building your local profile/);
-  assert.match(
-    renderToString(<LearnerProfileView state={{ status: "error", message: "IndexedDB unavailable" }} />),
-    /Learner profile unavailable: IndexedDB unavailable/
-  );
+  const errorHtml = renderToString(
+    <LearnerProfileView state={{ status: "error", message: "IndexedDB unavailable" }} />
+  ).replaceAll("<!-- -->", "");
+  assert.match(errorHtml, /Learner profile unavailable: IndexedDB unavailable/);
 });
