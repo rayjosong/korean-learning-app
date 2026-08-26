@@ -86,6 +86,7 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="flex flex-col gap-6">
         <VideoDifficultyEstimate
+          key={videoId}
           database={cacheDatabase}
           segments={segments}
           refreshKey={historyRevision}
