@@ -47,7 +47,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Install pinned OpenCode
@@ -95,6 +95,57 @@ jobs:
           set -euo pipefail
           echo "Starting OpenCode GitHub agent with DEBUG logs enabled"
           opencode --print-logs --log-level DEBUG github run
+
+      - name: Push agent work and open pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          current_branch="$(git branch --show-current)"
+          requested_branch="$(printf '%s\n' "$ISSUE_BODY" | sed -n 's/.*Use `\([^`]*\)`.*/\1/p' | head -n1)"
+
+          if [[ "$current_branch" == agent/* ]]; then
+            branch="$current_branch"
+          elif [[ "$requested_branch" == agent/* ]]; then
+            branch="$requested_branch"
+            git switch -C "$branch"
+          else
+            branch="agent/issue-${ISSUE_NUMBER}"
+            git switch -C "$branch"
+          fi
+
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: implement issue #${ISSUE_NUMBER}"
+          fi
+
+          if git diff --quiet "origin/main...HEAD"; then
+            echo "No changes relative to main; nothing to publish."
+            exit 1
+          fi
+
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --set-upstream origin "$branch"
+
+          existing_pr="$(gh pr list --head "$branch" --base main --state open --json url --jq '.[0].url // empty')"
+          if [[ -n "$existing_pr" ]]; then
+            echo "Pull request already exists: $existing_pr"
+            exit 0
+          fi
+
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "${ISSUE_TITLE}" \
+            --body "Closes #${ISSUE_NUMBER}.\n\nImplemented by the GLM issue worker. See the branch commits and CI checks for verification details."
 
       - name: Show OpenCode diagnostic log tail
         if: always()
