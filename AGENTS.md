@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This repository is designed to be built by multiple coding agents without losing product intent, architectural consistency, or backlog accuracy.
+This repository is designed to be built by multiple coding agents without losing product intent, visual/UX consistency, architectural consistency, or backlog accuracy.
 
-`docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, and `docs/BACKLOG.md` are authoritative project documents.
+`docs/PRODUCT.md`, `DESIGN.md`, `docs/ARCHITECTURE.md`, and `docs/BACKLOG.md` are authoritative project documents.
 
 ## Required reading
 
@@ -12,18 +12,24 @@ Before making changes, every coding agent MUST read, in order:
 
 1. `AGENTS.md`
 2. `docs/PRODUCT.md`
-3. `docs/ARCHITECTURE.md`
-4. `docs/BACKLOG.md`
+3. `DESIGN.md`
+4. `docs/ARCHITECTURE.md`
+5. `docs/BACKLOG.md`
 
 Do not begin implementation before doing this.
+
+For user-facing work, explicitly identify which product surface/mode the change belongs to before implementation: Home, Watch, Study, Review, Progress, or Settings.
 
 ## Source of truth
 
 - `docs/PRODUCT.md` defines what the product should become and what is in/out of scope.
+- `DESIGN.md` defines the canonical visual language, UX hierarchy, desktop reference layouts, responsive direction, and user-facing interaction rules.
 - `docs/ARCHITECTURE.md` defines architectural boundaries and engineering rules.
 - `docs/BACKLOG.md` defines implementation order, dependencies, acceptance criteria, and completion state.
 
 If implementation ideas conflict with these documents, follow the documents unless the user's current instruction explicitly overrides them.
+
+When documents appear inconsistent, do not silently choose whichever is easiest. Preserve product intent first, note the inconsistency in the PR, and update the relevant authoritative document when the user's instruction resolves it.
 
 ## Multi-agent coordination rules
 
@@ -48,6 +54,8 @@ Examples:
 - `agent/3-youtube-url-parser`
 - `agent/7-sentence-explanation`
 
+For documentation/design-system changes that are not tied to one numbered backlog item, use a descriptive `agent/docs-...` branch.
+
 Do not have two agents intentionally work on the same backlog item unless the user explicitly asks for collaboration.
 
 ### Backlog writes
@@ -65,17 +73,21 @@ If you discover that an already-completed item is broken:
 - document the regression in your task/PR;
 - fix it if it is required for your assigned work.
 
+If product/design direction changes after an older backlog item was completed, do not rewrite history by unchecking the old item. Add a new refinement item describing the delta from the currently shipped behavior.
+
 ### Completion protocol
 
 Before changing an item from `[ ]` to `[x]`:
 
 1. Re-read the item's acceptance criteria.
-2. Verify each criterion against the implementation.
-3. Run all relevant tests.
-4. Run typecheck.
-5. Run lint.
-6. Run the relevant build when practical.
-7. Confirm no required criterion is only partially implemented.
+2. Re-read relevant product and design requirements.
+3. Verify each criterion against the implementation.
+4. Run all relevant tests.
+5. Run typecheck.
+6. Run lint.
+7. Run the relevant build when practical.
+8. Confirm no required criterion is only partially implemented.
+9. For user-visible work, inspect the actual rendered flow and verify it against `DESIGN.md`.
 
 Only then update the backlog checkbox.
 
@@ -110,6 +122,7 @@ Verification
 - typecheck: pass/fail/not run
 - lint: pass/fail/not run
 - build: pass/fail/not run
+- UX/rendered flow: pass/fail/not applicable
 
 Files changed
 - ...
@@ -120,6 +133,30 @@ Remaining
 Recommended next item
 #<id> <title>
 ```
+
+## Product UX constraints
+
+The canonical V0.1 experience is desktop-web-first and follows:
+
+```text
+WATCH -> STUDY -> REVIEW
+```
+
+For user-facing changes:
+
+- Korean content is visually primary; English is assistance.
+- Watch defaults to video + Korean transcript.
+- Selecting a transcript sentence pauses playback and opens contextual explanation.
+- Watch explanations should be contextual overlays/popovers rather than a permanently visible third information panel.
+- Study mode may devote persistent space to deeper explanation.
+- Prefer meaningful phrase chunks over immediately splitting every sentence into isolated words/morphemes.
+- Grammar, nuance, morphology, and examples should use progressive disclosure.
+- Review should preserve original video/source context where practical.
+- Assistance is learner-driven; do not proactively interrupt playback because something appears difficult.
+- Avoid gamification-first patterns, generic SaaS dashboards, excessive cards, and provider-branded AI surfaces.
+- Mobile web must remain usable, but do not weaken the canonical desktop workspace solely for mobile parity.
+
+`DESIGN.md` contains the full interaction and visual rules. Do not infer a replacement design language from shadcn, Tailwind, or another component library.
 
 ## Architecture constraints
 
@@ -148,13 +185,18 @@ For V0.1, prioritize the vertical slice:
 ```text
 Paste YouTube URL
 -> transcript
--> synced transcript viewer
+-> synced Watch workspace
 -> click Korean sentence
--> structured contextual explanation
+-> pause playback
+-> contextual structured explanation
 -> local cache
+-> phrase learning
+-> contextual review
 ```
 
 Do not add native mobile, accounts, cloud sync, social features, achievements, pronunciation coaching, TOPIK features, or multi-language support unless explicitly requested.
+
+Do not broaden a feature into a full mobile redesign while mobile-specific UX remains KIV.
 
 ## Code quality
 
@@ -165,14 +207,23 @@ Do not add native mobile, accounts, cloud sync, social features, achievements, p
 - Avoid speculative abstractions that are not needed by the current backlog item.
 - Keep provider-specific code out of domain packages.
 - Never commit secrets or API keys.
+- Prefer domain-specific UI components for canonical interactions rather than repeated one-off compositions of generic primitives.
 
 ## Documentation updates
 
 Update documentation in the same change when implementation materially changes:
 - public behavior;
+- UX behavior or canonical screen hierarchy;
+- visual/design-system rules;
 - architecture;
 - domain interfaces;
 - backlog completion state.
+
+Use the appropriate source of truth:
+- product behavior/intent -> `docs/PRODUCT.md`;
+- visual/interaction design -> `DESIGN.md`;
+- implementation boundaries -> `docs/ARCHITECTURE.md`;
+- execution status/remaining work -> `docs/BACKLOG.md`.
 
 Do not rewrite product direction without explicit instruction.
 
@@ -180,12 +231,12 @@ Do not rewrite product direction without explicit instruction.
 
 When two agents' changes conflict:
 1. preserve the behavior required by `PRODUCT.md`;
-2. preserve the boundaries in `ARCHITECTURE.md`;
-3. preserve completed acceptance criteria from both tasks;
-4. do not mark either task complete until the merged result is re-verified.
+2. preserve the UX/design rules in `DESIGN.md`;
+3. preserve the boundaries in `ARCHITECTURE.md`;
+4. preserve completed acceptance criteria from both tasks where they remain compatible with current product direction;
+5. do not mark either task complete until the merged result is re-verified.
 
 The merged branch, not an isolated agent branch, is the final truth.
-
 
 ## Repository operating rules
 
@@ -228,6 +279,7 @@ After every CI failure:
 - Add a regression test in the package that owns every bug fix.
 - Test observable behavior rather than implementation details.
 - For user-visible flows, run the `.agents/skills/e2e-python-playwright` diagnostic when relevant and follow its cleanup rules.
+- Compare user-visible results against relevant `DESIGN.md` ASCII references and interaction rules; intentional deviations must be justified in the PR.
 - Do not weaken or delete a failing test without explicit PR justification.
 
 ### PR readiness
@@ -237,6 +289,7 @@ Every PR body must include:
 - verification commands and results;
 - omitted verification and why;
 - migrations, user-visible behavior, or compatibility risks;
+- UX/design impact for user-facing changes;
 - remaining work, if any.
 
 Do not merge your own PR unless the user explicitly asks.
