@@ -33,3 +33,17 @@ test("timed-text provider exposes rate-limit and malformed-response failures", a
  const track=encodeURIComponent(JSON.stringify({languageCode:"ko",kind:"manual"}));
  await assert.rejects(()=>malformed.fetchTrack("video",track),/invalid transcript response/);
 });
+test("falls back to caption tracks embedded in the watch page", async()=> {
+ let requestCount=0;
+ const watchPage='<script>var ytInitialPlayerResponse = {"captions":{"playerCaptionsTracklistRenderer":{"captionTracks":[{"baseUrl":"https://www.youtube.com/api/timedtext?v=video%26lang=ko","languageCode":"ko","name":{"simpleText":"Korean"}}]}}};</script>';
+ const provider=new YouTubeTimedTextProvider({fetch:async(url)=>{
+   requestCount+=1;
+   if (requestCount===1) return new Response("");
+   assert.equal(String(url),"https://www.youtube.com/watch?v=video");
+   return new Response(watchPage);
+ }});
+ const tracks=await provider.listTracks("video");
+ assert.equal(tracks.length,1);
+ assert.equal(tracks[0].languageCode,"ko");
+ assert.equal(tracks[0].kind,"manual");
+});
