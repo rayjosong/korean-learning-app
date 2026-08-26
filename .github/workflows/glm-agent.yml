@@ -15,7 +15,6 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
-      id-token: write
 
     steps:
       - name: Select GLM model
@@ -51,9 +50,11 @@ jobs:
         uses: anomalyco/opencode/github@latest
         env:
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: zai-coding-plan/${{ steps.model.outputs.model }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          mentions: /glm
+          use_github_token: true
           prompt: |
             Implement GitHub issue #${{ github.event.issue.number }}.
 
