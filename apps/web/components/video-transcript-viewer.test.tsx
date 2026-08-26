@@ -6,8 +6,8 @@ import { VideoTranscriptViewer } from "./video-transcript-viewer.tsx";
 import type { TranscriptSegment } from "@/lib/transcript";
 
 const mockSegments: readonly TranscriptSegment[] = [
-  { id: "s1", startTimeMs: 0, durationMs: 1000, text: "안녕하세요" },
-  { id: "s2", startTimeMs: 1000, durationMs: 1000, text: "반갑습니다" }
+  { id: "s1", startTimeMs: 0, endTimeMs: 1000, text: "안녕하세요" },
+  { id: "s2", startTimeMs: 1000, endTimeMs: 2000, text: "반갑습니다" }
 ];
 
 test("VideoTranscriptViewer defaults to Watch mode or reflects the mode prop", () => {
