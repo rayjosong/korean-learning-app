@@ -2,15 +2,16 @@
 
 import { useMemo, useState } from "react";
 
-import { ExplanationPanel } from "@/components/explanation-panel";
-import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { ClozeReviewPanel } from "@/components/cloze-review-panel";
+import { ExplanationPanel } from "@/components/explanation-panel";
+import { LearnerProfilePanel } from "@/components/learner-profile-panel";
+import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
 import { withExplanationCache } from "@/lib/explanation-cache";
 import type { TranscriptSegment } from "@/lib/transcript";
-import { useSentenceExplanation } from "@/lib/use-sentence-explanation";
 import { useLearnerItem } from "@/lib/use-learner-item";
+import { useSentenceExplanation } from "@/lib/use-sentence-explanation";
 import { useWordExplanation } from "@/lib/use-word-explanation";
 import { clearExplanationCache, ExplanationDatabase } from "@korean-learning/storage";
 
@@ -169,7 +170,13 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
           }}
           onUndo={() => void undoMarkKnown().then(() => setHistoryRevision((revision) => revision + 1))}
         />
-        <ClozeReviewPanel database={cacheDatabase} refreshKey={historyRevision} onReviewComplete={() => setHistoryRevision((revision) => revision + 1)} />\n        <LearningHistoryPanel database={cacheDatabase} refreshKey={historyRevision} />
+        <ClozeReviewPanel
+          database={cacheDatabase}
+          refreshKey={historyRevision}
+          onReviewComplete={() => setHistoryRevision((revision) => revision + 1)}
+        />
+        <LearnerProfilePanel database={cacheDatabase} refreshKey={historyRevision} />
+        <LearningHistoryPanel database={cacheDatabase} refreshKey={historyRevision} />
       </div>
     </div>
   );
