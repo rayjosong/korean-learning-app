@@ -73,6 +73,7 @@ Required:
 - basic contextual SRS;
 - BYO AI key;
 - OpenAI-compatible provider first;
+- locally persistent AI provider settings after first setup;
 - export/import.
 
 ## Out of scope for V0.1

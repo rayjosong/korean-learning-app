@@ -32,6 +32,7 @@ export class ExplanationDatabase extends Dexie {
   learningItems!: Table<LearningItem, string>;
   learningContexts!: Table<LearningContextRecord, string>;
   reviewRecords!: Table<ReviewRecord, string>;
+  aiProviderSettings!: Table<import("./ai-settings.ts").AiProviderSettingsRecord, string>;
 
   constructor(name = "korean-learning") {
     super(name);
@@ -50,6 +51,14 @@ export class ExplanationDatabase extends Dexie {
       learningItems: "id, text, lastSeenAt",
       learningContexts: "id, itemId, createdAt",
       reviewRecords: "id, itemId, reviewedAt, mode"
+    });
+    this.version(6).stores({
+      explanations: "key, createdAt",
+      wordExplanations: "key",
+      learningItems: "id, text, lastSeenAt",
+      learningContexts: "id, itemId, createdAt",
+      reviewRecords: "id, itemId, reviewedAt, mode",
+      aiProviderSettings: "id"
     });
   }
 }

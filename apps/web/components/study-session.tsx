@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ClozeReviewPanel } from "@/components/cloze-review-panel";
+import { AiProviderSettings } from "@/components/ai-provider-settings";
 import { ExplanationPanel } from "@/components/explanation-panel";
 import { LearnerProfilePanel } from "@/components/learner-profile-panel";
 import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
+import { loadAiSettings, removeAiSettings, saveAiSettings, type AiSettings } from "@/lib/ai-settings";
 import { withExplanationCache } from "@/lib/explanation-cache";
 import type { TranscriptSegment } from "@/lib/transcript";
 import { useLearnerItem } from "@/lib/use-learner-item";
@@ -22,24 +24,35 @@ export interface StudySessionProps {
 }
 
 export function StudySession({ videoId, segments }: StudySessionProps) {
-  const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("gpt-4o-mini");
-  const [baseUrl, setBaseUrl] = useState("");
+  const [settings, setSettings] = useState<AiSettings>({ apiKey: "", model: "gpt-4o-mini" });
+  const [settingsReady, setSettingsReady] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
   const [selectedSegment, setSelectedSegment] = useState<TranscriptSegment>();
   const [historyRevision, setHistoryRevision] = useState(0);
   const [cacheDatabase] = useState(
     () => (typeof window === "undefined" ? undefined : new ExplanationDatabase())
   );
 
+  useEffect(() => {
+    if (!cacheDatabase) return;
+    void loadAiSettings(cacheDatabase).then((stored) => {
+      if (stored) {
+        setSettings(stored);
+        setSettingsSaved(true);
+      }
+      setSettingsReady(true);
+    });
+  }, [cacheDatabase]);
+
   const languageModel = useMemo(() => {
-    if (!apiKey.trim() || !model.trim()) return null;
+    if (!settings.apiKey.trim() || !settings.model.trim()) return null;
     return withExplanationCache({
-      model: createLanguageModel({ apiKey, model, baseUrl }),
+      model: createLanguageModel(settings),
       database: cacheDatabase,
       provider: "openai-compatible",
-      modelName: model.trim()
+      modelName: settings.model.trim()
     });
-  }, [apiKey, model, baseUrl, cacheDatabase]);
+  }, [settings, cacheDatabase]);
   const { state, explain } = useSentenceExplanation(languageModel);
   const {
     state: wordState,
@@ -50,7 +63,7 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
     database: cacheDatabase,
     videoId,
     provider: "openai-compatible",
-    modelName: model.trim()
+    modelName: settings.model.trim()
   });
   const {
     state: learnerState,
@@ -98,41 +111,27 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
       </div>
 
       <div className="flex flex-col gap-6">
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="AI provider settings">
-          <h2 className="mb-1 font-semibold text-white">AI provider</h2>
-          <p className="mb-3 text-xs leading-5 text-slate-500">
-            Bring your own key for an OpenAI-compatible provider. The key stays in this tab and is never stored.
-          </p>
-          <label className="block text-xs font-medium text-slate-400" htmlFor="ai-api-key">API key</label>
-          <input
-            id="ai-api-key"
-            type="password"
-            autoComplete="off"
-            value={apiKey}
-            onChange={(event) => setApiKey(event.target.value)}
-            placeholder="sk-…"
-            className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-sky-400 focus:outline-none"
-          />
-          <label className="mt-3 block text-xs font-medium text-slate-400" htmlFor="ai-model">Model</label>
-          <input
-            id="ai-model"
-            type="text"
-            value={model}
-            onChange={(event) => setModel(event.target.value)}
-            placeholder="gpt-4o-mini"
-            className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-sky-400 focus:outline-none"
-          />
-          <label className="mt-3 block text-xs font-medium text-slate-400" htmlFor="ai-base-url">
-            Base URL <span className="text-slate-600">(optional)</span>
-          </label>
-          <input
-            id="ai-base-url"
-            type="text"
-            value={baseUrl}
-            onChange={(event) => setBaseUrl(event.target.value)}
-            placeholder="https://api.openai.com/v1"
-            className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-sky-400 focus:outline-none"
-          />
+        <AiProviderSettings
+          settings={settings}
+          ready={settingsReady}
+          saved={settingsSaved}
+          onChange={(next) => {
+            setSettings(next);
+            setSettingsSaved(false);
+          }}
+          onSave={() => {
+            if (!cacheDatabase) return;
+            void saveAiSettings(cacheDatabase, settings).then(() => setSettingsSaved(true));
+          }}
+          onRemove={() => {
+            if (!cacheDatabase) return;
+            void removeAiSettings(cacheDatabase).then(() => {
+              setSettings({ apiKey: "", model: "gpt-4o-mini" });
+              setSettingsSaved(false);
+            });
+          }}
+        />
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Explanation cache settings">
           <button
             type="button"
             disabled={!cacheDatabase}
