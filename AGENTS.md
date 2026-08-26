@@ -303,6 +303,7 @@ Every PR body must include:
 - the backlog item and acceptance-criteria mapping;
 - verification commands and results;
 - browser E2E / visual / accessibility verification when applicable;
+- **visual QA screenshots embedded directly in the PR description** (essential for all user-facing changes);
 - omitted verification and why;
 - migrations, user-visible behavior, or compatibility risks;
 - UX/design impact for user-facing changes;
