@@ -25,10 +25,17 @@ export class YouTubeTimedTextProvider implements YouTubeCaptionProvider {
   }
 
   async listTracks(videoId: string): Promise<YouTubeCaptionTrack[]> {
-    const response = await this.fetcher(`${this.endpoint}?type=list&v=${encodeURIComponent(videoId)}`);
+    const response = await this.fetcher(\`\${this.endpoint}?type=list&v=\${encodeURIComponent(videoId)}\`);
     if (!response.ok) throw providerResponseError(response.status);
     const xml = await response.text();
-    return parseTrackList(xml);
+    const tracks = parseTrackList(xml);
+    return tracks.length > 0 ? tracks : this.listWatchPageTracks(videoId);
+  }
+
+  private async listWatchPageTracks(videoId: string): Promise<YouTubeCaptionTrack[]> {
+    const response = await this.fetcher(\`https://www.youtube.com/watch?v=\${encodeURIComponent(videoId)}\`);
+    if (!response.ok) throw providerResponseError(response.status);
+    return parseWatchPageTracks(await response.text());
   }
 
   async fetchTrack(videoId: string, trackId: string): Promise<YouTubeCaptionSegment[]> {
@@ -42,7 +49,11 @@ export class YouTubeTimedTextProvider implements YouTubeCaptionProvider {
     if (track.name) params.set("name", track.name);
     if (track.vssId) params.set("vss_id", track.vssId);
 
-    const response = await this.fetcher(`${this.endpoint}?${params.toString()}`);
+    const url = track.baseUrl ? new URL(track.baseUrl) : new URL(this.endpoint);
+    if (!track.baseUrl) params.forEach((value, key) => url.searchParams.set(key, value));
+    else url.searchParams.set("fmt", "json3");
+
+    const response = await this.fetcher(url.toString());
     if (!response.ok) throw providerResponseError(response.status);
     return parseTimedText(await response.text());
   }
@@ -80,7 +91,7 @@ function normalize(caption: YouTubeCaptionSegment, index: number): TranscriptSeg
 }
 function providerError(error: unknown): TranscriptSourceError {
   const message = error instanceof Error ? error.message : "Unknown provider failure.";
-  return new TranscriptSourceError("PROVIDER_ERROR", `YouTube caption provider failed: ${message}`);
+  return new TranscriptSourceError("PROVIDER_ERROR", \`YouTube caption provider failed: \${message}\`);
 }
 
 interface TimedTextTrack {
@@ -88,6 +99,7 @@ interface TimedTextTrack {
   kind: "manual" | "auto";
   name?: string;
   vssId?: string;
+  baseUrl?: string;
 }
 
 function parseTrackList(xml: string): YouTubeCaptionTrack[] {
@@ -105,6 +117,53 @@ function parseTrackList(xml: string): YouTubeCaptionTrack[] {
       return { id: encodeTrackId(track), languageCode: track.languageCode, kind: track.kind };
     })
     .filter((track): track is YouTubeCaptionTrack => Boolean(track));
+}
+
+function parseWatchPageTracks(html: string): YouTubeCaptionTrack[] {
+  const playerResponse = extractJsonObject(html, "ytInitialPlayerResponse") as {
+    captions?: { playerCaptionsTracklistRenderer?: { captionTracks?: unknown } };
+  } | undefined;
+  const captionTracks = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  if (!Array.isArray(captionTracks)) return [];
+
+  return captionTracks.flatMap((candidate) => {
+    if (!candidate || typeof candidate !== "object") return [];
+    const track = candidate as { languageCode?: unknown; kind?: unknown; name?: { simpleText?: unknown }; baseUrl?: unknown };
+    if (typeof track.languageCode !== "string" || typeof track.baseUrl !== "string") return [];
+    const normalized: TimedTextTrack = {
+      languageCode: track.languageCode,
+      kind: track.kind === "asr" ? "auto" : "manual",
+      baseUrl: track.baseUrl,
+      ...(track.name && typeof track.name.simpleText === "string" ? { name: track.name.simpleText } : {})
+    };
+    return [{ id: encodeTrackId(normalized), languageCode: normalized.languageCode, kind: normalized.kind }];
+  });
+}
+
+function extractJsonObject(source: string, marker: string): unknown {
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex < 0) return undefined;
+  const start = source.indexOf("{", markerIndex);
+  if (start < 0) return undefined;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < source.length; index += 1) {
+    const character = source[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === '"') inString = false;
+      continue;
+    }
+    if (character === '"') { inString = true; continue; }
+    if (character === "{") depth += 1;
+    else if (character === "}" && --depth === 0) {
+      try { return JSON.parse(source.slice(start, index + 1)); } catch { return undefined; }
+    }
+  }
+  return undefined;
 }
 
 function parseTimedText(json: string): YouTubeCaptionSegment[] {
@@ -158,5 +217,5 @@ function decodeTrackId(trackId: string): TimedTextTrack {
 
 function providerResponseError(status: number): Error {
   if (status === 429) return new Error("YouTube caption provider rate limited the request.");
-  return new Error(`YouTube caption provider returned HTTP ${status}.`);
+  return new Error(\`YouTube caption provider returned HTTP \${status}.\`);
 }
