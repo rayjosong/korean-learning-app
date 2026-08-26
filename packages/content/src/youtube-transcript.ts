@@ -18,6 +18,7 @@ export interface YouTubeTimedTextProviderOptions {
 export class YouTubeTimedTextProvider implements YouTubeCaptionProvider {
   private readonly fetcher: typeof globalThis.fetch;
   private readonly endpoint: string;
+  private readonly watchPageContexts = new Map<string, WatchPageContext>();
 
   constructor(options: YouTubeTimedTextProviderOptions = {}) {
     this.fetcher = options.fetch ?? globalThis.fetch;
@@ -35,27 +36,91 @@ export class YouTubeTimedTextProvider implements YouTubeCaptionProvider {
   private async listWatchPageTracks(videoId: string): Promise<YouTubeCaptionTrack[]> {
     const response = await this.fetcher(`https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`);
     if (!response.ok) throw providerResponseError(response.status);
-    return parseWatchPageTracks(await response.text());
+    const html = await response.text();
+    const context = extractWatchPageContext(html);
+    this.watchPageContexts.set(videoId, context);
+    return parseWatchPageTracks(html);
   }
 
   async fetchTrack(videoId: string, trackId: string): Promise<YouTubeCaptionSegment[]> {
     const track = decodeTrackId(trackId);
-    const params = new URLSearchParams({
-      v: videoId,
-      lang: track.languageCode,
-      fmt: "json3"
+    let body = "";
+    try {
+      const params = new URLSearchParams({
+        v: videoId,
+        lang: track.languageCode,
+        fmt: "json3"
+      });
+      if (track.kind === "auto") params.set("kind", "asr");
+      if (track.name) params.set("name", track.name);
+      if (track.vssId) params.set("vss_id", track.vssId);
+
+      const url = track.baseUrl ? new URL(track.baseUrl) : new URL(this.endpoint);
+      if (!track.baseUrl) params.forEach((value, key) => url.searchParams.set(key, value));
+      else url.searchParams.set("fmt", "json3");
+
+      const response = await this.fetcher(url.toString());
+      if (response.ok) {
+        body = await response.text();
+      }
+    } catch {
+      // Ignore error to allow fallback
+    }
+
+    if (!body || body.trim().length === 0) {
+      return this.fetchTrackViaGetPanel(videoId, track);
+    }
+    return parseTimedText(body);
+  }
+
+  private async fetchTrackViaGetPanel(videoId: string, track: TimedTextTrack): Promise<YouTubeCaptionSegment[]> {
+    let context = this.watchPageContexts.get(videoId);
+    if (!context) {
+      const response = await this.fetcher(`https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`);
+      if (!response.ok) throw providerResponseError(response.status);
+      const html = await response.text();
+      context = extractWatchPageContext(html);
+      this.watchPageContexts.set(videoId, context);
+    }
+
+    if (!context.apiKey || !context.getPanelParams) {
+      throw new Error("YouTube returned an invalid transcript response.");
+    }
+
+    const url = `https://www.youtube.com/youtubei/v1/get_panel?key=${context.apiKey}&prettyPrint=false`;
+    const payload = {
+      context: {
+        client: {
+          clientName: "WEB",
+          clientVersion: context.clientVersion,
+          hl: track.languageCode,
+          gl: "KR",
+          utcOffsetMinutes: 540,
+          ...(context.visitorData ? { visitorData: context.visitorData } : {})
+        }
+      },
+      panelId: "PAmodern_transcript_view",
+      params: context.getPanelParams
+    };
+
+    const response = await this.fetcher(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-YouTube-Client-Name": "1",
+        "X-YouTube-Client-Version": context.clientVersion,
+        ...(context.visitorData ? { "X-Goog-Visitor-Id": context.visitorData } : {})
+      },
+      body: JSON.stringify(payload)
     });
-    if (track.kind === "auto") params.set("kind", "asr");
-    if (track.name) params.set("name", track.name);
-    if (track.vssId) params.set("vss_id", track.vssId);
 
-    const url = track.baseUrl ? new URL(track.baseUrl) : new URL(this.endpoint);
-    if (!track.baseUrl) params.forEach((value, key) => url.searchParams.set(key, value));
-    else url.searchParams.set("fmt", "json3");
-
-    const response = await this.fetcher(url.toString());
     if (!response.ok) throw providerResponseError(response.status);
-    return parseTimedText(await response.text());
+    const data = await response.json();
+    const segments = extractTranscriptFromGetPanel(data);
+    if (segments.length === 0) {
+      throw new Error("YouTube returned an invalid transcript response.");
+    }
+    return segments;
   }
 }
 export class TranscriptSourceError extends Error {
@@ -218,4 +283,87 @@ function decodeTrackId(trackId: string): TimedTextTrack {
 function providerResponseError(status: number): Error {
   if (status === 429) return new Error("YouTube caption provider rate limited the request.");
   return new Error(`YouTube caption provider returned HTTP ${status}.`);
+}
+
+interface WatchPageContext {
+  apiKey: string | null;
+  clientVersion: string;
+  visitorData: string | null;
+  getPanelParams: string | null;
+}
+
+function extractWatchPageContext(html: string): WatchPageContext {
+  const apiKeyMatch = html.match(/"INNERTUBE_API_KEY"\s*:\s*"([^"]+)"/) || html.match(/"apiKey"\s*:\s*"([^"]+)"/);
+  const apiKey = apiKeyMatch ? apiKeyMatch[1] : null;
+
+  const clientVersionMatch = html.match(/"clientVersion"\s*:\s*"([^"]+)"/);
+  const clientVersion = clientVersionMatch ? clientVersionMatch[1] : "2.20260824.10.00";
+
+  const visitorDataMatch = html.match(/"visitorData"\s*:\s*"([^"]+)"/);
+  const visitorData = visitorDataMatch ? visitorDataMatch[1] : null;
+
+  const targetTagIndex = html.indexOf('"tag":"PAmodern_transcript_view"');
+  let getPanelParams: string | null = null;
+  if (targetTagIndex >= 0) {
+    const searchArea = html.substring(targetTagIndex, targetTagIndex + 500);
+    const paramsMatch = searchArea.match(/"params"\s*:\s*"([^"]+)"/);
+    if (paramsMatch) {
+      getPanelParams = paramsMatch[1];
+    }
+  }
+
+  return { apiKey, clientVersion, visitorData, getPanelParams };
+}
+
+function parseTimestampToMs(timestamp: string): number {
+  const parts = timestamp.split(":").map(Number);
+  if (parts.some(isNaN)) return 0;
+  let seconds = 0;
+  if (parts.length === 2) {
+    seconds = parts[0] * 60 + parts[1];
+  } else if (parts.length === 3) {
+    seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+  } else if (parts.length === 1) {
+    seconds = parts[0];
+  }
+  return seconds * 1000;
+}
+
+function extractTranscriptFromGetPanel(data: any): YouTubeCaptionSegment[] {
+  const segments: { text: string; startTimeMs: number }[] = [];
+
+  const traverse = (obj: any) => {
+    if (!obj || typeof obj !== "object") return;
+    if (Array.isArray(obj)) {
+      for (const item of obj) traverse(item);
+    } else {
+      if (obj.transcriptSegmentViewModel) {
+        const vm = obj.transcriptSegmentViewModel;
+        const text = vm.simpleText;
+        const timestamp = vm.timestamp;
+        if (typeof text === "string" && typeof timestamp === "string") {
+          segments.push({
+            text,
+            startTimeMs: parseTimestampToMs(timestamp)
+          });
+        }
+      } else {
+        for (const value of Object.values(obj)) {
+          traverse(value);
+        }
+      }
+    }
+  };
+
+  traverse(data);
+
+  return segments.map((seg, index) => {
+    const nextSeg = segments[index + 1];
+    const endTimeMs = nextSeg ? nextSeg.startTimeMs : seg.startTimeMs + 5000;
+    return {
+      text: seg.text,
+      startTimeMs: seg.startTimeMs,
+      endTimeMs
+    };
+  });
 }
