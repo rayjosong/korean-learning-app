@@ -5,8 +5,10 @@
 - The top-level checkbox is the canonical completion state.
 - A top-level item may be checked only when every acceptance criterion is checked and verified.
 - Agents must follow `/AGENTS.md`.
+- User-facing work must also follow `/DESIGN.md`.
 - Multiple agents must work on different assigned items.
 - Work in dependency order unless explicitly overridden.
+- If newer product/design direction refines an already-completed feature, keep the historical item complete and create a new refinement item for the remaining delta.
 
 ## Milestone 0 — Project foundation
 
@@ -135,6 +137,8 @@ Acceptance criteria:
 - [x] Error state.
 - [x] Integrates from transcript click.
 - [x] Reasonably responsive.
+
+Note: this records the original explanation UI. The newer canonical Watch/Study interaction is tracked in #29 rather than rewriting completed history.
 
 Depends on: #5, #7
 
@@ -308,6 +312,8 @@ Acceptance criteria:
 - [ ] Review success.
 - [ ] Explanation frequency.
 - [ ] Content studied.
+- [ ] Comprehension-oriented information is visually prioritized over vanity metrics.
+- [ ] Layout follows `DESIGN.md` rather than a generic KPI-card dashboard.
 
 Depends on: #18
 
@@ -319,6 +325,7 @@ Acceptance criteria:
 - [ ] Previously studied content detected.
 - [ ] Progress can be compared across time.
 - [ ] Replay offered.
+- [ ] Comparison can communicate `Then` vs `Now` comprehension when data supports it.
 
 Depends on: #19, #21
 
@@ -327,10 +334,14 @@ Depends on: #19, #21
 ### [ ] #23 Continue-learning home screen
 
 Acceptance criteria:
-- [ ] Resume unfinished video.
+- [ ] Resume unfinished/recent video.
 - [ ] Due review surfaced.
 - [ ] Recent content surfaced.
+- [ ] Recommended content can be surfaced when recommendation data exists.
 - [ ] New-content entry point exists.
+- [ ] Home mixes continuation, review, and content discovery in one calm hierarchy.
+- [ ] Home answers "What should I do next?" and does not become a generic metrics dashboard.
+- [ ] Desktop layout follows `DESIGN.md` reference hierarchy.
 
 Depends on: #13, #15
 
@@ -411,21 +422,89 @@ Acceptance criteria:
 
 Depends on: #27
 
+## Milestone 8 — Canonical desktop learning UX
+
+> Consolidate existing capabilities into the desktop-first Watch -> Study -> Review experience defined by `PRODUCT.md` and `DESIGN.md`.
+
+### [ ] #29 Watch / Study media workspace
+
+Acceptance criteria:
+- [ ] Desktop Watch layout uses persistent video + Korean transcript as dominant surfaces.
+- [ ] Watch is the default mode when opening a video.
+- [ ] Guided Watch does not persistently show English translation.
+- [ ] Clicking a transcript sentence pauses playback automatically.
+- [ ] Selected sentence opens an anchored contextual breakdown popover/overlay in Watch.
+- [ ] Explanation preserves nearby transcript context.
+- [ ] Natural meaning is prioritized over literal translation.
+- [ ] Meaningful phrase chunks precede morphology-first decomposition.
+- [ ] Grammar, nuance, and examples use progressive disclosure.
+- [ ] Learner can switch Watch/Study without losing video/transcript context.
+- [ ] Study gives persistent space to selected sentence and deeper explanation.
+- [ ] `Learn this` / `I know this` remain available in relevant phrase context.
+- [ ] Saving shows low-friction confirmation without a configuration modal.
+- [ ] Long transcripts remain usable.
+- [ ] Keyboard/focus behavior and selected/current-playback states are accessible.
+- [ ] Rendered desktop flow is verified against `DESIGN.md` ASCII references.
+
+Depends on: #5, #8, #10, #11, #12
+
+---
+
+### [ ] #30 Assistance levels
+
+Acceptance criteria:
+- [ ] Supports `full`, `guided`, and `immersion`.
+- [ ] Guided is default.
+- [ ] Assistance changes presentation, not learner knowledge state.
+- [ ] Full makes translation/help easier to reveal while keeping Korean primary.
+- [ ] Guided keeps Korean first and reveals concise help after interaction.
+- [ ] Immersion is Korean-only by default and requires intentional requests for English help.
+- [ ] No assistance level proactively pauses playback because content appears difficult.
+- [ ] Preference persists locally.
+- [ ] Provider settings remain separate from assistance settings.
+
+Depends on: #29
+
+---
+
+### [ ] #31 Original-context video review
+
+Acceptance criteria:
+- [ ] Review resolves stored source video, transcript segment, and timestamp when available.
+- [ ] Review attempts to present/replay a short source clip around the learned context.
+- [ ] Korean sentence/phrase is shown before answer reveal.
+- [ ] Learner recalls meaning before reveal.
+- [ ] Reveal shows natural meaning and useful source context.
+- [ ] Learner can mark at least `Again` / `Got it` or equivalent failure/success.
+- [ ] Scheduler updates remain independent from clip playback success.
+- [ ] If clip playback is unavailable, review falls back to sentence + source timestamp/context.
+- [ ] Existing cloze behavior is not silently removed without documented replacement/compatibility behavior.
+- [ ] Rendered Review flow is verified against `DESIGN.md`.
+
+Depends on: #15, #29
+
 ## Later — not V0.1
 
 - AI conversation missions.
 - Post-conversation correction and retry.
 - Pronunciation flagging only when misunderstanding is likely.
-- Recommended Korean content feed.
+- Rich recommended Korean content feed beyond the V0.1 home guidance surface.
 - Browser extension.
 - Music/lyrics ingestion.
-- Mobile app.
+- Native mobile app.
+- Mobile-first redesign beyond functional responsive web.
 - Optional sync.
 - More AI providers.
 - Advanced learner model / FSRS.
 
-## Recommended first implementation order
+## Current product integration priority
 
-`#1 -> #2 -> #3/#6 -> #4/#7 -> #5 -> #8 -> #9`
+Foundational capabilities exist, but they still need to become one coherent learning experience:
 
-After #9, stop and use the product on a real Korean video before expanding scope.
+```text
+#29 Watch / Study media workspace
+ -> #30 Assistance levels
+ -> #31 Original-context video review
+```
+
+Continue other unblocked work according to dependencies. Do not mark UX refinement complete merely because older underlying capabilities already exist.
