@@ -74,8 +74,9 @@ export function VideoTranscriptViewer({
   const activeSegmentRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    if (selectedSegmentId) return;
     activeSegmentRef.current?.scrollIntoView({ block: "nearest" });
-  }, [currentActiveSegmentId]);
+  }, [currentActiveSegmentId, selectedSegmentId]);
 
   function seekToSegment(segment: TranscriptSegment) {
     currentSeekTo(segment.startTimeMs / 1000);
@@ -122,6 +123,7 @@ export function VideoTranscriptViewer({
                           : "text-slate-300 hover:bg-[#FAF9F5]/5 hover:text-white"
                     }`}
                     aria-current={isActive ? "true" : undefined}
+                    aria-pressed={isSelected}
                     onClick={() => {
                       if (mode === "watch") {
                         currentSeekTo(segment.startTimeMs / 1000);
@@ -246,10 +248,10 @@ function StudyTranscriptContext({
           const isSelected = segment.id === selectedSegmentId;
           const isActive = segment.id === activeSegmentId;
           return (
+            <div key={segment.id} role="listitem">
             <button
-              key={segment.id}
               type="button"
-              role="listitem"
+              aria-pressed={isSelected}
               onClick={() => onSelect?.(segment)}
               className={`w-full rounded-xl border-l-2 px-3 py-3 text-left transition-colors ${
                 isSelected
@@ -262,6 +264,7 @@ function StudyTranscriptContext({
               <span className="block text-xs text-sky-300">{formatTimestamp(segment.startTimeMs)}</span>
               <span lang="ko" className="mt-1 block leading-6 font-medium">{segment.text}</span>
             </button>
+            </div>
           );
         })}
       </div>
