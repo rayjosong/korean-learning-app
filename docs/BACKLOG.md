@@ -483,6 +483,40 @@ Acceptance criteria:
 
 Depends on: #15, #29
 
+---
+
+### [ ] #32 Cross-surface visual system consistency
+
+Apply the existing `DESIGN.md` Warm Korean Editorial direction consistently across Home, Watch, Study, Review, Progress, and Settings. This is a visual-system refinement, not a new product direction.
+
+GitHub issue: [#65](https://github.com/rayjosong/korean-learning-app/issues/65)
+
+Acceptance criteria:
+- [ ] Named semantic tokens cover canvas, surfaces, text, borders, primary actions, selection, current playback, success/known, warning, and error states.
+- [ ] User-facing components use semantic tokens or documented design-system utilities instead of mixing legacy dark-theme `slate`, `sky`, `emerald`, and repeated raw hex colours.
+- [ ] Watch keeps the video and Korean transcript visually dominant, with English and supporting guidance subordinate.
+- [ ] Selected and currently playing transcript sentences remain visually distinct and are not communicated by colour alone.
+- [ ] Persimmon is reserved for primary actions, focus, selection, and learning emphasis; jade is reserved for success/known states; warm yellow is reserved for current playback or temporary highlights.
+- [ ] Revisit, difficulty, review, progress, history, provider settings, and learner-profile surfaces share the same light-theme text, surface, border, radius, and depth rules.
+- [ ] Cards and shadows follow `DESIGN.md`: whitespace and hairlines provide normal grouping, while stronger shadows are limited to temporary overlays/popovers.
+- [ ] Loading, empty, success, warning, and error states meet WCAG AA contrast where applicable and retain clear non-colour cues.
+- [ ] Existing Watch/Study session, transcript, explanation, learning-action, review, progress, and settings behavior does not regress during the visual migration.
+- [ ] Deterministic visual coverage protects Home, Watch default, Watch selected sentence, expanded explanation, Study, long transcript, compact desktop, Review, Progress, and Settings states where implemented.
+- [ ] Accessibility verification covers contrast, visible focus, keyboard operation, and selected-versus-playing state communication.
+- [ ] Rendered desktop flows are inspected against the canonical `DESIGN.md` references.
+- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` pass before the item is marked complete.
+
+Implementation plan:
+1. Reconcile any in-progress palette migration and preserve unrelated work.
+2. Promote the existing `DESIGN.md` palette into reusable semantic tokens and state styles.
+3. Complete Watch, including transcript, playback/selection states, mode controls, and contextual explanation.
+4. Complete Study, including persistent explanation, nearby context, learning actions, and feedback states.
+5. Migrate Review, Progress, history, difficulty/revisit guidance, learner profile, and Settings to the same system.
+6. Remove or document remaining direct colour values and legacy dark-theme utilities.
+7. Add deterministic visual and accessibility coverage, then run the full verification gate.
+
+Depends on: #29
+
 ## Later — not V0.1
 
 - AI conversation missions.
@@ -503,6 +537,7 @@ Foundational capabilities exist, but they still need to become one coherent lear
 
 ```text
 #29 Watch / Study media workspace
+ -> #32 Cross-surface visual system consistency
  -> #30 Assistance levels
  -> #31 Original-context video review
 ```
