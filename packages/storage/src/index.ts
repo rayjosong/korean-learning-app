@@ -2,6 +2,7 @@ import Dexie, { type Table } from "dexie";
 
 import type { SentenceExplanation, WordExplanation } from "@korean-learning/korean";
 import type { LearningContext, LearningItem, ReviewMode, ReviewOutcome } from "@korean-learning/learning-engine";
+import type { ContentProgressSnapshot } from "@korean-learning/learning-engine/revisit";
 
 /**
  * A cached sentence explanation.
@@ -33,6 +34,7 @@ export class ExplanationDatabase extends Dexie {
   learningContexts!: Table<LearningContextRecord, string>;
   reviewRecords!: Table<ReviewRecord, string>;
   studiedContent!: Table<StudiedContentRecord, string>;
+  contentProgressSnapshots!: Table<ContentProgressSnapshot, string>;
 
   constructor(name = "korean-learning") {
     super(name);
@@ -59,6 +61,15 @@ export class ExplanationDatabase extends Dexie {
       learningContexts: "id, itemId, createdAt",
       reviewRecords: "id, itemId, reviewedAt, mode",
       studiedContent: "videoId, firstStudiedAt, lastStudiedAt"
+    });
+    this.version(7).stores({
+      explanations: "key, createdAt",
+      wordExplanations: "key",
+      learningItems: "id, text, lastSeenAt",
+      learningContexts: "id, itemId, createdAt",
+      reviewRecords: "id, itemId, reviewedAt, mode",
+      studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+      contentProgressSnapshots: "id, videoId, capturedAt"
     });
   }
 }
@@ -247,6 +258,23 @@ export async function recordStudiedContent(
     firstStudiedAt: existing?.firstStudiedAt ?? input.studiedAt,
     lastStudiedAt: input.studiedAt
   });
+}
+
+export async function getContentProgressSnapshots(
+  database: ExplanationDatabase,
+  videoId: string
+): Promise<ContentProgressSnapshot[]> {
+  return database.contentProgressSnapshots
+    .where("videoId")
+    .equals(videoId)
+    .sortBy("capturedAt");
+}
+
+export async function putContentProgressSnapshot(
+  database: ExplanationDatabase,
+  snapshot: ContentProgressSnapshot
+): Promise<void> {
+  await database.contentProgressSnapshots.put(snapshot);
 }
 
 export interface ProgressSnapshotInput {

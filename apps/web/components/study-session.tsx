@@ -6,6 +6,7 @@ import { ClozeReviewPanel } from "@/components/cloze-review-panel";
 import { ExplanationPanel } from "@/components/explanation-panel";
 import { LearnerProfilePanel } from "@/components/learner-profile-panel";
 import { ProgressDashboard } from "@/components/progress-dashboard";
+import { RevisitNotice } from "@/components/revisit-notice";
 import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
@@ -20,14 +21,17 @@ import { clearExplanationCache, ExplanationDatabase, recordStudiedContent } from
 export interface StudySessionProps {
   videoId: string;
   segments: readonly TranscriptSegment[];
+  videoUrl?: string;
+  onReplay?: (videoUrl: string) => void;
 }
 
-export function StudySession({ videoId, segments }: StudySessionProps) {
+export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySessionProps) {
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState("gpt-4o-mini");
   const [baseUrl, setBaseUrl] = useState("");
   const [selectedSegment, setSelectedSegment] = useState<TranscriptSegment>();
   const [historyRevision, setHistoryRevision] = useState(0);
+  const [sessionId] = useState(() => crypto.randomUUID());
   const [cacheDatabase] = useState(
     () => (typeof window === "undefined" ? undefined : new ExplanationDatabase())
   );
@@ -90,6 +94,13 @@ export function StudySession({ videoId, segments }: StudySessionProps) {
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="flex flex-col gap-6">
+        <RevisitNotice
+          database={cacheDatabase}
+          videoId={videoId}
+          segments={segments}
+          sessionId={sessionId}
+          onReplay={videoUrl && onReplay ? () => onReplay(videoUrl) : undefined}
+        />
         <VideoDifficultyEstimate
           key={videoId}
           database={cacheDatabase}
