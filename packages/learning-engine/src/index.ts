@@ -177,6 +177,9 @@ export function markLearning(input: MarkLearningInput): MarkLearningResult {
 
 export type ReviewOutcome = "success" | "failure";
 
+/** The exercise format used for a completed review. */
+export type ReviewMode = "recognition" | "production" | "cloze";
+
 export interface ReviewSchedule {
   /** Whole-day spacing, kept explicit so it can be persisted by the caller. */
   intervalDays: number;
@@ -229,6 +232,8 @@ export interface ApplyReviewOutcomeInput {
   outcome: ReviewOutcome;
   schedule: ReviewSchedule;
   now: string;
+  /** Cloze is a recognition exercise because the learner selects the answer in context. */
+  mode?: ReviewMode;
 }
 
 /**
@@ -237,11 +242,17 @@ export interface ApplyReviewOutcomeInput {
  * small 0–100 scale so the learner model remains explainable in V0.1.
  */
 export function applyReviewOutcome(input: ApplyReviewOutcomeInput): LearningItem {
-  const recognitionDelta = input.outcome === "success" ? 10 : -10;
+  const confidenceDelta = input.outcome === "success" ? 10 : -10;
+  const updatesProductionConfidence = input.mode === "production";
 
   return {
     ...input.item,
-    recognitionConfidence: Math.max(0, Math.min(100, input.item.recognitionConfidence + recognitionDelta)),
+    recognitionConfidence: updatesProductionConfidence
+      ? input.item.recognitionConfidence
+      : Math.max(0, Math.min(100, input.item.recognitionConfidence + confidenceDelta)),
+    productionConfidence: updatesProductionConfidence
+      ? Math.max(0, Math.min(100, input.item.productionConfidence + confidenceDelta))
+      : input.item.productionConfidence,
     successes: input.item.successes + (input.outcome === "success" ? 1 : 0),
     failures: input.item.failures + (input.outcome === "failure" ? 1 : 0),
     encounters: input.item.encounters + 1,

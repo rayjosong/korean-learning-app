@@ -249,7 +249,7 @@ Depends on: #15
 
 ---
 
-### [ ] #17 Mixed review modes
+### [x] #17 Mixed review modes
 
 Acceptance criteria:
 - [ ] Recognition mode.
