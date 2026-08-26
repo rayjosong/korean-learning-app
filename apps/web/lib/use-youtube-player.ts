@@ -83,9 +83,10 @@ function loadYouTubeApi(): Promise<YouTubeNamespace> {
 export interface UseYouTubePlayerProps {
   videoId: string;
   segments: readonly TranscriptSegment[];
+  enabled?: boolean;
 }
 
-export function useYouTubePlayer({ videoId, segments }: UseYouTubePlayerProps) {
+export function useYouTubePlayer({ videoId, segments, enabled = true }: UseYouTubePlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const pendingSeekRef = useRef<number | null>(null);
@@ -95,6 +96,7 @@ export function useYouTubePlayer({ videoId, segments }: UseYouTubePlayerProps) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     setIsReady(false);
 
@@ -143,9 +145,10 @@ export function useYouTubePlayer({ videoId, segments }: UseYouTubePlayerProps) {
       playerRef.current = null;
       setIsReady(false);
     };
-  }, [videoId]);
+  }, [enabled, videoId]);
 
   useEffect(() => {
+    if (!enabled) return;
     const interval = window.setInterval(() => {
       const player = playerRef.current;
       if (!player || typeof player.getCurrentTime !== "function") return;
@@ -154,7 +157,7 @@ export function useYouTubePlayer({ videoId, segments }: UseYouTubePlayerProps) {
     }, 250);
 
     return () => window.clearInterval(interval);
-  }, [segments]);
+  }, [enabled, segments]);
 
   const seekTo = (seconds: number) => {
     const player = playerRef.current;

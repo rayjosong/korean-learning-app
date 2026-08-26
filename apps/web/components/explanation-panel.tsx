@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { SentenceExplanation } from "@korean-learning/ai";
 
 import type { TranscriptSegment } from "@/lib/transcript";
@@ -15,6 +16,7 @@ export interface ExplanationPanelProps {
   onMarkKnown?: () => void;
   onMarkLearning?: () => void;
   onUndo?: () => void;
+  progressive?: boolean;
 }
 
 export function ExplanationPanel({
@@ -26,8 +28,10 @@ export function ExplanationPanel({
   learnerState,
   onMarkKnown,
   onMarkLearning,
-  onUndo
+  onUndo,
+  progressive = false
 }: ExplanationPanelProps) {
+  const [openSection, setOpenSection] = useState<"grammar" | "nuance" | "examples">();
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Sentence explanation">
       <h2 className="mb-3 font-semibold text-white">Explanation</h2>
@@ -66,7 +70,13 @@ export function ExplanationPanel({
       ) : null}
 
       {state.status === "ready" && state.explanation ? (
-        <ExplanationContent explanation={state.explanation} onWordClick={onWordClick} />
+        <ExplanationContent
+          explanation={state.explanation}
+          onWordClick={onWordClick}
+          progressive={progressive}
+          openSection={openSection}
+          onToggleSection={(section) => setOpenSection((current) => current === section ? undefined : section)}
+        />
       ) : null}
 
       {wordState && wordState.status !== "idle" ? (
@@ -78,10 +88,16 @@ export function ExplanationPanel({
 
 function ExplanationContent({
   explanation,
-  onWordClick
+  onWordClick,
+  progressive,
+  openSection,
+  onToggleSection
 }: {
   explanation: SentenceExplanation;
   onWordClick?: (word: string) => void;
+  progressive: boolean;
+  openSection?: "grammar" | "nuance" | "examples";
+  onToggleSection: (section: "grammar" | "nuance" | "examples") => void;
 }) {
   return (
     <article>
@@ -122,7 +138,19 @@ function ExplanationContent({
         </dl>
       </section>
 
-      {explanation.grammar.length > 0 ? (
+      {progressive ? (
+        <div className="mt-4 flex flex-wrap gap-3 border-t border-slate-800 pt-3 text-xs">
+          {explanation.grammar.length > 0 ? (
+            <DisclosureButton label="Grammar" open={openSection === "grammar"} onClick={() => onToggleSection("grammar")} />
+          ) : null}
+          {explanation.nuance ? (
+            <DisclosureButton label="Nuance" open={openSection === "nuance"} onClick={() => onToggleSection("nuance")} />
+          ) : null}
+          <DisclosureButton label="More examples" open={openSection === "examples"} onClick={() => onToggleSection("examples")} />
+        </div>
+      ) : null}
+
+      {!progressive && explanation.grammar.length > 0 ? (
         <section className="mt-4" aria-label="Grammar">
           <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-slate-500">Grammar</h3>
           <ul className="mt-1.5 space-y-1.5">
@@ -137,14 +165,32 @@ function ExplanationContent({
         </section>
       ) : null}
 
-      {explanation.nuance ? (
+      {!progressive && explanation.nuance ? (
         <section className="mt-4" aria-label="Nuance">
           <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-slate-500">Nuance</h3>
           <p className="mt-1.5 text-sm leading-6 text-slate-300">{explanation.nuance}</p>
         </section>
       ) : null}
+
+      {progressive && openSection === "grammar" && explanation.grammar.length > 0 ? (
+        <section className="mt-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3" aria-label="Grammar">
+          <ul className="space-y-1.5">
+            {explanation.grammar.map((item) => <li key={`${item.form}-${item.explanation}`} className="text-sm leading-6 text-slate-300"><span lang="ko" className="font-medium text-slate-100">{item.form}</span><span className="text-slate-500"> — </span>{item.explanation}</li>)}
+          </ul>
+        </section>
+      ) : null}
+      {progressive && openSection === "nuance" && explanation.nuance ? (
+        <section className="mt-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3" aria-label="Nuance"><p className="text-sm leading-6 text-slate-300">{explanation.nuance}</p></section>
+      ) : null}
+      {progressive && openSection === "examples" ? (
+        <section className="mt-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3" aria-label="More examples"><p className="text-sm leading-6 text-slate-400">More examples will stay tied to this sentence and its spoken patterns.</p></section>
+      ) : null}
     </article>
   );
+}
+
+function DisclosureButton({ label, open, onClick }: { label: string; open: boolean; onClick: () => void }) {
+  return <button type="button" aria-expanded={open} onClick={onClick} className={`font-semibold transition-colors hover:text-white ${open ? "text-[#C7654C]" : "text-slate-400"}`}>{open ? `Hide ${label}` : label}</button>;
 }
 
 function WordCard({

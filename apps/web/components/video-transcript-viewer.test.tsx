@@ -118,3 +118,41 @@ test("VideoTranscriptViewer renders popover ready state with progressive disclos
   // Popover renders nuance toggle trigger
   assert.match(html, /Nuance/);
 });
+
+test("Study renders nearby context and the persistent explanation hierarchy", () => {
+  const html = renderToString(
+    <VideoTranscriptViewer
+      videoId="test-video"
+      segments={[
+        ...mockSegments,
+        { id: "s3", startTimeMs: 2000, endTimeMs: 3000, text: "또 만나요" }
+      ]}
+      mode="study"
+      selectedSegmentId="s2"
+      explanationState={{
+        status: "ready",
+        explanation: {
+          sentence: "반갑습니다",
+          naturalMeaning: "Nice to meet you",
+          breakdown: [{ text: "반갑습니다", meaning: "nice to meet you" }],
+          grammar: [{ form: "-습니다", explanation: "Formal polite ending." }],
+          nuance: "Polite and neutral."
+        }
+      }}
+    />
+  ).replaceAll("<!-- -->", "");
+
+  assert.match(html, /Nearby transcript/);
+  assert.match(html, /안녕하세요/);
+  assert.match(html, /반갑습니다/);
+  assert.match(html, /또 만나요/);
+  assert.match(html, /Nice to meet you/);
+  assert.match(html, /More examples/);
+  assert.doesNotMatch(html, /Sentence explanation popover/);
+});
+
+test("Study selection uses the paused seek baseline", async () => {
+  const source = await (await import("node:fs/promises")).readFile(new URL("./video-transcript-viewer.tsx", import.meta.url), "utf8");
+  assert.match(source, /function seekToSegment[\s\S]*?currentSeekTo\(segment\.startTimeMs \/ 1000\);[\s\S]*?currentPause\(\);/);
+  assert.doesNotMatch(source, /function seekToSegment[\s\S]*?currentPlay\(\);/);
+});

@@ -11,6 +11,7 @@ import type { SentenceExplanationState } from "@/lib/use-sentence-explanation";
 import type { WordExplanationState } from "@/lib/use-word-explanation";
 import type { LearnerItemState } from "@/lib/use-learner-item";
 import { SentenceBreakdownPopover } from "./sentence-breakdown-popover";
+import { ExplanationPanel } from "./explanation-panel";
 
 export interface VideoTranscriptViewerProps {
   videoId: string;
@@ -49,7 +50,6 @@ export function VideoTranscriptViewer({
   selectedSegmentId,
   playerError,
   seekTo,
-  play,
   pause,
   mode = "watch",
   onModeChange,
@@ -63,13 +63,12 @@ export function VideoTranscriptViewer({
   onUndoMarkKnown,
   onCloseExplanation
 }: VideoTranscriptViewerProps) {
-  const internalPlayer = useYouTubePlayer({ videoId, segments });
+  const internalPlayer = useYouTubePlayer({ videoId, segments, enabled: !playerContainerRef });
 
   const containerRef = playerContainerRef ?? internalPlayer.playerContainerRef;
   const currentActiveSegmentId = activeSegmentId ?? internalPlayer.activeSegmentId;
   const currentError = playerError ?? internalPlayer.playerError;
   const currentSeekTo = seekTo ?? internalPlayer.seekTo;
-  const currentPlay = play ?? internalPlayer.play;
   const currentPause = pause ?? internalPlayer.pause;
 
   const activeSegmentRef = useRef<HTMLButtonElement>(null);
@@ -80,19 +79,27 @@ export function VideoTranscriptViewer({
 
   function seekToSegment(segment: TranscriptSegment) {
     currentSeekTo(segment.startTimeMs / 1000);
-    currentPlay();
+    currentPause();
   }
 
   return (
     <div className="flex flex-col gap-4">
       {/* The main video and transcript grid */}
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]" aria-label={title}>
-        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-black shadow-2xl">
+        <div className={mode === "study" ? "overflow-hidden rounded-2xl border border-slate-800 bg-black shadow-2xl lg:col-start-1 lg:row-start-1" : "overflow-hidden rounded-2xl border border-slate-800 bg-black shadow-2xl"}>
           <div ref={containerRef} className="aspect-video w-full" />
           {currentError ? <p className="px-4 py-3 text-sm text-rose-300">{currentError}</p> : null}
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl">
+        {mode === "study" ? (
+          <StudyTranscriptContext
+            segments={segments}
+            selectedSegmentId={selectedSegmentId}
+            activeSegmentId={currentActiveSegmentId}
+            onSelect={onSegmentClick}
+          />
+        ) : (
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl lg:col-start-1 lg:row-start-2">
           <div className="mb-3 flex items-baseline justify-between gap-4">
             <h2 className="font-semibold text-white">{title}</h2>
             <span className="text-xs text-slate-500">{segments.length} segments</span>
@@ -151,7 +158,25 @@ export function VideoTranscriptViewer({
               );
             })}
           </div>
-        </div>
+          </div>
+        )}
+
+        {mode === "study" ? (
+          <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
+            <ExplanationPanel
+              segment={segments.find((segment) => segment.id === selectedSegmentId)}
+              state={explanationState ?? { status: "idle" }}
+              progressive
+              onRetry={onRetryExplanation}
+              wordState={wordExplanationState}
+              onWordClick={onWordClick}
+              learnerState={learnerItemState}
+              onMarkKnown={onMarkKnown}
+              onMarkLearning={onMarkLearning}
+              onUndo={onUndoMarkKnown}
+            />
+          </div>
+        ) : null}
       </section>
 
       {/* Workspace mode and settings bar */}
@@ -189,6 +214,56 @@ export function VideoTranscriptViewer({
           <span>Assistance:</span>
           <span className="font-semibold text-slate-300">Guided</span>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function StudyTranscriptContext({
+  segments,
+  selectedSegmentId,
+  activeSegmentId,
+  onSelect
+}: {
+  segments: readonly TranscriptSegment[];
+  selectedSegmentId?: string;
+  activeSegmentId?: string;
+  onSelect?: (segment: TranscriptSegment) => void;
+}) {
+  const selectedIndex = segments.findIndex((segment) => segment.id === selectedSegmentId);
+  const centerIndex = selectedIndex >= 0 ? selectedIndex : segments.findIndex((segment) => segment.id === activeSegmentId);
+  const start = Math.max(0, centerIndex >= 0 ? centerIndex - 1 : 0);
+  const nearby = segments.slice(start, start + 3);
+
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl" aria-label="Nearby transcript">
+      <div className="mb-3 flex items-baseline justify-between gap-4">
+        <h2 className="font-semibold text-white">Nearby transcript</h2>
+        <span className="text-xs text-slate-500">Study context</span>
+      </div>
+      <div className="space-y-1" role="list" aria-label="Nearby transcript sentences">
+        {nearby.map((segment) => {
+          const isSelected = segment.id === selectedSegmentId;
+          const isActive = segment.id === activeSegmentId;
+          return (
+            <button
+              key={segment.id}
+              type="button"
+              role="listitem"
+              onClick={() => onSelect?.(segment)}
+              className={`w-full rounded-xl border-l-2 px-3 py-3 text-left transition-colors ${
+                isSelected
+                  ? "border-l-[#C7654C] bg-[#F4E1DA]/10 text-white"
+                  : isActive
+                    ? "border-l-[#F4E8B8] bg-[#FAF4DA]/10 text-white"
+                    : "border-l-transparent text-slate-400 hover:bg-[#FAF9F5]/5 hover:text-white"
+              }`}
+            >
+              <span className="block text-xs text-sky-300">{formatTimestamp(segment.startTimeMs)}</span>
+              <span lang="ko" className="mt-1 block leading-6 font-medium">{segment.text}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

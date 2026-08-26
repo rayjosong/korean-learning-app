@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 
 import { ClozeReviewPanel } from "@/components/cloze-review-panel";
 import { AiProviderSettings } from "@/components/ai-provider-settings";
-import { ExplanationPanel } from "@/components/explanation-panel";
 import { LearnerProfilePanel } from "@/components/learner-profile-panel";
 import { ProgressDashboard } from "@/components/progress-dashboard";
 import { RevisitNotice } from "@/components/revisit-notice";
@@ -153,9 +152,6 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
           mode={mode}
           onModeChange={(nextMode) => {
             setMode(nextMode);
-            setSelectedSegment(undefined);
-            resetWordExplanation();
-            resetLearnerItem();
           }}
           explanationState={state}
           onRetryExplanation={retryExplanation}
@@ -199,39 +195,6 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
         
         <div className="grid gap-6 md:grid-cols-2">
           <div className="flex flex-col gap-6">
-            {mode === "study" && (
-              <ExplanationPanel
-                segment={selectedSegment}
-                state={state}
-                onRetry={retryExplanation}
-                wordState={wordState}
-                onWordClick={(word) => {
-                  if (!selectedSegment) return;
-                  void explainWord({ word, segment: selectedSegment });
-                  void loadLearnerItem(word);
-                }}
-                learnerState={learnerState}
-                onMarkKnown={() => {
-                  if (selectedSegment && wordState.word) {
-                    void markWordKnown({
-                      text: wordState.word,
-                      dictionaryForm: wordState.explanation?.dictionaryForm,
-                      segment: selectedSegment
-                    }).then(() => setHistoryRevision((revision) => revision + 1));
-                  }
-                }}
-                onMarkLearning={() => {
-                  if (selectedSegment && wordState.word) {
-                    void markWordLearning({
-                      text: wordState.word,
-                      dictionaryForm: wordState.explanation?.dictionaryForm,
-                      segment: selectedSegment
-                    }).then(() => setHistoryRevision((revision) => revision + 1));
-                  }
-                }}
-                onUndo={() => void undoMarkKnown().then(() => setHistoryRevision((revision) => revision + 1))}
-              />
-            )}
             <ClozeReviewPanel
               database={cacheDatabase}
               refreshKey={historyRevision}
