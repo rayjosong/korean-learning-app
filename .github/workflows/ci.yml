@@ -36,7 +36,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --no-frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm --filter @korean-learning/web exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - run: pnpm test:a11y
       - run: pnpm test:visual
