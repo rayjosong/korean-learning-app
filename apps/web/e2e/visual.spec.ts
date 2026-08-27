@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { openFixture } from "./fixture";
 
+// Each state gets a fresh page so baselines cannot inherit prior interactions.
 test("Watch default state matches the reviewed desktop baseline", async ({ page }) => {
   await openFixture(page);
   await expect(page.locator('[data-player="fixture"]')).toBeVisible();
