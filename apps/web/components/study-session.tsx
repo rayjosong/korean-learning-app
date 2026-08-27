@@ -62,6 +62,7 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
   }, [cacheDatabase]);
 
   const languageModel = useMemo(() => {
+    if (fixture) return createFixtureLanguageModel();
     if (!settings.apiKey.trim() || !settings.model.trim()) return null;
     return withExplanationCache({
       model: createLanguageModel(settings),
