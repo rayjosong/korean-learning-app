@@ -508,16 +508,16 @@ Acceptance criteria:
 - [x] Rendered desktop flows are inspected against the canonical `DESIGN.md` references.
 - [x] `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` pass before the item is marked complete.
 
-Remaining: permanent browser-level visual-regression infrastructure (Playwright screenshot baselines in CI) does not exist in this repository yet; current protection is component-layer token assertions plus the deterministic fixture screenshots and temporary-browser checks recorded in the #32 PR, following the convention from the #58 gate. Utilities were demoted into a collapsed `Workspace Utilities & Settings` disclosure. AA state inks (`primary-deep`, `jade-deep`, `error`, `warning`) were added to the palette and documented in `DESIGN.md`.
+Remaining: deterministic visual coverage is incomplete across the #32 surface/state matrix. Permanent Playwright infrastructure now exists on main: `apps/web/e2e/visual.spec.ts` has three executable baselines (Watch default, Watch selected, Study selected) under `qa/29d/`, and CI runs E2E, accessibility, and visual checks. Extend this suite for Home, expanded explanation, dedicated long-transcript and compact-desktop states, existing Review/Progress/Settings panels, and important loading/feedback/error states. Stabilize actual Pretendard font loading and fixture data before approving new baselines. Existing images under `qa/screenshots/32/` remain historical QA evidence, not proof of executable coverage. Utilities remain demoted into the collapsed `Workspace Utilities & Settings` disclosure. Preserve all current checkboxes until final verification; this note does not re-certify previously checked criteria.
 
-Implementation plan:
-1. Reconcile any in-progress palette migration and preserve unrelated work.
-2. Promote the existing `DESIGN.md` palette into reusable semantic tokens and state styles.
-3. Complete Watch, including transcript, playback/selection states, mode controls, and contextual explanation.
-4. Complete Study, including persistent explanation, nearby context, learning actions, and feedback states.
-5. Migrate Review, Progress, history, difficulty/revisit guidance, learner profile, and Settings to the same system.
-6. Remove or document remaining direct colour values and legacy dark-theme utilities.
-7. Add deterministic visual and accessibility coverage, then run the full verification gate.
+Implementation plan: [Cross-surface visual consistency implementation plan](IMPLEMENTATION-32.md).
+
+1. Reconfirm #29 and the latest committed baseline; audit existing tokens, rendered states, and active work.
+2. Reuse the existing Playwright fixture/player/model and make fonts, persistence, dates, and asynchronous states deterministic.
+3. Extend the existing visual suite with the plan's explicit state/viewport matrix; retain the three #29 baselines.
+4. Fix only demonstrated #32 visual gaps while preserving current learning, review, progress, and settings behavior.
+5. Extend accessibility and critical browser checks; inspect the final rendered flows against `DESIGN.md`.
+6. Record acceptance-criterion evidence and before/after screenshots, run all verification commands, and require green CI on the latest commit before completing #32.
 
 Depends on: #29
 
