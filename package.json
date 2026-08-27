@@ -7,6 +7,9 @@
     "build": "pnpm --filter @korean-learning/web build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "test:e2e": "pnpm --filter @korean-learning/web test:e2e",
+    "test:a11y": "pnpm --filter @korean-learning/web test:a11y",
+    "test:visual": "pnpm --filter @korean-learning/web test:visual"
   }
 }
