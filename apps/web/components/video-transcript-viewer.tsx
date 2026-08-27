@@ -110,7 +110,7 @@ export function VideoTranscriptViewer({
               const isActive = segment.id === currentActiveSegmentId;
               const isSelected = segment.id === selectedSegmentId;
               return (
-                <div key={segment.id} className="relative mb-1">
+                <div key={segment.id} className="relative mb-1" role="listitem">
                   <button
                     id={`segment-btn-${segment.id}`}
                     ref={isActive ? activeSegmentRef : undefined}
