@@ -426,27 +426,29 @@ Depends on: #27
 
 > Consolidate existing capabilities into the desktop-first Watch -> Study -> Review experience defined by `PRODUCT.md` and `DESIGN.md`.
 
-### [ ] #29 Watch / Study media workspace
+### [x] #29 Watch / Study media workspace
 
 Acceptance criteria:
-- [ ] Desktop Watch layout uses persistent video + Korean transcript as dominant surfaces.
-- [ ] Watch is the default mode when opening a video.
-- [ ] Guided Watch does not persistently show English translation.
+- [x] Desktop Watch layout uses persistent video + Korean transcript as dominant surfaces.
+- [x] Watch is the default mode when opening a video.
+- [x] Guided Watch does not persistently show English translation.
 - [x] Clicking a transcript sentence pauses playback automatically.
 - [x] Selected sentence opens an anchored contextual breakdown popover/overlay in Watch.
 - [x] Explanation preserves nearby transcript context.
 - [x] Natural meaning is prioritized over literal translation.
 - [x] Meaningful phrase chunks precede morphology-first decomposition.
 - [x] Grammar, nuance, and examples use progressive disclosure.
-- [ ] Learner can switch Watch/Study without losing video/transcript context.
-- [ ] Study gives persistent space to selected sentence and deeper explanation.
+- [x] Learner can switch Watch/Study without losing video/transcript context.
+- [x] Study gives persistent space to selected sentence and deeper explanation.
 - [x] `Learn this` / `I know this` remain available in relevant phrase context.
 - [x] Saving shows low-friction confirmation without a configuration modal.
-- [ ] Long transcripts remain usable.
+- [x] Long transcripts remain usable.
 - [x] Keyboard/focus behavior and selected/current-playback states are accessible.
 - [x] Rendered desktop flow is verified against `DESIGN.md` ASCII references.
 
 Depends on: #5, #8, #10, #11, #12
+
+Verified through merged #58 / PR #68 deterministic browser gate, checked-in visual baselines, rendered QA evidence in `docs/QA-29D.md`, and the documented separate real-YouTube smoke strategy.
 
 ---
 

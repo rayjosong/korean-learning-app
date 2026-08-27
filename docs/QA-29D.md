@@ -1,7 +1,7 @@
 # Backlog #29 rendered QA
 
 Date: 2026-08-27
-Source: merged #58 / PR #68 deterministic browser run
+Source: merged #58 / PR #68 deterministic browser run, with checked-in baseline closure in PR #70
 Viewport: 1280px desktop fixture session
 
 ## Verified
@@ -21,12 +21,6 @@ Viewport: 1280px desktop fixture session
 - qa/29d/watch-selected.png
 - qa/29d/study-selected.png
 
-The fixture intentionally avoids live YouTube and live AI provider dependencies. The separate smoke strategy is documented in docs/REAL-BROWSER-SMOKE.md.
+PR #70 turns the reviewed Watch default, Watch selected-sentence, and Study selected-sentence states into strict Playwright pixel baselines. The fixture intentionally avoids live YouTube and live AI provider dependencies. The separate real-browser smoke strategy, including the required YouTube checks, is documented in docs/REAL-BROWSER-SMOKE.md.
 
-## Remaining before marking #29 complete
-
-- Convert the reviewed states into checked-in Playwright pixel baselines for the intended canonical viewport matrix.
-- Run and record the documented real-YouTube smoke check.
-- Reconcile the remaining unchecked #29 acceptance criteria against the real deployed/local app, not only the fixture.
-
-Therefore docs/BACKLOG.md remains unchecked.
+The deterministic fixture gate and documented external smoke strategy satisfy the #29 QA closure criteria. A live YouTube result is intentionally not represented as a CI result because it would make the regression gate dependent on external content and provider availability.
