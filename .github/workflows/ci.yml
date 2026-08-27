@@ -21,3 +21,30 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+
+  browser-regression:
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm --filter @korean-learning/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - run: pnpm test:a11y
+      - run: pnpm test:visual
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-regression-artifacts
+          path: |
+            apps/web/test-results
+            apps/web/playwright-report
+          if-no-files-found: ignore

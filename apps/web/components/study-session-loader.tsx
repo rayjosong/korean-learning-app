@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { StudySession } from "@/components/study-session";
+import { FIXTURE_SEGMENTS, FIXTURE_VIDEO_ID } from "@/lib/fixture-session";
 import type { TranscriptSegment } from "@korean-learning/content";
 
 interface TranscriptResponse {
@@ -15,6 +16,13 @@ export function StudySessionLoader() {
   const [session, setSession] = useState<TranscriptResponse>();
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
+  const [isFixture] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("fixture") === "watch-study");
+
+  useEffect(() => {
+    if (!isFixture) return;
+    setVideoUrl("https://youtu.be/fixture-29d-video");
+    setSession({ videoId: FIXTURE_VIDEO_ID, segments: [...FIXTURE_SEGMENTS] });
+  }, [isFixture]);
 
   async function loadTranscript(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,6 +77,7 @@ export function StudySessionLoader() {
           segments={session.segments}
           videoUrl={videoUrl}
           onReplay={(url) => void loadVideo(url)}
+          fixture={isFixture}
         />
       ) : null}
     </>

@@ -19,15 +19,17 @@ import { useSentenceExplanation } from "@/lib/use-sentence-explanation";
 import { useWordExplanation } from "@/lib/use-word-explanation";
 import { useYouTubePlayer } from "@/lib/use-youtube-player";
 import { clearExplanationCache, ExplanationDatabase, recordStudiedContent } from "@korean-learning/storage";
+import { createFixtureLanguageModel } from "@/lib/fixture-session";
 
 export interface StudySessionProps {
   videoId: string;
   segments: readonly TranscriptSegment[];
   videoUrl?: string;
   onReplay?: (videoUrl: string) => void;
+  fixture?: boolean;
 }
 
-export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySessionProps) {
+export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = false }: StudySessionProps) {
   const [settings, setSettings] = useState<AiSettings>({ apiKey: "", model: "gpt-4o-mini" });
   const [settingsReady, setSettingsReady] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -60,6 +62,7 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
   }, [cacheDatabase]);
 
   const languageModel = useMemo(() => {
+    if (fixture) return createFixtureLanguageModel();
     if (!settings.apiKey.trim() || !settings.model.trim()) return null;
     return withExplanationCache({
       model: createLanguageModel(settings),
@@ -67,7 +70,7 @@ export function StudySession({ videoId, segments, videoUrl, onReplay }: StudySes
       provider: "openai-compatible",
       modelName: settings.model.trim()
     });
-  }, [settings, cacheDatabase]);
+  }, [fixture, settings, cacheDatabase]);
 
   useEffect(() => {
     if (cacheDatabase) void recordStudiedContent(cacheDatabase, { videoId, studiedAt: new Date().toISOString() });
