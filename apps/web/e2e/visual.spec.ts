@@ -17,6 +17,8 @@ test("Watch selected-sentence state matches the reviewed desktop baseline", asyn
 
 test("Study selected-sentence state matches the reviewed desktop baseline", async ({ page }) => {
   await openFixture(page);
+  await expect(page.locator("#segment-btn-fixture-2")).toBeVisible();
+  await page.locator("#segment-btn-fixture-2").click();
   await page.getByRole("tab", { name: "Study" }).click();
   await expect(page).toHaveScreenshot("study-selected.png", { fullPage: true, animations: "disabled" });
 });
