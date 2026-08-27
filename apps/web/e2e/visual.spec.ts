@@ -15,6 +15,7 @@ test("Watch selected-sentence state matches the reviewed desktop baseline", asyn
   await expect(page).toHaveScreenshot("watch-selected.png", { fullPage: true, animations: "disabled" });
 });
 
+// Establish selection first: Study must retain the active inspection context from Watch.
 test("Study selected-sentence state matches the reviewed desktop baseline", async ({ page }) => {
   await openFixture(page);
   await expect(page.locator("#segment-btn-fixture-2")).toBeVisible();
