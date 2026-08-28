@@ -465,6 +465,8 @@ Acceptance criteria:
 - [ ] Preference persists locally.
 - [ ] Provider settings remain separate from assistance settings.
 
+Implementation plan: [IMPLEMENTATION-30.md](IMPLEMENTATION-30.md). This is planning guidance only; all #30 completion checkboxes remain unchanged.
+
 Depends on: #29
 
 ---
