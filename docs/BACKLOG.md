@@ -485,6 +485,8 @@ Acceptance criteria:
 - [ ] Existing cloze behavior is not silently removed without documented replacement/compatibility behavior.
 - [ ] Rendered Review flow is verified against `DESIGN.md`.
 
+Implementation plan: [IMPLEMENTATION-31.md](IMPLEMENTATION-31.md). This is planning guidance only; all #31 completion checkboxes remain unchanged.
+
 Depends on: #15, #29
 
 ---
