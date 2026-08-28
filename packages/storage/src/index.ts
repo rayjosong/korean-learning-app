@@ -34,6 +34,7 @@ export class ExplanationDatabase extends Dexie {
   learningContexts!: Table<LearningContextRecord, string>;
   reviewRecords!: Table<ReviewRecord, string>;
   aiProviderSettings!: Table<import("./ai-settings.ts").AiProviderSettingsRecord, string>;
+  assistanceSettings!: Table<import("./assistance-settings.ts").AssistanceSettingsRecord, string>;
   studiedContent!: Table<StudiedContentRecord, string>;
   contentProgressSnapshots!: Table<ContentProgressSnapshot, string>;
 
@@ -81,6 +82,17 @@ export class ExplanationDatabase extends Dexie {
       studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
       contentProgressSnapshots: "id, videoId, capturedAt",
       aiProviderSettings: "id"
+    });
+    this.version(9).stores({
+      explanations: "key, createdAt",
+      wordExplanations: "key",
+      learningItems: "id, text, lastSeenAt",
+      learningContexts: "id, itemId, createdAt",
+      reviewRecords: "id, itemId, reviewedAt, mode",
+      studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+      contentProgressSnapshots: "id, videoId, capturedAt",
+      aiProviderSettings: "id",
+      assistanceSettings: "id"
     });
   }
 }
