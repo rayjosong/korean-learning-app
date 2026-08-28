@@ -20,3 +20,31 @@ test("transcript and disclosure controls remain keyboard operable", async ({ pag
   await page.keyboard.press("Escape");
   await expect(selected).toBeFocused();
 });
+
+test("selected, expanded, and utility surfaces remain accessible", async ({ page }) => {
+  await openFixture(page);
+  await page.locator("#segment-btn-fixture-2").click();
+  const popover = page.getByRole("region", { name: "Sentence explanation popover" });
+  await popover.getByRole("button", { name: "Grammar" }).click();
+  const selectedResults = await new AxeBuilder({ page }).analyze();
+  expect(selectedResults.violations, JSON.stringify(selectedResults.violations, null, 2)).toEqual([]);
+
+  await page.getByRole("tab", { name: "Study" }).click();
+  const studyResults = await new AxeBuilder({ page }).analyze();
+  expect(studyResults.violations, JSON.stringify(studyResults.violations, null, 2)).toEqual([]);
+
+  await page.locator("summary").click();
+  const utilityResults = await new AxeBuilder({ page }).analyze();
+  expect(utilityResults.violations, JSON.stringify(utilityResults.violations, null, 2)).toEqual([]);
+});
+
+test("selected and playing rows expose independent state", async ({ page }) => {
+  await openFixture(page, "long");
+  const selected = page.locator("#segment-btn-fixture-40");
+  await selected.scrollIntoViewIfNeeded();
+  await selected.click();
+  await page.evaluate(() => window.__fixturePlayer?.seekTo(0));
+  await expect(page.locator("#segment-btn-fixture-1")).toHaveAttribute("aria-current", "true");
+  await expect(selected).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#segment-btn-fixture-1")).toContainText("▶");
+});

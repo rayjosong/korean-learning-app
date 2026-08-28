@@ -3,7 +3,13 @@
 import { FormEvent, useEffect, useState } from "react";
 
 import { StudySession } from "@/components/study-session";
-import { FIXTURE_SEGMENTS, FIXTURE_VIDEO_ID } from "@/lib/fixture-session";
+import {
+  FIXTURE_SEGMENTS,
+  FIXTURE_VIDEO_ID,
+  LONG_FIXTURE_SEGMENTS,
+  seedFixtureStorage,
+  type FixtureScenario
+} from "@/lib/fixture-session";
 import type { TranscriptSegment } from "@korean-learning/content";
 
 interface TranscriptResponse {
@@ -16,13 +22,25 @@ export function StudySessionLoader() {
   const [session, setSession] = useState<TranscriptResponse>();
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
-  const [isFixture] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("fixture") === "watch-study");
+  const [fixtureScenario] = useState<FixtureScenario | undefined>(() => {
+    if (typeof window === "undefined") return undefined;
+    const value = new URLSearchParams(window.location.search).get("fixture");
+    return value === "watch-study" || value === "long" || value === "populated" || value === "loading" || value === "error"
+      ? value
+      : undefined;
+  });
+  const isFixture = fixtureScenario !== undefined;
 
   useEffect(() => {
     if (!isFixture) return;
-    setVideoUrl("https://youtu.be/fixture-29d-video");
-    setSession({ videoId: FIXTURE_VIDEO_ID, segments: [...FIXTURE_SEGMENTS] });
-  }, [isFixture]);
+    void seedFixtureStorage(fixtureScenario ?? "watch-study").then(() => {
+      setVideoUrl("https://youtu.be/fixture-29d-video");
+      setSession({
+        videoId: FIXTURE_VIDEO_ID,
+        segments: [...(fixtureScenario === "long" ? LONG_FIXTURE_SEGMENTS : FIXTURE_SEGMENTS)]
+      });
+    });
+  }, [fixtureScenario, isFixture]);
 
   async function loadTranscript(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -78,6 +96,7 @@ export function StudySessionLoader() {
           videoUrl={videoUrl}
           onReplay={(url) => void loadVideo(url)}
           fixture={isFixture}
+          fixtureScenario={fixtureScenario}
         />
       ) : null}
     </>

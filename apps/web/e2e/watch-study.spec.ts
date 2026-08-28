@@ -5,6 +5,7 @@ test("Watch to Study golden path preserves session and learner state", async ({ 
   await openFixture(page);
   const selected = page.locator("#segment-btn-fixture-2");
   await selected.click();
+  await expect(page.locator("body")).toHaveAttribute("data-player-state", "paused");
   await expect(page.getByRole("region", { name: "Sentence explanation popover" })).toBeVisible();
   await expect(page.getByText(/So I.?m just going to walk there\./)).toBeVisible();
   await page.getByRole("button", { name: "그래서", exact: true }).click();

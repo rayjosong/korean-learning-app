@@ -1,11 +1,30 @@
 import { expect, type Page } from "@playwright/test";
+import type { FixtureScenario } from "@/lib/fixture-session";
 
-export async function openFixture(page: Page) {
+declare global {
+  interface Window {
+    __fixturePlayer?: { seekTo(seconds: number): void };
+  }
+}
+
+export async function openFixture(page: Page, scenario: FixtureScenario = "watch-study") {
   await page.addInitScript(() => {
+    const RealDate = Date;
+    class FixtureDate extends RealDate {
+      constructor(value?: string | number | Date) {
+        super(value ?? "2026-01-15T00:00:00.000Z");
+      }
+      static now() {
+        return new RealDate("2026-01-15T00:00:00.000Z").valueOf();
+      }
+    }
+    (globalThis as { Date: unknown }).Date = FixtureDate;
+
     class FixturePlayer {
       private currentTime = 0;
       constructor(element: HTMLElement, options: { events: { onReady: (event: { target: FixturePlayer }) => void } }) {
         element.dataset.player = "fixture";
+        (window as Window & { __fixturePlayer?: FixturePlayer }).__fixturePlayer = this;
         queueMicrotask(() => options.events.onReady({ target: this }));
       }
       getCurrentTime() { return this.currentTime; }
@@ -16,6 +35,12 @@ export async function openFixture(page: Page) {
     }
     (window as Window & { YT?: unknown }).YT = { Player: FixturePlayer };
   });
-  await page.goto("/?fixture=watch-study");
+  await page.goto(`/?fixture=${scenario}`);
   await expect(page.getByRole("list", { name: "Timestamped transcript" })).toBeVisible();
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    if (!document.fonts.check('18px "Pretendard Variable"')) {
+      throw new Error("Pretendard Variable did not load in the fixture.");
+    }
+  });
 }
