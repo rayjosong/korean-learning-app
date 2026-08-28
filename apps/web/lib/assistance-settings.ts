@@ -1,9 +1,6 @@
 import type { AssistanceLevel } from "@korean-learning/storage/assistance-settings";
-import {
-  getAssistanceSettings,
-  putAssistanceSettings,
-  type ExplanationDatabase
-} from "@korean-learning/storage";
+import type { ExplanationDatabase } from "@korean-learning/storage";
+import { getAssistanceSettings, putAssistanceSettings } from "@korean-learning/storage/assistance-settings";
 
 export async function loadAssistanceLevel(database: ExplanationDatabase): Promise<AssistanceLevel> {
   return (await getAssistanceSettings(database))?.level ?? "guided";
