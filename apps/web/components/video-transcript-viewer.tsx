@@ -169,9 +169,6 @@ export function VideoTranscriptViewer({
                         onMarkKnown={onMarkKnown}
                         onMarkLearning={onMarkLearning}
                         onUndo={onUndoMarkKnown}
-              assistancePresentation={presentation}
-              englishHelpRevealed={englishHelpRevealed}
-              onShowEnglishHelp={onShowEnglishHelp}
                         onClose={onCloseExplanation}
                         assistancePresentation={presentation}
                         englishHelpRevealed={englishHelpRevealed}
