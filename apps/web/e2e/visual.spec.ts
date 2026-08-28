@@ -150,7 +150,7 @@ test("Utilities and guidance share the same surface system", async ({ page }) =>
   await expect(page.getByRole("region", { name: "Learner profile" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Learning history" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Video difficulty estimate" })).toBeVisible();
-  await expect(page).toHaveScreenshot("32-utilities-guidance-1440.png", { fullPage: true, animations: "disabled" });
+  await expect(page).toHaveScreenshot("32-utilities-guidance-1440.png", { animations: "disabled" });
 });
 
 test("Loading and error states have stable recovery surfaces", async ({ page }) => {

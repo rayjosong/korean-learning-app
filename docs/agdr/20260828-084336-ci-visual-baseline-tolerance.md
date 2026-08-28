@@ -3,7 +3,7 @@ timestamp: 2026-08-28T08:43:36Z
 agent: pi-coding-agent
 model: gpt-5.6-sol
 trigger: user-prompt
-status: executed
+status: superseded
 ticket: no-ticket
 pr: 71
 ---
