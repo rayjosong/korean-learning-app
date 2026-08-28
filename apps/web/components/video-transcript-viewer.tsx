@@ -12,6 +12,9 @@ import type { WordExplanationState } from "@/lib/use-word-explanation";
 import type { LearnerItemState } from "@/lib/use-learner-item";
 import { SentenceBreakdownPopover } from "./sentence-breakdown-popover";
 import { ExplanationPanel } from "./explanation-panel";
+import { AssistanceControl } from "./assistance-control";
+import { assistancePresentation } from "@/lib/assistance-presentation";
+import type { AssistanceLevel } from "@korean-learning/storage/assistance-settings";
 
 export interface VideoTranscriptViewerProps {
   videoId: string;
@@ -38,6 +41,12 @@ export interface VideoTranscriptViewerProps {
   onMarkLearning?: () => void;
   onUndoMarkKnown?: () => void;
   onCloseExplanation?: () => void;
+  assistanceLevel?: AssistanceLevel;
+  assistanceReady?: boolean;
+  assistanceError?: string;
+  onAssistanceChange?: (level: AssistanceLevel) => void;
+  englishHelpRevealed?: boolean;
+  onShowEnglishHelp?: () => void;
 }
 
 export function VideoTranscriptViewer({
@@ -61,8 +70,15 @@ export function VideoTranscriptViewer({
   onMarkKnown,
   onMarkLearning,
   onUndoMarkKnown,
-  onCloseExplanation
+  onCloseExplanation,
+  assistanceLevel = "guided",
+  assistanceReady = true,
+  assistanceError,
+  onAssistanceChange,
+  englishHelpRevealed = false,
+  onShowEnglishHelp
 }: VideoTranscriptViewerProps) {
+  const presentation = assistancePresentation(assistanceLevel, englishHelpRevealed);
   const internalPlayer = useYouTubePlayer({ videoId, segments, enabled: !playerContainerRef });
 
   const containerRef = playerContainerRef ?? internalPlayer.playerContainerRef;
@@ -153,7 +169,13 @@ export function VideoTranscriptViewer({
                         onMarkKnown={onMarkKnown}
                         onMarkLearning={onMarkLearning}
                         onUndo={onUndoMarkKnown}
+              assistancePresentation={presentation}
+              englishHelpRevealed={englishHelpRevealed}
+              onShowEnglishHelp={onShowEnglishHelp}
                         onClose={onCloseExplanation}
+                        assistancePresentation={presentation}
+                        englishHelpRevealed={englishHelpRevealed}
+                        onShowEnglishHelp={onShowEnglishHelp}
                       />
                     </div>
                   )}
@@ -213,9 +235,9 @@ export function VideoTranscriptViewer({
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-ink-muted">
-          <span>Assistance:</span>
-          <span className="font-medium text-ink-secondary">Guided</span>
+        <div className="flex flex-col items-end gap-1">
+          <AssistanceControl level={assistanceLevel} disabled={!assistanceReady} onChange={(level) => onAssistanceChange?.(level)} />
+          {assistanceError ? <p role="status" className="text-xs text-error">{assistanceError}</p> : null}
         </div>
       </div>
     </div>
