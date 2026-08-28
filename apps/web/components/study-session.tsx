@@ -12,6 +12,8 @@ import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate"
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
 import { loadAiSettings, removeAiSettings, saveAiSettings, type AiSettings } from "@/lib/ai-settings";
+import { loadAssistanceLevel, saveAssistanceLevel } from "@/lib/assistance-settings";
+import type { AssistanceLevel } from "@korean-learning/storage/assistance-settings";
 import { withExplanationCache } from "@/lib/explanation-cache";
 import type { TranscriptSegment } from "@/lib/transcript";
 import { useLearnerItem } from "@/lib/use-learner-item";
@@ -35,6 +37,10 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
   const [settingsReady, setSettingsReady] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [mode, setMode] = useState<"watch" | "study">("watch");
+  const [assistanceLevel, setAssistanceLevel] = useState<AssistanceLevel>("guided");
+  const [assistanceReady, setAssistanceReady] = useState(false);
+  const [assistanceError, setAssistanceError] = useState<string>();
+  const [englishHelpRevealed, setEnglishHelpRevealed] = useState(false);
   const [selectedSegment, setSelectedSegment] = useState<TranscriptSegment>();
   const [historyRevision, setHistoryRevision] = useState(0);
   const [sessionId] = useState(() => crypto.randomUUID());
@@ -60,6 +66,19 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
       }
       setSettingsReady(true);
     });
+  }, [cacheDatabase]);
+
+  useEffect(() => {
+    if (!cacheDatabase) return;
+    let active = true;
+    void loadAssistanceLevel(cacheDatabase).then((level) => {
+      if (!active) return;
+      setAssistanceLevel(level);
+      setAssistanceReady(true);
+    }).catch(() => {
+      if (active) setAssistanceReady(true);
+    });
+    return () => { active = false; };
   }, [cacheDatabase]);
 
   const languageModel = useMemo(() => {
@@ -100,6 +119,7 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
   async function explainSegment(segment: TranscriptSegment) {
     setSelectedSegment(segment);
+    setEnglishHelpRevealed(false);
     resetWordExplanation();
     resetLearnerItem();
     const index = segments.indexOf(segment);
@@ -113,12 +133,25 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
   function closeExplanation() {
     setSelectedSegment(undefined);
+    setEnglishHelpRevealed(false);
     resetWordExplanation();
     resetLearnerItem();
   }
 
   function retryExplanation() {
     if (selectedSegment) void explainSegment(selectedSegment);
+  }
+
+  function changeAssistanceLevel(level: AssistanceLevel) {
+    const previous = assistanceLevel;
+    setAssistanceLevel(level);
+    setEnglishHelpRevealed(false);
+    setAssistanceError(undefined);
+    if (!cacheDatabase) return;
+    void saveAssistanceLevel(cacheDatabase, level).catch(() => {
+      setAssistanceLevel(previous);
+      setAssistanceError("Could not save assistance preference. Try again.");
+    });
   }
 
   async function clearCachedExplanations() {
@@ -186,6 +219,12 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
           }}
           onUndoMarkKnown={() => void undoMarkKnown().then(() => setHistoryRevision((revision) => revision + 1))}
           onCloseExplanation={closeExplanation}
+          assistanceLevel={assistanceLevel}
+          assistanceReady={assistanceReady}
+          assistanceError={assistanceError}
+          onAssistanceChange={changeAssistanceLevel}
+          englishHelpRevealed={englishHelpRevealed}
+          onShowEnglishHelp={() => setEnglishHelpRevealed(true)}
         />
       </div>
 
