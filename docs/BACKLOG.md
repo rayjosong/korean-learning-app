@@ -487,7 +487,7 @@ Depends on: #15, #29
 
 ---
 
-### [ ] #32 Cross-surface visual system consistency
+### [x] #32 Cross-surface visual system consistency
 
 Apply the existing `DESIGN.md` Warm Korean Editorial direction consistently across Home, Watch, Study, Review, Progress, and Settings. This is a visual-system refinement, not a new product direction.
 
@@ -503,12 +503,12 @@ Acceptance criteria:
 - [x] Cards and shadows follow `DESIGN.md`: whitespace and hairlines provide normal grouping, while stronger shadows are limited to temporary overlays/popovers.
 - [x] Loading, empty, success, warning, and error states meet WCAG AA contrast where applicable and retain clear non-colour cues.
 - [x] Existing Watch/Study session, transcript, explanation, learning-action, review, progress, and settings behavior does not regress during the visual migration.
-- [ ] Deterministic visual coverage protects Home, Watch default, Watch selected sentence, expanded explanation, Study, long transcript, compact desktop, Review, Progress, and Settings states where implemented.
+- [x] Deterministic visual coverage protects Home, Watch default, Watch selected sentence, expanded explanation, Study, long transcript, compact desktop, Review, Progress, and Settings states where implemented.
 - [x] Accessibility verification covers contrast, visible focus, keyboard operation, and selected-versus-playing state communication.
 - [x] Rendered desktop flows are inspected against the canonical `DESIGN.md` references.
 - [x] `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` pass before the item is marked complete.
 
-Remaining: permanent browser-level visual-regression infrastructure (Playwright screenshot baselines in CI) does not exist in this repository yet; current protection is component-layer token assertions plus the deterministic fixture screenshots and temporary-browser checks recorded in the #32 PR, following the convention from the #58 gate. Utilities were demoted into a collapsed `Workspace Utilities & Settings` disclosure. AA state inks (`primary-deep`, `jade-deep`, `error`, `warning`) were added to the palette and documented in `DESIGN.md`.
+Completed: deterministic visual and accessibility coverage is recorded in [QA-32.md](QA-32.md). The suite retains the three #29 reviewed baselines and adds the #32 state matrix. Fixture dates, transcript lengths, learner data, loading/error transitions, and the local Pretendard font are pinned for repeatable captures. Utilities remain collapsed by default.
 
 Implementation plan:
 1. Reconcile any in-progress palette migration and preserve unrelated work.

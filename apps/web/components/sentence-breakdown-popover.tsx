@@ -100,13 +100,13 @@ export function SentenceBreakdownPopover({
         <div className="pr-6">
           {/* Natural meaning prioritized */}
           <section aria-label="Natural meaning" className="mb-3">
-            <h4 className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Meaning</h4>
+            <h3 className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Meaning</h3>
             <p className="text-base font-medium leading-6 text-ink">{state.explanation.naturalMeaning}</p>
           </section>
 
           {/* Meaningful phrase-first breakdown */}
           <section aria-label="Breakdown" className="mb-3 border-t border-hairline pt-3">
-            <h4 className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink-muted">Phrases</h4>
+            <h3 className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink-muted">Phrases</h3>
             <dl className="space-y-2">
               {state.explanation.breakdown.map((item) => (
                 <div key={`${item.text}-${item.meaning}`} className="grid grid-cols-[auto_1fr] items-baseline gap-x-2">

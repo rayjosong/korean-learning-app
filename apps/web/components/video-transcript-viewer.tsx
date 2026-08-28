@@ -135,6 +135,7 @@ export function VideoTranscriptViewer({
                     }}
                   >
                     <span className={`pt-0.5 text-xs tabular-nums ${isActive || isSelected ? "font-semibold text-ink-secondary" : "text-ink-muted"}`}>
+                      {isActive ? <span aria-hidden="true" className="mr-1 text-[10px] text-warning">▶</span> : null}
                       {formatTimestamp(segment.startTimeMs)}
                     </span>
                     <span lang="ko" className="text-[18px] font-[475] leading-[1.7]">{segment.text}</span>
@@ -261,7 +262,10 @@ function StudyTranscriptContext({
                     : "border-l-transparent text-ink-secondary hover:bg-surface-subtle hover:text-ink"
               }`}
             >
-              <span className={`block text-xs tabular-nums ${isActive || isSelected ? "font-semibold text-ink-secondary" : "text-ink-muted"}`}>{formatTimestamp(segment.startTimeMs)}</span>
+              <span className={`block text-xs tabular-nums ${isActive || isSelected ? "font-semibold text-ink-secondary" : "text-ink-muted"}`}>
+                {isActive ? <span aria-hidden="true" className="mr-1 text-[10px] text-warning">▶</span> : null}
+                {formatTimestamp(segment.startTimeMs)}
+              </span>
               <span lang="ko" className="mt-1 block text-[18px] font-[475] leading-[1.7]">{segment.text}</span>
             </button>
             </div>
