@@ -207,6 +207,8 @@ test/fixtures/
 
 The exact directory may follow existing repository conventions; the important requirement is that canonical regression tests do not rely on network responses changing underneath them.
 
+The web browser suite uses named query fixtures through `apps/web/e2e/fixture.ts` and `apps/web/lib/fixture-session.ts`: `watch-study`, `long`, `populated`, `loading`, and `error`. These fixtures pin the browser date, use the local Pretendard font, and seed IndexedDB when learner-state coverage is needed. The loading fixture is released by an explicit test event, and the error fixture uses the deterministic model failure path.
+
 Fixtures should represent real product edge cases:
 
 - short and long transcripts;

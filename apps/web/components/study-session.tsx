@@ -19,7 +19,7 @@ import { useSentenceExplanation } from "@/lib/use-sentence-explanation";
 import { useWordExplanation } from "@/lib/use-word-explanation";
 import { useYouTubePlayer } from "@/lib/use-youtube-player";
 import { clearExplanationCache, ExplanationDatabase, recordStudiedContent } from "@korean-learning/storage";
-import { createFixtureLanguageModel } from "@/lib/fixture-session";
+import { createFixtureLanguageModel, type FixtureScenario } from "@/lib/fixture-session";
 
 export interface StudySessionProps {
   videoId: string;
@@ -27,9 +27,10 @@ export interface StudySessionProps {
   videoUrl?: string;
   onReplay?: (videoUrl: string) => void;
   fixture?: boolean;
+  fixtureScenario?: FixtureScenario;
 }
 
-export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = false }: StudySessionProps) {
+export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = false, fixtureScenario }: StudySessionProps) {
   const [settings, setSettings] = useState<AiSettings>({ apiKey: "", model: "gpt-4o-mini" });
   const [settingsReady, setSettingsReady] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -62,7 +63,7 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
   }, [cacheDatabase]);
 
   const languageModel = useMemo(() => {
-    if (fixture) return createFixtureLanguageModel();
+    if (fixture) return createFixtureLanguageModel(fixtureScenario);
     if (!settings.apiKey.trim() || !settings.model.trim()) return null;
     return withExplanationCache({
       model: createLanguageModel(settings),
@@ -70,7 +71,7 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
       provider: "openai-compatible",
       modelName: settings.model.trim()
     });
-  }, [fixture, settings, cacheDatabase]);
+  }, [fixture, fixtureScenario, settings, cacheDatabase]);
 
   useEffect(() => {
     if (cacheDatabase) void recordStudiedContent(cacheDatabase, { videoId, studiedAt: new Date().toISOString() });
