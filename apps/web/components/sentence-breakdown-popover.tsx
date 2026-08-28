@@ -7,6 +7,7 @@ import type { TranscriptSegment } from "@/lib/transcript";
 import type { SentenceExplanationState } from "@/lib/use-sentence-explanation";
 import type { LearnerItemState } from "@/lib/use-learner-item";
 import type { WordExplanationState } from "@/lib/use-word-explanation";
+import type { AssistancePresentation } from "@/lib/assistance-presentation";
 
 export interface SentenceBreakdownPopoverProps {
   segment: TranscriptSegment;
@@ -19,6 +20,9 @@ export interface SentenceBreakdownPopoverProps {
   onMarkLearning?: () => void;
   onUndo?: () => void;
   onClose: () => void;
+  assistancePresentation?: AssistancePresentation;
+  englishHelpRevealed?: boolean;
+  onShowEnglishHelp?: () => void;
 }
 
 export function SentenceBreakdownPopover({
@@ -31,11 +35,19 @@ export function SentenceBreakdownPopover({
   onMarkKnown,
   onMarkLearning,
   onUndo,
-  onClose
+  onClose,
+  assistancePresentation,
+  englishHelpRevealed = false,
+  onShowEnglishHelp
 }: SentenceBreakdownPopoverProps) {
   const [showGrammar, setShowGrammar] = useState(false);
   const [showNuance, setShowNuance] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
+
+  useEffect(() => {
+    if (assistancePresentation?.expandGrammarByDefault) setShowGrammar(true);
+    if (assistancePresentation?.expandNuanceByDefault) setShowNuance(true);
+  }, [assistancePresentation?.expandGrammarByDefault, assistancePresentation?.expandNuanceByDefault]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -97,6 +109,9 @@ export function SentenceBreakdownPopover({
       ) : null}
 
       {state.status === "ready" && state.explanation ? (
+        !assistancePresentation?.showEnglishMeaning ? (
+          <div className="pr-6"><p lang="ko" className="text-lg font-medium text-ink">{state.explanation.sentence}</p><button type="button" aria-expanded={englishHelpRevealed} onClick={onShowEnglishHelp} className="mt-3 rounded-lg border border-primary/40 px-3 py-1.5 text-sm text-primary-deep focus-visible:ring-2 focus-visible:ring-primary">Show English help</button></div>
+        ) : (
         <div className="pr-6">
           {/* Natural meaning prioritized */}
           <section aria-label="Natural meaning" className="mb-3">
@@ -202,6 +217,7 @@ export function SentenceBreakdownPopover({
             </div>
           )}
         </div>
+        )
       ) : null}
 
       {/* Inline Word Lookup Area */}
