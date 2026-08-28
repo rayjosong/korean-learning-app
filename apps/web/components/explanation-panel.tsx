@@ -5,6 +5,7 @@ import type { TranscriptSegment } from "@/lib/transcript";
 import type { SentenceExplanationState } from "@/lib/use-sentence-explanation";
 import type { LearnerItemState } from "@/lib/use-learner-item";
 import type { WordExplanationState } from "@/lib/use-word-explanation";
+import type { AssistancePresentation } from "@/lib/assistance-presentation";
 
 export interface ExplanationPanelProps {
   segment?: TranscriptSegment;
@@ -17,6 +18,9 @@ export interface ExplanationPanelProps {
   onMarkLearning?: () => void;
   onUndo?: () => void;
   progressive?: boolean;
+  assistancePresentation?: AssistancePresentation;
+  englishHelpRevealed?: boolean;
+  onShowEnglishHelp?: () => void;
 }
 
 export function ExplanationPanel({
@@ -29,7 +33,10 @@ export function ExplanationPanel({
   onMarkKnown,
   onMarkLearning,
   onUndo,
-  progressive = false
+  progressive = false,
+  assistancePresentation,
+  englishHelpRevealed = false,
+  onShowEnglishHelp
 }: ExplanationPanelProps) {
   const [openSection, setOpenSection] = useState<"grammar" | "nuance" | "examples">();
   return (
@@ -76,6 +83,9 @@ export function ExplanationPanel({
           progressive={progressive}
           openSection={openSection}
           onToggleSection={(section) => setOpenSection((current) => current === section ? undefined : section)}
+          assistancePresentation={assistancePresentation}
+          englishHelpRevealed={englishHelpRevealed}
+          onShowEnglishHelp={onShowEnglishHelp}
         />
       ) : null}
 
@@ -91,14 +101,23 @@ function ExplanationContent({
   onWordClick,
   progressive,
   openSection,
-  onToggleSection
+  onToggleSection,
+  assistancePresentation,
+  englishHelpRevealed,
+  onShowEnglishHelp
 }: {
   explanation: SentenceExplanation;
   onWordClick?: (word: string) => void;
   progressive: boolean;
   openSection?: "grammar" | "nuance" | "examples";
   onToggleSection: (section: "grammar" | "nuance" | "examples") => void;
+  assistancePresentation?: AssistancePresentation;
+  englishHelpRevealed: boolean;
+  onShowEnglishHelp?: () => void;
 }) {
+  if (assistancePresentation && !assistancePresentation.showEnglishMeaning) {
+    return <article><p lang="ko" className="text-[26px] font-[550] leading-[1.6] text-ink">{explanation.sentence}</p><button type="button" aria-expanded={englishHelpRevealed} onClick={onShowEnglishHelp} className="mt-4 rounded-lg border border-primary/40 px-3 py-1.5 text-sm text-primary-deep focus-visible:ring-2 focus-visible:ring-primary">Show English help</button></article>;
+  }
   return (
     <article>
       <p lang="ko" className="text-[26px] font-[550] leading-[1.6] text-ink">{explanation.sentence}</p>
@@ -172,14 +191,14 @@ function ExplanationContent({
         </section>
       ) : null}
 
-      {progressive && openSection === "grammar" && explanation.grammar.length > 0 ? (
+      {progressive && (openSection === "grammar" || assistancePresentation?.expandGrammarByDefault) && explanation.grammar.length > 0 ? (
         <section className="mt-3 rounded-lg border border-hairline bg-surface-subtle p-3" aria-label="Grammar">
           <ul className="space-y-1.5">
             {explanation.grammar.map((item) => <li key={`${item.form}-${item.explanation}`} className="text-sm leading-6 text-ink-secondary"><span lang="ko" className="font-medium text-ink">{item.form}</span><span className="text-ink-muted"> — </span>{item.explanation}</li>)}
           </ul>
         </section>
       ) : null}
-      {progressive && openSection === "nuance" && explanation.nuance ? (
+      {progressive && (openSection === "nuance" || assistancePresentation?.expandNuanceByDefault) && explanation.nuance ? (
         <section className="mt-3 rounded-lg border border-hairline bg-surface-subtle p-3" aria-label="Nuance"><p className="text-sm leading-6 text-ink-secondary">{explanation.nuance}</p></section>
       ) : null}
       {progressive && openSection === "examples" ? (

@@ -60,7 +60,7 @@ test("VideoTranscriptViewer distinguishes active playback segment and selected s
   assert.match(html, /aria-current="true"/);
 });
 
-test("Assistance label is rendered read-only as Guided", () => {
+test("Assistance control defaults to Guided", () => {
   const html = renderToString(
     <VideoTranscriptViewer
       videoId="test-video"
@@ -68,8 +68,9 @@ test("Assistance label is rendered read-only as Guided", () => {
     />
   ).replaceAll("<!-- -->", "");
 
-  assert.match(html, /Assistance:/);
+  assert.match(html, /aria-label="Assistance level"/);
   assert.match(html, /Guided/);
+  assert.match(html, /aria-checked="true"/);
 });
 
 test("VideoTranscriptViewer renders SentenceBreakdownPopover in watch mode when selected", () => {

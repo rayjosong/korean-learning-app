@@ -452,20 +452,20 @@ Verified through merged #58 / PR #68 deterministic browser gate, checked-in visu
 
 ---
 
-### [ ] #30 Assistance levels
+### [x] #30 Assistance levels
 
 Acceptance criteria:
-- [ ] Supports `full`, `guided`, and `immersion`.
-- [ ] Guided is default.
-- [ ] Assistance changes presentation, not learner knowledge state.
-- [ ] Full makes translation/help easier to reveal while keeping Korean primary.
-- [ ] Guided keeps Korean first and reveals concise help after interaction.
-- [ ] Immersion is Korean-only by default and requires intentional requests for English help.
-- [ ] No assistance level proactively pauses playback because content appears difficult.
-- [ ] Preference persists locally.
-- [ ] Provider settings remain separate from assistance settings.
+- [x] Supports `full`, `guided`, and `immersion`.
+- [x] Guided is default.
+- [x] Assistance changes presentation, not learner knowledge state.
+- [x] Full makes translation/help easier to reveal while keeping Korean primary.
+- [x] Guided keeps Korean first and reveals concise help after interaction.
+- [x] Immersion is Korean-only by default and requires intentional requests for English help.
+- [x] No assistance level proactively pauses playback because content appears difficult.
+- [x] Preference persists locally.
+- [x] Provider settings remain separate from assistance settings.
 
-Implementation plan: [IMPLEMENTATION-30.md](IMPLEMENTATION-30.md). This is planning guidance only; all #30 completion checkboxes remain unchanged.
+Implementation plan: [IMPLEMENTATION-30.md](IMPLEMENTATION-30.md). Verification evidence: [QA-30.md](QA-30.md).
 
 Depends on: #29
 
