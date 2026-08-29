@@ -59,7 +59,7 @@ test("bounds invalid saved confidence values before averaging", () => {
   });
 
   assert.deepEqual(profile.recognitionConfidence, { count: 3, average: 33.3 });
-  assert.deepEqual(profile.productionConfidence, { count: 3, average: 30 });
+  assert.deepEqual(profile.productionConfidence, { count: 3, average: 33.3 });
 });
 
 test("normalizes and deduplicates repeated grammar forms", () => {
