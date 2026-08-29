@@ -110,7 +110,7 @@ export function ContextualReviewPanel({
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
               <span>{formatTimestamp(session.context.startTimeMs)}</span>
               <span aria-hidden="true">·</span>
-              <span>Source video</span>
+              <span className="text-ink-secondary">Source video</span>
               <button
                 type="button"
                 onClick={() => onReturnToSource?.(session.context!)}
