@@ -25,7 +25,7 @@ test("dismissing the first recommendation promotes Resume and persists after rel
   await page.getByRole("button", { name: "Dismiss review recommendation" }).click();
   await expect(page.getByText('Continue "성시경 먹을텐데 - fixture" where you left off.')).toBeVisible();
   await page.reload();
-  await expect(page.getByText("Continue the video you last studied.")).toBeVisible();
+  await expect(page.getByText("Continue "성시경 먹을텐데 - fixture" where you left off.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Dismiss review recommendation" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Dismiss resume recommendation" })).toBeVisible();
 });
