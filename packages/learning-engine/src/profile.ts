@@ -45,9 +45,14 @@ function normalizeLabel(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
+function boundedConfidence(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, value));
+}
+
 function confidenceSummary(values: readonly number[]): ConfidenceSummary {
   if (values.length === 0) return { count: 0, average: null };
-  const total = values.reduce((sum, value) => sum + Math.max(0, Math.min(100, value)), 0);
+  const total = values.reduce((sum, value) => sum + boundedConfidence(value), 0);
   return { count: values.length, average: Math.round((total / values.length) * 10) / 10 };
 }
 
@@ -66,7 +71,9 @@ function countLabels(values: readonly string[]): Map<string, { label: string; co
 /**
  * Builds a deterministic, explainable local learner snapshot.
  *
- * Confidence is the arithmetic mean across saved known/learning items. Grammar
+ * Confidence is the arithmetic mean across saved known/learning items. Invalid
+ * persisted confidence values are treated as zero defensively, while the
+ * summary count remains the number of eligible saved items. Grammar
  * and speech-level observations are exposure counts only; they never imply
  * mastery. Speech-level familiarity intentionally describes repeated exposure:
  * one encounter is "exposed", two or three are "familiar", and four or more

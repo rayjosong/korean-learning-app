@@ -47,6 +47,21 @@ test("summarizes mixed learner state and 0/100 confidence boundaries", () => {
   assert.deepEqual(profile.productionConfidence, { count: 2, average: 50 });
 });
 
+test("bounds invalid saved confidence values before averaging", () => {
+  const profile = aggregateLearnerProfile({
+    items: [
+      item({ recognitionConfidence: 150, productionConfidence: -10 }),
+      item({ recognitionConfidence: Number.NaN, productionConfidence: Number.POSITIVE_INFINITY }),
+      item({ recognitionConfidence: 0, productionConfidence: 100 })
+    ],
+    grammar: [],
+    speechLevels: []
+  });
+
+  assert.deepEqual(profile.recognitionConfidence, { count: 3, average: 33.3 });
+  assert.deepEqual(profile.productionConfidence, { count: 3, average: 30 });
+});
+
 test("normalizes and deduplicates repeated grammar forms", () => {
   const profile = aggregateLearnerProfile({
     items: [],
