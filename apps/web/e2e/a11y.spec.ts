@@ -54,7 +54,7 @@ test("contextual review recall, reveal, and unavailable-clip states are accessib
   await openFixture(page, "populated");
   await page.locator("summary").click();
   const review = page.getByRole("region", { name: "Contextual review" });
-  await expect(review.getByRole("button", { name: "Reveal meaning" })).toBeFocused({ timeout: 0 }).catch(() => undefined);
+  await expect(review.getByRole("button", { name: "Reveal meaning" })).toBeFocused();
   let results = await new AxeBuilder({ page }).analyze();
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 
