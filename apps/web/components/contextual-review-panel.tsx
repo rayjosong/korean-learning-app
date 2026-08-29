@@ -17,6 +17,7 @@ export interface ContextualReviewPanelProps {
   database?: ExplanationDatabase;
   refreshKey: number;
   clipAdapter?: ReviewClipAdapter;
+  loadClipOnMount?: boolean;
   onReviewComplete: () => void;
   onReturnToSource?: (context: LearningContextRecord) => void;
 }
@@ -25,6 +26,7 @@ export function ContextualReviewPanel({
   database,
   refreshKey,
   clipAdapter,
+  loadClipOnMount = true,
   onReviewComplete,
   onReturnToSource
 }: ContextualReviewPanelProps) {
@@ -61,12 +63,13 @@ export function ContextualReviewPanel({
     try {
       setClipStatus(clipAdapter.loadClip({
         videoId: session.context.videoId,
-        window: reviewClipWindow(session.context)
+        window: reviewClipWindow(session.context),
+        seek: loadClipOnMount
       }));
     } catch {
       setClipStatus("unavailable");
     }
-  }, [session?.context?.id]);
+  }, [loadClipOnMount, session?.context?.id]);
 
   async function finish(outcome: ReviewOutcome) {
     if (!database || !session || saving) return;

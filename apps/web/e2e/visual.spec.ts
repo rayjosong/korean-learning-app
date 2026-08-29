@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openFixture } from "./fixture";
+import { openFixture, openHomeFixture } from "./fixture";
 
 // Each state gets a fresh page so baselines cannot inherit prior interactions.
 test("Watch default state matches the reviewed desktop baseline", async ({ page }) => {
@@ -29,6 +29,18 @@ test("Home entry state matches the Warm Korean Editorial layout", async ({ page 
   await page.goto("/");
   await expect(page.getByLabel("Korean YouTube URL")).toBeVisible();
   await expect(page).toHaveScreenshot("32-home-1440.png", { fullPage: true, animations: "disabled" });
+});
+
+test("Populated Home keeps Continue as the primary desktop action", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHomeFixture(page, "home-populated");
+  await expect(page).toHaveScreenshot("23-home-populated-1440.png", { fullPage: true, animations: "disabled" });
+});
+
+test("Empty Home keeps the new-content path visible", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHomeFixture(page, "home-empty");
+  await expect(page).toHaveScreenshot("23-home-empty-1440.png", { fullPage: true, animations: "disabled" });
 });
 
 test("Watch default state is covered at the canonical 1440px viewport", async ({ page }) => {

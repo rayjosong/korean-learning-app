@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { openFixture } from "./fixture";
+import { openFixture, openHomeFixture } from "./fixture";
 
 test("canonical Watch and Study states have no obvious accessibility violations", async ({ page }) => {
   await openFixture(page);
@@ -9,6 +9,22 @@ test("canonical Watch and Study states have no obvious accessibility violations"
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
   }
+});
+
+test("Home states have understandable landmarks and keyboard actions", async ({ page }) => {
+  await openHomeFixture(page, "home-populated");
+  let results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+  const input = page.getByLabel("Korean YouTube URL");
+  await input.focus();
+  await expect(input).toBeFocused();
+  await page.getByRole("button", { name: "Review ->" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("region", { name: "Contextual review" })).toBeVisible();
+
+  await openHomeFixture(page, "home-empty");
+  results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 });
 
 test("transcript and disclosure controls remain keyboard operable", async ({ page }) => {

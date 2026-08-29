@@ -1,5 +1,4 @@
 import { StudySessionLoader } from "@/components/study-session-loader";
-import { appTagline } from "@/lib/site";
 
 const upcomingNav = ["Library", "Review", "Progress", "Settings"];
 
@@ -18,11 +17,6 @@ export default function HomePage() {
           ))}
         </div>
       </nav>
-      <header className="mb-10 max-w-2xl">
-        <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-primary-deep">First study session</p>
-        <h1 className="text-4xl font-semibold tracking-tight text-ink sm:text-5xl">Learn Korean through real content.</h1>
-        <p className="mt-5 text-lg leading-8 text-ink-secondary">{appTagline}</p>
-      </header>
       <StudySessionLoader />
     </main>
   );

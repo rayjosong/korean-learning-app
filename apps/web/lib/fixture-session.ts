@@ -11,7 +11,7 @@ import {
 } from "@korean-learning/storage";
 import { putAiProviderSettings } from "@korean-learning/storage/ai-settings";
 
-export type FixtureScenario = "watch-study" | "long" | "populated" | "review-unavailable" | "review-no-context" | "loading" | "error";
+export type FixtureScenario = "watch-study" | "long" | "populated" | "review-unavailable" | "review-no-context" | "loading" | "error" | "home-empty" | "home-populated" | "home-due-only";
 
 export const FIXTURE_VIDEO_ID = "fixture-29d-video";
 export const FIXTURE_SEGMENTS: readonly TranscriptSegment[] = Array.from(
@@ -61,8 +61,6 @@ const FIXTURE_EXPLANATION: SentenceExplanation = {
 };
 
 export async function seedFixtureStorage(scenario: FixtureScenario): Promise<void> {
-  if (scenario !== "populated" && scenario !== "review-unavailable" && scenario !== "review-no-context") return;
-
   const database = new ExplanationDatabase();
   await Promise.all([
     database.explanations.clear(),
@@ -74,6 +72,17 @@ export async function seedFixtureStorage(scenario: FixtureScenario): Promise<voi
     database.studiedContent.clear(),
     database.contentProgressSnapshots.clear()
   ]);
+
+  if (scenario === "home-empty") {
+    database.close();
+    return;
+  }
+
+  const shouldSeedReview = scenario === "populated" || scenario === "review-unavailable" || scenario === "review-no-context" || scenario === "home-populated" || scenario === "home-due-only";
+  if (!shouldSeedReview) {
+    database.close();
+    return;
+  }
 
   const context = {
     id: `${FIXTURE_VIDEO_ID}:fixture-2:그래서`,
@@ -137,7 +146,20 @@ export async function seedFixtureStorage(scenario: FixtureScenario): Promise<voi
     model: "fixture-model",
     createdAt: "2026-01-14T00:00:00.000Z"
   });
-  await recordStudiedContent(database, { videoId: FIXTURE_VIDEO_ID, studiedAt: FIXTURE_NOW });
+  await recordStudiedContent(database, {
+    videoId: FIXTURE_VIDEO_ID,
+    sourceUrl: "https://youtu.be/fixture-29d-video",
+    title: "성시경 먹을텐데 - fixture",
+    studiedAt: FIXTURE_NOW
+  });
+  if (scenario === "home-populated") {
+    await recordStudiedContent(database, {
+      videoId: "fixture-recent-video",
+      sourceUrl: "https://youtu.be/fixture-recent-video",
+      title: "서울에서 보낸 하루",
+      studiedAt: "2026-01-14T00:00:00.000Z"
+    });
+  }
   await putAiProviderSettings(database, {
     provider: "openai-compatible",
     apiKey: "sk-fixture-only",
@@ -154,6 +176,20 @@ export async function seedFixtureStorage(scenario: FixtureScenario): Promise<voi
     comprehensionMidpoint: 45,
     source: "fallback"
   });
+  if (scenario === "home-populated") {
+    await database.contentResume.put({
+      videoId: FIXTURE_VIDEO_ID,
+      sourceUrl: "https://youtu.be/fixture-29d-video",
+      title: "성시경 먹을텐데 - fixture",
+      lastPositionMs: 125000,
+      completed: false,
+      updatedAt: "2026-01-15T00:00:00.000Z"
+    });
+  }
+  if (scenario === "home-due-only") {
+    await database.contentResume.clear();
+    await database.studiedContent.clear();
+  }
   database.close();
 }
 

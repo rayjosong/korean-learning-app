@@ -21,7 +21,7 @@ import { useLearnerItem } from "@/lib/use-learner-item";
 import { useSentenceExplanation } from "@/lib/use-sentence-explanation";
 import { useWordExplanation } from "@/lib/use-word-explanation";
 import { useYouTubePlayer } from "@/lib/use-youtube-player";
-import { clearExplanationCache, ExplanationDatabase, recordStudiedContent } from "@korean-learning/storage";
+import { clearExplanationCache, ExplanationDatabase, putContentResume, recordStudiedContent } from "@korean-learning/storage";
 import { createFixtureLanguageModel, type FixtureScenario } from "@/lib/fixture-session";
 import { createSessionReviewClipAdapter } from "@/lib/review-clip-adapter";
 
@@ -32,9 +32,10 @@ export interface StudySessionProps {
   onReplay?: (videoUrl: string) => void;
   fixture?: boolean;
   fixtureScenario?: FixtureScenario;
+  initialPositionMs?: number;
 }
 
-export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = false, fixtureScenario }: StudySessionProps) {
+export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = false, fixtureScenario, initialPositionMs = 0 }: StudySessionProps) {
   const [settings, setSettings] = useState<AiSettings>({ apiKey: "", model: "gpt-4o-mini" });
   const [settingsReady, setSettingsReady] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -56,8 +57,10 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
     playerError,
     seekTo,
     play,
-    pause
-  } = useYouTubePlayer({ videoId, segments });
+    pause,
+    getCurrentTime,
+    isReady
+  } = useYouTubePlayer({ videoId, segments, initialPositionMs });
 
   useEffect(() => {
     if (!cacheDatabase) return;
@@ -95,8 +98,29 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
   }, [fixture, fixtureScenario, settings, cacheDatabase]);
 
   useEffect(() => {
-    if (cacheDatabase) void recordStudiedContent(cacheDatabase, { videoId, studiedAt: new Date().toISOString() });
-  }, [cacheDatabase, videoId]);
+    if (cacheDatabase && isReady) {
+      void recordStudiedContent(cacheDatabase, { videoId, sourceUrl: videoUrl, studiedAt: new Date().toISOString() });
+    }
+  }, [cacheDatabase, isReady, videoId, videoUrl]);
+
+  useEffect(() => {
+    if (!cacheDatabase || !isReady || !videoUrl) return;
+    let lastSavedPositionMs = initialPositionMs;
+    const persistPosition = () => {
+      const positionMs = Math.max(0, Math.round(getCurrentTime() * 1000));
+      if (positionMs <= 0 || Math.abs(positionMs - lastSavedPositionMs) < 1000) return;
+      lastSavedPositionMs = positionMs;
+      void putContentResume(cacheDatabase, {
+        videoId,
+        sourceUrl: videoUrl,
+        lastPositionMs: positionMs,
+        completed: false,
+        updatedAt: new Date().toISOString()
+      });
+    };
+    const interval = window.setInterval(persistPosition, 5000);
+    return () => window.clearInterval(interval);
+  }, [cacheDatabase, getCurrentTime, initialPositionMs, isReady, videoId, videoUrl]);
 
   const { state, explain } = useSentenceExplanation(languageModel);
   const {
@@ -247,6 +271,7 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
               database={cacheDatabase}
               refreshKey={historyRevision}
               clipAdapter={reviewClipAdapter}
+              loadClipOnMount={initialPositionMs <= 0}
               onReturnToSource={(context) => {
                 if (context.videoId === videoId) {
                   seekTo(context.startTimeMs / 1000);
