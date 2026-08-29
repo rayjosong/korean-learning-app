@@ -82,3 +82,16 @@ test("contextual review recall, reveal, and unavailable-clip states are accessib
   results = await new AxeBuilder({ page }).analyze();
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 });
+
+
+test("learner profile populated and empty states remain accessible", async ({ page }) => {
+  await openFixture(page, "populated");
+  await page.locator("summary").click();
+  let results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+
+  await openFixture(page);
+  await page.locator("summary").click();
+  results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+});
