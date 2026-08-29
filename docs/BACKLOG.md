@@ -349,6 +349,8 @@ Depends on: #13, #15
 
 ### [ ] #24 Opinionated recommendation engine
 
+Implementation plan: [IMPLEMENTATION-24.md](IMPLEMENTATION-24.md).
+
 Acceptance criteria:
 - [ ] Rule-based first.
 - [ ] Recommendation includes reason.
