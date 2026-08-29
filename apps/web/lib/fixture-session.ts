@@ -72,7 +72,6 @@ export async function seedFixtureStorage(scenario: FixtureScenario): Promise<voi
     database.studiedContent.clear(),
     database.contentProgressSnapshots.clear(),
     database.contentResume.clear(),
-    database.recommendationDismissals.clear()
   ]);
 
   if (scenario === "home-empty") {
