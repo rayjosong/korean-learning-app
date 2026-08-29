@@ -108,7 +108,7 @@ export function ContextualReviewPanel({
           <div className="rounded-lg border border-hairline bg-surface-subtle p-4">
             <p lang="ko" className="text-xl leading-9 text-ink">{session.context.sentence}</p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
-              <span>{formatTimestamp(session.context.startTimeMs)}</span>
+              <span className="text-ink-secondary">{formatTimestamp(session.context.startTimeMs)}</span>
               <span aria-hidden="true">·</span>
               <span className="text-ink-secondary">Source video</span>
               <button
