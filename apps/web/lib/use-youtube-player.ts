@@ -162,6 +162,14 @@ export function useYouTubePlayer({ videoId, segments, enabled = true, initialPos
     return () => window.clearInterval(interval);
   }, [enabled, segments]);
 
+  useEffect(() => {
+    if (!enabled || !isReady || initialPositionMs <= 0) return;
+    const player = playerRef.current;
+    if (!player) return;
+    player.seekTo(initialPositionMs / 1000, true);
+    player.pauseVideo();
+  }, [enabled, initialPositionMs, isReady]);
+
   const seekTo = (seconds: number) => {
     const player = playerRef.current;
     if (!player || typeof player.seekTo !== "function") {
