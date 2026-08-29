@@ -126,7 +126,7 @@ export function HomeSurface({
                   className="w-full rounded-lg border border-hairline bg-surface-subtle p-4 text-left transition hover:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
                   <span lang="ko" className="block text-base font-medium leading-7 text-ink">{content.title ?? "Korean video"}</span>
-                  <span className="mt-2 block text-xs text-ink-muted">Open in Watch</span>
+                  <span className="mt-2 block text-xs text-ink-secondary">Open in Watch</span>
                 </button>
               </div>
             ))}

@@ -57,6 +57,21 @@ export async function openHomeFixture(page: Page, scenario: "home-empty" | "home
       }
     }
     (globalThis as { Date: unknown }).Date = FixtureDate;
+
+    class FixturePlayer {
+      private currentTime = 0;
+      constructor(element: HTMLElement, options: { events: { onReady: (event: { target: FixturePlayer }) => void } }) {
+        element.dataset.player = "fixture";
+        (window as Window & { __fixturePlayer?: FixturePlayer }).__fixturePlayer = this;
+        queueMicrotask(() => options.events.onReady({ target: this }));
+      }
+      getCurrentTime() { return this.currentTime; }
+      seekTo(seconds: number) { this.currentTime = seconds; }
+      playVideo() { document.body.dataset.playerState = "playing"; }
+      pauseVideo() { document.body.dataset.playerState = "paused"; }
+      destroy() {}
+    }
+    (window as Window & { YT?: unknown }).YT = { Player: FixturePlayer };
   });
   await page.goto(`/?fixture=${scenario}`);
   await expect(page.getByRole("heading", { name: "안녕하세요." })).toBeVisible();
