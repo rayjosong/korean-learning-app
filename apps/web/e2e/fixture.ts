@@ -3,7 +3,7 @@ import type { FixtureScenario } from "@/lib/fixture-session";
 
 declare global {
   interface Window {
-    __fixturePlayer?: { seekTo(seconds: number): void };
+    __fixturePlayer?: { seekTo(seconds: number): void; getCurrentTime(): number };
   }
 }
 
@@ -43,4 +43,22 @@ export async function openFixture(page: Page, scenario: FixtureScenario = "watch
       throw new Error("Pretendard Variable did not load in the fixture.");
     }
   });
+}
+
+export async function openHomeFixture(page: Page, scenario: "home-empty" | "home-populated" | "home-due-only" = "home-empty") {
+  await page.addInitScript(() => {
+    const RealDate = Date;
+    class FixtureDate extends RealDate {
+      constructor(value?: string | number | Date) {
+        super(value ?? "2026-01-15T00:00:00.000Z");
+      }
+      static now() {
+        return new RealDate("2026-01-15T00:00:00.000Z").valueOf();
+      }
+    }
+    (globalThis as { Date: unknown }).Date = FixtureDate;
+  });
+  await page.goto(`/?fixture=${scenario}`);
+  await expect(page.getByRole("heading", { name: "안녕하세요." })).toBeVisible();
+  await expect(page.getByLabel("Korean YouTube URL")).toBeVisible();
 }

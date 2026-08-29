@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { findSegmentAtTime, type TranscriptSegment } from "./transcript";
 
 export interface YouTubePlayer {
@@ -84,9 +84,10 @@ export interface UseYouTubePlayerProps {
   videoId: string;
   segments: readonly TranscriptSegment[];
   enabled?: boolean;
+  initialPositionMs?: number;
 }
 
-export function useYouTubePlayer({ videoId, segments, enabled = true }: UseYouTubePlayerProps) {
+export function useYouTubePlayer({ videoId, segments, enabled = true, initialPositionMs = 0 }: UseYouTubePlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const pendingSeekRef = useRef<number | null>(null);
@@ -99,6 +100,8 @@ export function useYouTubePlayer({ videoId, segments, enabled = true }: UseYouTu
     if (!enabled) return;
     let cancelled = false;
     setIsReady(false);
+    pendingSeekRef.current = initialPositionMs > 0 ? initialPositionMs : null;
+    pendingPlayStateRef.current = initialPositionMs > 0 ? "pause" : null;
 
     void loadYouTubeApi()
       .then((youTube) => {
@@ -145,7 +148,7 @@ export function useYouTubePlayer({ videoId, segments, enabled = true }: UseYouTu
       playerRef.current = null;
       setIsReady(false);
     };
-  }, [enabled, videoId]);
+  }, [enabled, videoId, initialPositionMs]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -186,6 +189,8 @@ export function useYouTubePlayer({ videoId, segments, enabled = true }: UseYouTu
     }
   };
 
+  const getCurrentTime = useCallback(() => playerRef.current?.getCurrentTime() ?? 0, []);
+
   return {
     playerContainerRef,
     playerRef,
@@ -195,6 +200,7 @@ export function useYouTubePlayer({ videoId, segments, enabled = true }: UseYouTu
     isReady,
     seekTo,
     play,
-    pause
+    pause,
+    getCurrentTime
   };
 }

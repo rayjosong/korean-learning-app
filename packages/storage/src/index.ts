@@ -37,6 +37,7 @@ export class ExplanationDatabase extends Dexie {
   assistanceSettings!: Table<import("./assistance-settings.ts").AssistanceSettingsRecord, string>;
   studiedContent!: Table<StudiedContentRecord, string>;
   contentProgressSnapshots!: Table<ContentProgressSnapshot, string>;
+  contentResume!: Table<ContentResumeRecord, string>;
 
   constructor(name = "korean-learning") {
     super(name);
@@ -93,6 +94,18 @@ export class ExplanationDatabase extends Dexie {
       contentProgressSnapshots: "id, videoId, capturedAt",
       aiProviderSettings: "id",
       assistanceSettings: "id"
+    });
+    this.version(10).stores({
+      explanations: "key, createdAt",
+      wordExplanations: "key",
+      learningItems: "id, text, lastSeenAt",
+      learningContexts: "id, itemId, createdAt",
+      reviewRecords: "id, itemId, reviewedAt, mode",
+      studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+      contentProgressSnapshots: "id, videoId, capturedAt",
+      aiProviderSettings: "id",
+      assistanceSettings: "id",
+      contentResume: "videoId, updatedAt"
     });
   }
 }
@@ -313,18 +326,68 @@ export interface StudiedContentRecord {
   videoId: string;
   firstStudiedAt: string;
   lastStudiedAt: string;
+  sourceUrl?: string;
+  title?: string;
 }
 
 export async function recordStudiedContent(
   database: ExplanationDatabase,
-  input: { videoId: string; studiedAt: string }
+  input: { videoId: string; studiedAt: string; sourceUrl?: string; title?: string }
 ): Promise<void> {
   const existing = await database.studiedContent.get(input.videoId);
   await database.studiedContent.put({
     videoId: input.videoId,
     firstStudiedAt: existing?.firstStudiedAt ?? input.studiedAt,
-    lastStudiedAt: input.studiedAt
+    lastStudiedAt: input.studiedAt,
+    ...(input.sourceUrl ?? existing?.sourceUrl ? { sourceUrl: input.sourceUrl ?? existing?.sourceUrl } : {}),
+    ...(input.title ?? existing?.title ? { title: input.title ?? existing?.title } : {})
   });
+}
+
+/** A resumable media position owned by the local learner. */
+export interface ContentResumeRecord {
+  videoId: string;
+  sourceUrl: string;
+  title?: string;
+  lastPositionMs: number;
+  durationMs?: number;
+  completed: boolean;
+  updatedAt: string;
+}
+
+export async function putContentResume(
+  database: ExplanationDatabase,
+  record: ContentResumeRecord
+): Promise<void> {
+  await database.contentResume.put({
+    ...record,
+    lastPositionMs: Math.max(0, Math.round(record.lastPositionMs)),
+    ...(record.durationMs === undefined ? {} : { durationMs: Math.max(0, Math.round(record.durationMs)) })
+  });
+}
+
+export async function getMostRecentResumableContent(
+  database: ExplanationDatabase
+): Promise<ContentResumeRecord | undefined> {
+  const records = await database.contentResume.orderBy("updatedAt").reverse().toArray();
+  return records.find((record) => !record.completed && record.lastPositionMs > 0);
+}
+
+export async function getRecentStudiedContent(
+  database: ExplanationDatabase,
+  limit = 4
+): Promise<StudiedContentRecord[]> {
+  return database.studiedContent.orderBy("lastStudiedAt").reverse().limit(Math.max(0, Math.floor(limit))).toArray();
+}
+
+export async function getDueReviewCount(
+  database: ExplanationDatabase,
+  now: string
+): Promise<number> {
+  const items = await database.learningItems.toArray();
+  return items.filter(
+    (item) => item.state === "learning" && typeof item.nextReviewAt === "string" && item.nextReviewAt <= now
+  ).length;
 }
 
 export async function getContentProgressSnapshots(
