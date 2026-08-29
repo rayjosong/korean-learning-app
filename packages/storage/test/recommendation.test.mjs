@@ -6,11 +6,11 @@ import Dexie from "dexie";
 import {
   ExplanationDatabase,
   getRecommendationInput,
-  putAiProviderSettings,
   putContentResume,
   putRecommendationDismissal,
   recordStudiedContent
 } from "../src/index.ts";
+import { putAiProviderSettings } from "../src/ai-settings.ts";
 
 test("reads recommendation evidence consistently and round-trips dismissals", async () => {
   const database = new ExplanationDatabase("recommendation-input-test");
