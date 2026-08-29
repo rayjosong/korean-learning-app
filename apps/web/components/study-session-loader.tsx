@@ -25,7 +25,7 @@ export function StudySessionLoader() {
   const [fixtureScenario] = useState<FixtureScenario | undefined>(() => {
     if (typeof window === "undefined") return undefined;
     const value = new URLSearchParams(window.location.search).get("fixture");
-    return value === "watch-study" || value === "long" || value === "populated" || value === "loading" || value === "error"
+    return value === "watch-study" || value === "long" || value === "populated" || value === "review-unavailable" || value === "review-no-context" || value === "loading" || value === "error"
       ? value
       : undefined;
   });

@@ -264,6 +264,50 @@ export async function putReviewRecord(database: ExplanationDatabase, record: Rev
   await database.reviewRecords.put(record);
 }
 
+/** The most recently created context that can provide a bounded source clip. */
+export async function getMostRecentUsableLearningContext(
+  database: ExplanationDatabase,
+  itemId: string
+): Promise<LearningContextRecord | undefined> {
+  const contexts = await database.learningContexts.where("itemId").equals(itemId).toArray();
+  return contexts
+    .filter((context) =>
+      Boolean(
+        context.videoId.trim() &&
+        context.transcriptSegmentId.trim() &&
+        context.sentence.trim() &&
+        Number.isFinite(context.startTimeMs) &&
+        Number.isFinite(context.endTimeMs) &&
+        context.startTimeMs >= 0 &&
+        context.endTimeMs > context.startTimeMs
+      )
+    )
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt) || right.id.localeCompare(left.id))[0];
+}
+
+/** Looks up cached natural meaning without coupling Review to an AI provider. */
+export async function getCachedNaturalMeaning(
+  database: ExplanationDatabase,
+  sentence: string
+): Promise<string | undefined> {
+  const normalized = sentence.replace(/\s+/g, " ").trim();
+  const records = (await database.explanations.toArray())
+    .filter((record) => record.sentence.replace(/\s+/g, " ").trim() === normalized)
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  return records[0]?.explanation.naturalMeaning;
+}
+
+/** Persists learner-state and its review audit record in one transaction. */
+export async function completeReviewAtomically(
+  database: ExplanationDatabase,
+  input: { item: LearningItem; record: ReviewRecord }
+): Promise<void> {
+  await database.transaction("rw", database.learningItems, database.reviewRecords, async () => {
+    await database.learningItems.put(input.item);
+    await database.reviewRecords.put(input.record);
+  });
+}
+
 /** Local activity for a successfully loaded piece of study content. */
 export interface StudiedContentRecord {
   videoId: string;

@@ -48,3 +48,21 @@ test("selected and playing rows expose independent state", async ({ page }) => {
   await expect(selected).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#segment-btn-fixture-1")).toContainText("▶");
 });
+
+
+test("contextual review recall, reveal, and unavailable-clip states are accessible", async ({ page }) => {
+  await openFixture(page, "populated");
+  await page.locator("summary").click();
+  const review = page.getByRole("region", { name: "Contextual review" });
+  let results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+
+  await review.getByRole("button", { name: "Reveal meaning" }).click();
+  results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+
+  await openFixture(page, "review-unavailable");
+  await page.locator("summary").click();
+  results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+});
