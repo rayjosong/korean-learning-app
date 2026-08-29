@@ -77,3 +77,22 @@ export async function openHomeFixture(page: Page, scenario: "home-empty" | "home
   await expect(page.getByRole("heading", { name: "안녕하세요." })).toBeVisible();
   await expect(page.getByLabel("Korean YouTube URL")).toBeVisible();
 }
+
+
+export async function openProgressFixture(page: Page, scenario: "progress-empty" | "progress-populated" = "progress-empty") {
+  await page.addInitScript(() => {
+    const RealDate = Date;
+    class FixtureDate extends RealDate {
+      constructor(value?: string | number | Date) {
+        super(value ?? "2026-01-15T00:00:00.000Z");
+      }
+      static now() {
+        return new RealDate("2026-01-15T00:00:00.000Z").valueOf();
+      }
+    }
+    (globalThis as { Date: unknown }).Date = FixtureDate;
+  });
+  await page.goto(`/progress?fixture=${scenario}`);
+  await expect(page.getByRole("heading", { name: "Your Korean" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Progress dashboard" })).toBeVisible();
+}

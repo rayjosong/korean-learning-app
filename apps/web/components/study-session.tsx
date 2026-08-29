@@ -6,7 +6,6 @@ import { ClozeReviewPanel } from "@/components/cloze-review-panel";
 import { ContextualReviewPanel } from "@/components/contextual-review-panel";
 import { AiProviderSettings } from "@/components/ai-provider-settings";
 import { LearnerProfilePanel } from "@/components/learner-profile-panel";
-import { ProgressDashboard } from "@/components/progress-dashboard";
 import { RevisitNotice } from "@/components/revisit-notice";
 import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
@@ -319,7 +318,6 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
               </button>
             </section>
             <LearnerProfilePanel database={cacheDatabase} refreshKey={historyRevision} />
-            <ProgressDashboard database={cacheDatabase} refreshKey={historyRevision} />
             <LearningHistoryPanel database={cacheDatabase} refreshKey={historyRevision} />
           </div>
         </div>

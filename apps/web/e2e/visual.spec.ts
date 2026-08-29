@@ -119,24 +119,6 @@ test("Review utility has an honest empty state", async ({ page }) => {
   await expect(review).toHaveScreenshot("32-review-empty-1440.png", { animations: "disabled" });
 });
 
-test("Progress utility renders populated and empty states", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await openFixture(page, "populated");
-  await page.locator("summary").click();
-  const progress = page.getByRole("region", { name: "Progress dashboard" });
-  await expect(progress).toContainText("Known items");
-  await expect(progress).toHaveScreenshot("32-progress-populated-1440.png", { animations: "disabled" });
-});
-
-test("Progress utility preserves honest empty metrics", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await openFixture(page);
-  await page.locator("summary").click();
-  const progress = page.getByRole("region", { name: "Progress dashboard" });
-  await expect(progress).toContainText("No reviews yet");
-  await expect(progress).toHaveScreenshot("32-progress-empty-1440.png", { animations: "disabled" });
-});
-
 test("Settings utility renders ready and saved states", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page, "populated");
