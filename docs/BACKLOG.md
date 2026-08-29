@@ -331,17 +331,17 @@ Depends on: #19, #21
 
 ## Milestone 5 — Product guidance
 
-### [ ] #23 Continue-learning home screen
+### [x] #23 Continue-learning home screen
 
 Acceptance criteria:
-- [ ] Resume unfinished/recent video.
-- [ ] Due review surfaced.
-- [ ] Recent content surfaced.
-- [ ] Recommended content can be surfaced when recommendation data exists.
-- [ ] New-content entry point exists.
-- [ ] Home mixes continuation, review, and content discovery in one calm hierarchy.
-- [ ] Home answers "What should I do next?" and does not become a generic metrics dashboard.
-- [ ] Desktop layout follows `DESIGN.md` reference hierarchy.
+- [x] Resume unfinished/recent video.
+- [x] Due review surfaced.
+- [x] Recent content surfaced.
+- [x] Recommended content can be surfaced when recommendation data exists.
+- [x] New-content entry point exists.
+- [x] Home mixes continuation, review, and content discovery in one calm hierarchy.
+- [x] Home answers "What should I do next?" and does not become a generic metrics dashboard.
+- [x] Desktop layout follows `DESIGN.md` reference hierarchy.
 
 Depends on: #13, #15
 
