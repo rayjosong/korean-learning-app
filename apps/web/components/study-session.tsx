@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { ClozeReviewPanel } from "@/components/cloze-review-panel";
+import { ContextualReviewPanel } from "@/components/contextual-review-panel";
 import { AiProviderSettings } from "@/components/ai-provider-settings";
 import { LearnerProfilePanel } from "@/components/learner-profile-panel";
 import { ProgressDashboard } from "@/components/progress-dashboard";
@@ -22,6 +23,7 @@ import { useWordExplanation } from "@/lib/use-word-explanation";
 import { useYouTubePlayer } from "@/lib/use-youtube-player";
 import { clearExplanationCache, ExplanationDatabase, recordStudiedContent } from "@korean-learning/storage";
 import { createFixtureLanguageModel, type FixtureScenario } from "@/lib/fixture-session";
+import { createSessionReviewClipAdapter } from "@/lib/review-clip-adapter";
 
 export interface StudySessionProps {
   videoId: string;
@@ -154,6 +156,11 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
     });
   }
 
+  const reviewClipAdapter = useMemo(
+    () => createSessionReviewClipAdapter({ activeVideoId: videoId, seekTo, play, pause }),
+    [videoId, seekTo, play, pause]
+  );
+
   async function clearCachedExplanations() {
     if (cacheDatabase) await clearExplanationCache(cacheDatabase);
   }
@@ -236,6 +243,18 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
         <div className="grid gap-6 border-t border-hairline p-4 md:grid-cols-2">
           <div className="flex flex-col gap-6">
+            <ContextualReviewPanel
+              database={cacheDatabase}
+              refreshKey={historyRevision}
+              clipAdapter={reviewClipAdapter}
+              onReturnToSource={(context) => {
+                if (context.videoId === videoId) {
+                  seekTo(context.startTimeMs / 1000);
+                  pause();
+                }
+              }}
+              onReviewComplete={() => setHistoryRevision((revision) => revision + 1)}
+            />
             <ClozeReviewPanel
               database={cacheDatabase}
               refreshKey={historyRevision}
