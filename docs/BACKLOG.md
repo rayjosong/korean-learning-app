@@ -308,20 +308,20 @@ Depends on: #19
 
 ---
 
-### [ ] #21 Progress dashboard
+### [x] #21 Progress dashboard
 
-Implementation plan: [IMPLEMENTATION-21.md](IMPLEMENTATION-21.md).
+Implementation plan: [IMPLEMENTATION-21.md](IMPLEMENTATION-21.md). Verification evidence: [QA-21.md](QA-21.md).
 
-Remaining: the merged local metric foundation must become the canonical top-level Progress surface, with recent review recall prioritized over supporting counts/activity and full route-level browser, visual, and accessibility evidence.
+Completed: Progress is the canonical local-only `/progress` surface. Recent 30-day review recall is primary; learner-state counts and activity are supporting context. The duplicate Watch/Study utility panel is removed.
 
 Acceptance criteria:
-- [ ] Known items.
-- [ ] Learning items.
-- [ ] Review success.
-- [ ] Explanation frequency.
-- [ ] Content studied.
-- [ ] Comprehension-oriented information is visually prioritized over vanity metrics.
-- [ ] Layout follows `DESIGN.md` rather than a generic KPI-card dashboard.
+- [x] Known items.
+- [x] Learning items.
+- [x] Review success.
+- [x] Explanation frequency.
+- [x] Content studied.
+- [x] Comprehension-oriented information is visually prioritized over vanity metrics.
+- [x] Layout follows `DESIGN.md` rather than a generic KPI-card dashboard.
 
 Depends on: #18
 
