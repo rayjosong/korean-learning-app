@@ -256,11 +256,13 @@ Depends on: #15
 ### [x] #17 Mixed review modes
 
 Acceptance criteria:
-- [ ] Recognition mode.
-- [ ] Production mode.
-- [ ] Cloze mode.
-- [ ] Review type stored.
-- [ ] Recognition/production confidence tracked separately.
+- [x] Recognition mode.
+- [x] Production mode.
+- [x] Cloze mode.
+- [x] Review type stored.
+- [x] Recognition/production confidence tracked separately.
+
+Verification evidence: [QA-17.md](QA-17.md).
 
 Depends on: #16
 
