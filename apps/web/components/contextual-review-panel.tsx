@@ -120,7 +120,14 @@ export function ContextualReviewPanel({
               </button>
             </div>
             {clipStatus === "available" ? (
-              <button type="button" onClick={() => clipAdapter?.play()} className="mt-4 rounded-lg border border-hairline-strong px-3 py-2 text-sm text-ink-secondary hover:border-primary hover:text-ink focus-visible:ring-2 focus-visible:ring-primary">
+              <button type="button" onClick={() => {
+                  if (!clipAdapter) return;
+                  clipAdapter.loadClip({
+                    videoId: session.context.videoId,
+                    window: reviewClipWindow(session.context)
+                  });
+                  clipAdapter.play();
+                }} className="mt-4 rounded-lg border border-hairline-strong px-3 py-2 text-sm text-ink-secondary hover:border-primary hover:text-ink focus-visible:ring-2 focus-visible:ring-primary">
                 Play source clip
               </button>
             ) : (
