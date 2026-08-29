@@ -310,6 +310,10 @@ Depends on: #19
 
 ### [ ] #21 Progress dashboard
 
+Implementation plan: [IMPLEMENTATION-21.md](IMPLEMENTATION-21.md).
+
+Remaining: the merged local metric foundation must become the canonical top-level Progress surface, with recent review recall prioritized over supporting counts/activity and full route-level browser, visual, and accessibility evidence.
+
 Acceptance criteria:
 - [ ] Known items.
 - [ ] Learning items.
