@@ -268,15 +268,17 @@ Depends on: #16
 
 ## Milestone 4 — Difficulty and progress
 
-### [ ] #18 Simple learner profile
+### [x] #18 Simple learner profile
 
 Acceptance criteria:
-- [ ] Known vocabulary summary.
-- [ ] Learning vocabulary summary.
-- [ ] Grammar item summary.
-- [ ] Recognition confidence summary.
-- [ ] Production confidence summary.
-- [ ] Speech-level familiarity supported.
+- [x] Known vocabulary summary.
+- [x] Learning vocabulary summary.
+- [x] Grammar item summary.
+- [x] Recognition confidence summary.
+- [x] Production confidence summary.
+- [x] Speech-level familiarity supported.
+
+Verification evidence: [QA-18.md](QA-18.md).
 
 Depends on: #11, #12, #17
 
