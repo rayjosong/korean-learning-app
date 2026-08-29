@@ -131,6 +131,7 @@ export function ContextualReviewPanel({
           {!revealed ? (
             <button
               type="button"
+              autoFocus
               onClick={() => {
                 revealReviewAnswer(session);
                 setRevealed(true);
