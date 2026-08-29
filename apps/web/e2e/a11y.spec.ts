@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { openFixture, openHomeFixture } from "./fixture";
+import { openFixture, openHomeFixture, openProgressFixture } from "./fixture";
 
 test("canonical Watch and Study states have no obvious accessibility violations", async ({ page }) => {
   await openFixture(page);
@@ -92,6 +92,18 @@ test("learner profile populated and empty states remain accessible", async ({ pa
 
   await openFixture(page);
   await page.locator("summary").click();
+  results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+});
+
+
+test("Progress populated and empty states have no obvious accessibility violations", async ({ page }) => {
+  await openProgressFixture(page, "progress-populated");
+  let results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+  await expect(page.getByRole("link", { name: "Progress" })).toHaveAttribute("aria-current", "page");
+
+  await openProgressFixture(page, "progress-empty");
   results = await new AxeBuilder({ page }).analyze();
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 });
