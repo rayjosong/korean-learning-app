@@ -347,16 +347,16 @@ Depends on: #13, #15
 
 ---
 
-### [ ] #24 Opinionated recommendation engine
+### [x] #24 Opinionated recommendation engine
 
 Implementation plan: [IMPLEMENTATION-24.md](IMPLEMENTATION-24.md).
 
 Acceptance criteria:
-- [ ] Rule-based first.
-- [ ] Recommendation includes reason.
-- [ ] Uses recent weaknesses.
-- [ ] User can dismiss.
-- [ ] Core prioritization does not require AI.
+- [x] Rule-based first.
+- [x] Recommendation includes reason.
+- [x] Uses recent weaknesses.
+- [x] User can dismiss.
+- [x] Core prioritization does not require AI.
 
 Depends on: #18, #23
 
