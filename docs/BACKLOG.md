@@ -473,19 +473,21 @@ Depends on: #29
 
 ---
 
-### [ ] #31 Original-context video review
+### [x] #31 Original-context video review
 
 Acceptance criteria:
-- [ ] Review resolves stored source video, transcript segment, and timestamp when available.
-- [ ] Review attempts to present/replay a short source clip around the learned context.
-- [ ] Korean sentence/phrase is shown before answer reveal.
-- [ ] Learner recalls meaning before reveal.
-- [ ] Reveal shows natural meaning and useful source context.
-- [ ] Learner can mark at least `Again` / `Got it` or equivalent failure/success.
-- [ ] Scheduler updates remain independent from clip playback success.
-- [ ] If clip playback is unavailable, review falls back to sentence + source timestamp/context.
-- [ ] Existing cloze behavior is not silently removed without documented replacement/compatibility behavior.
-- [ ] Rendered Review flow is verified against `DESIGN.md`.
+- [x] Review resolves stored source video, transcript segment, and timestamp when available.
+- [x] Review attempts to present/replay a short source clip around the learned context.
+- [x] Korean sentence/phrase is shown before answer reveal.
+- [x] Learner recalls meaning before reveal.
+- [x] Reveal shows natural meaning and useful source context.
+- [x] Learner can mark at least `Again` / `Got it` or equivalent failure/success.
+- [x] Scheduler updates remain independent from clip playback success.
+- [x] If clip playback is unavailable, review falls back to sentence + source timestamp/context.
+- [x] Existing cloze behavior is not silently removed without documented replacement/compatibility behavior.
+- [x] Rendered Review flow is verified against `DESIGN.md`.
+
+Implementation plan: [IMPLEMENTATION-31.md](IMPLEMENTATION-31.md). Verification evidence: [QA-31.md](QA-31.md).
 
 Depends on: #15, #29
 
