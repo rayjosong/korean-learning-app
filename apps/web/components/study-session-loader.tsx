@@ -35,10 +35,13 @@ export function StudySessionLoader() {
       : undefined;
   });
   const isFixture = fixtureScenario !== undefined;
-  const [fixtureReady, setFixtureReady] = useState(true);
+  const [fixtureReady, setFixtureReady] = useState(false);
 
   useEffect(() => {
-    if (!isFixture) return;
+    if (!isFixture) {
+      setFixtureReady(true);
+      return;
+    }
     void seedFixtureStorage(fixtureScenario ?? "watch-study").then(() => {
       setFixtureReady(true);
       if (WORKSPACE_FIXTURES.includes(fixtureScenario)) {
