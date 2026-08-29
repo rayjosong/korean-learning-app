@@ -11,7 +11,7 @@ import {
 } from "@korean-learning/storage";
 import { putAiProviderSettings } from "@korean-learning/storage/ai-settings";
 
-export type FixtureScenario = "watch-study" | "long" | "populated" | "review-unavailable" | "loading" | "error";
+export type FixtureScenario = "watch-study" | "long" | "populated" | "review-unavailable" | "review-no-context" | "loading" | "error";
 
 export const FIXTURE_VIDEO_ID = "fixture-29d-video";
 export const FIXTURE_SEGMENTS: readonly TranscriptSegment[] = Array.from(
@@ -61,7 +61,7 @@ const FIXTURE_EXPLANATION: SentenceExplanation = {
 };
 
 export async function seedFixtureStorage(scenario: FixtureScenario): Promise<void> {
-  if (scenario !== "populated" && scenario !== "review-unavailable") return;
+  if (scenario !== "populated" && scenario !== "review-unavailable" && scenario !== "review-no-context") return;
 
   const database = new ExplanationDatabase();
   await Promise.all([
@@ -78,7 +78,7 @@ export async function seedFixtureStorage(scenario: FixtureScenario): Promise<voi
   const context = {
     id: `${FIXTURE_VIDEO_ID}:fixture-2:그래서`,
     itemId: "fixture-learning-item",
-    videoId: scenario === "review-unavailable" ? "fixture-unavailable-video" : FIXTURE_VIDEO_ID,
+    videoId: scenario === "review-unavailable" ? "fixture-unavailable-video" : scenario === "review-no-context" ? "" : FIXTURE_VIDEO_ID,
     transcriptSegmentId: "fixture-2",
     sentence: "그래서 그냥 걸어가려고요.",
     startTimeMs: 4000,
