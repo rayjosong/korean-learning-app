@@ -38,6 +38,7 @@ export class ExplanationDatabase extends Dexie {
   studiedContent!: Table<StudiedContentRecord, string>;
   contentProgressSnapshots!: Table<ContentProgressSnapshot, string>;
   contentResume!: Table<ContentResumeRecord, string>;
+  recommendationDismissals!: Table<RecommendationDismissalRecord, string>;
 
   constructor(name = "korean-learning") {
     super(name);
@@ -106,6 +107,19 @@ export class ExplanationDatabase extends Dexie {
       aiProviderSettings: "id",
       assistanceSettings: "id",
       contentResume: "videoId, updatedAt"
+    });
+    this.version(11).stores({
+      explanations: "key, createdAt",
+      wordExplanations: "key",
+      learningItems: "id, text, lastSeenAt",
+      learningContexts: "id, itemId, createdAt",
+      reviewRecords: "id, itemId, reviewedAt, mode",
+      studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+      contentProgressSnapshots: "id, videoId, capturedAt",
+      aiProviderSettings: "id",
+      assistanceSettings: "id",
+      contentResume: "videoId, updatedAt",
+      recommendationDismissals: "fingerprint, dismissedUntil"
     });
   }
 }
@@ -256,7 +270,6 @@ export async function deleteLearningItem(
     await database.learningContexts.where("itemId").equals(itemId).delete();
   });
 }
-
 
 /** One due learner item with the source sentence used to review it in context. */
 export interface DueReviewItem {
@@ -464,4 +477,64 @@ export async function getDueReviewItems(
       return context ? { item, context } : { item };
     })
   );
+}
+
+/** Local-only identity of a dismissed recommendation. */
+export interface RecommendationDismissalRecord {
+  fingerprint: string;
+  dismissedAt: string;
+  dismissedUntil: string;
+}
+
+export interface RecommendationInput {
+  dueItems: LearningItem[];
+  recentReviews: ReviewRecord[];
+  studiedContent: StudiedContentRecord[];
+  progressSnapshots: ContentProgressSnapshot[];
+  resume?: ContentResumeRecord;
+  dismissals: RecommendationDismissalRecord[];
+}
+
+/** Reads all recommendation evidence in one transaction for a coherent Home result. */
+export async function getRecommendationInput(
+  database: ExplanationDatabase,
+  now: string
+): Promise<RecommendationInput> {
+  const [input, dismissals] = await Promise.all([
+    database.transaction(
+      "r",
+      database.learningItems,
+      database.reviewRecords,
+      database.studiedContent,
+      database.contentProgressSnapshots,
+      database.contentResume,
+      async () => {
+        const [items, recentReviews, studiedContent, progressSnapshots, resume] = await Promise.all([
+          database.learningItems.toArray(),
+          database.reviewRecords.toArray(),
+          database.studiedContent.toArray(),
+          database.contentProgressSnapshots.toArray(),
+          database.contentResume.orderBy("updatedAt").reverse().toArray()
+        ]);
+        return {
+          dueItems: items.filter(
+            (item) => item.state === "learning" && typeof item.nextReviewAt === "string" && item.nextReviewAt <= now
+          ),
+          recentReviews,
+          studiedContent,
+          progressSnapshots,
+          resume: resume.find((record) => !record.completed && record.lastPositionMs > 0)
+        };
+      }
+    ),
+    database.recommendationDismissals.toArray()
+  ]);
+  return { ...input, dismissals };
+}
+
+export async function putRecommendationDismissal(
+  database: ExplanationDatabase,
+  record: RecommendationDismissalRecord
+): Promise<void> {
+  await database.recommendationDismissals.put(record);
 }

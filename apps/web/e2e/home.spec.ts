@@ -6,6 +6,7 @@ test("empty Home offers a new-content entry point without fake metrics", async (
   await expect(page.getByRole("heading", { name: "Start something new" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Continue learning" })).toHaveCount(0);
   await expect(page.getByText(/ready for review/)).toHaveCount(0);
+  await expect(page.getByText("Start a new Korean video when nothing is waiting.")).toBeVisible();
 });
 
 test("populated Home prioritizes Continue, due review, and recent content", async ({ page }) => {
@@ -13,9 +14,20 @@ test("populated Home prioritizes Continue, due review, and recent content", asyn
   await expect(page.getByRole("heading", { name: "Continue learning" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Continue/ })).toBeVisible();
   await expect(page.getByText("1 phrase ready for review")).toBeVisible();
+  await expect(page.getByText("2 production reviews were missed in the last 14 days.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Recent content" })).toBeVisible();
   await expect(page.getByRole("button", { name: /서울에서 보낸 하루/ })).toBeVisible();
   await expect(page.getByLabel("Korean YouTube URL")).toBeVisible();
+});
+
+test("dismissing the first recommendation promotes Resume and persists after reload", async ({ page }) => {
+  await openHomeFixture(page, "home-populated");
+  await page.getByRole("button", { name: "Dismiss review recommendation" }).click();
+  await expect(page.getByText('Continue "성시경 먹을텐데 - fixture" where you left off.')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Continue "성시경 먹을텐데 - fixture" where you left off.')).toBeVisible();
+  await expect(page.getByRole("button", { name: "Dismiss review recommendation" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Dismiss resume recommendation" })).toBeVisible();
 });
 
 test("Continue reuses the existing Watch workspace and restores the saved position", async ({ page }) => {

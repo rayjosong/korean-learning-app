@@ -70,7 +70,8 @@ export async function seedFixtureStorage(scenario: FixtureScenario): Promise<voi
     database.reviewRecords.clear(),
     database.aiProviderSettings.clear(),
     database.studiedContent.clear(),
-    database.contentProgressSnapshots.clear()
+    database.contentProgressSnapshots.clear(),
+    database.contentResume.clear(),
   ]);
 
   if (scenario === "home-empty") {
@@ -136,6 +137,13 @@ export async function seedFixtureStorage(scenario: FixtureScenario): Promise<voi
     mode: "production",
     outcome: "failure",
     reviewedAt: "2026-01-13T00:00:00.000Z"
+  });
+  await putReviewRecord(database, {
+    id: "fixture-review-failure-2",
+    itemId: "fixture-learning-item",
+    mode: "production",
+    outcome: "failure",
+    reviewedAt: "2026-01-12T00:00:00.000Z"
   });
   await putCachedExplanation(database, {
     key: "fixture-v1:그래서 그냥 걸어가려고요.",
