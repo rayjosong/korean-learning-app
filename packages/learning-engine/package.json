@@ -8,7 +8,8 @@
     "./profile": "./src/profile.ts",
     "./video-difficulty": "./src/video-difficulty.ts",
     "./progress": "./src/progress.ts",
-    "./revisit": "./src/revisit.ts"
+    "./revisit": "./src/revisit.ts",
+    "./recommendation": "./src/recommendation.ts"
   },
   "scripts": {
     "lint": "node ./scripts/lint.mjs",
