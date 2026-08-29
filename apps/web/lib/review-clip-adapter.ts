@@ -3,7 +3,7 @@ import type { ReviewClipWindow } from "./review-context";
 export type ReviewClipStatus = "available" | "unavailable";
 
 export interface ReviewClipAdapter {
-  loadClip(input: { videoId: string; window: ReviewClipWindow }): ReviewClipStatus;
+  loadClip(input: { videoId: string; window: ReviewClipWindow; seek?: boolean }): ReviewClipStatus;
   play(): void;
   pause(): void;
 }
@@ -28,12 +28,14 @@ export function createSessionReviewClipAdapter(input: {
   }
 
   return {
-    loadClip({ videoId, window }) {
+    loadClip({ videoId, window, seek = true }) {
       clearStopTimer();
       if (videoId !== input.activeVideoId) return "unavailable";
       loaded = { videoId, window };
-      input.seekTo(window.startTimeMs / 1000);
-      input.pause();
+      if (seek) {
+        input.seekTo(window.startTimeMs / 1000);
+        input.pause();
+      }
       return "available";
     },
     play() {

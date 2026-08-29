@@ -271,6 +271,7 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
               database={cacheDatabase}
               refreshKey={historyRevision}
               clipAdapter={reviewClipAdapter}
+              loadClipOnMount={initialPositionMs <= 0}
               onReturnToSource={(context) => {
                 if (context.videoId === videoId) {
                   seekTo(context.startTimeMs / 1000);
