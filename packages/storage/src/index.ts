@@ -500,35 +500,36 @@ export async function getRecommendationInput(
   database: ExplanationDatabase,
   now: string
 ): Promise<RecommendationInput> {
-  return database.transaction(
-    "r",
-    database.learningItems,
-    database.reviewRecords,
-    database.studiedContent,
-    database.contentProgressSnapshots,
-    database.contentResume,
-    database.recommendationDismissals,
-    async () => {
-      const [items, recentReviews, studiedContent, progressSnapshots, resume, dismissals] = await Promise.all([
-        database.learningItems.toArray(),
-        database.reviewRecords.toArray(),
-        database.studiedContent.toArray(),
-        database.contentProgressSnapshots.toArray(),
-        database.contentResume.orderBy("updatedAt").reverse().toArray(),
-        database.recommendationDismissals.toArray()
-      ]);
-      return {
-        dueItems: items.filter(
-          (item) => item.state === "learning" && typeof item.nextReviewAt === "string" && item.nextReviewAt <= now
-        ),
-        recentReviews,
-        studiedContent,
-        progressSnapshots,
-        resume: resume.find((record) => !record.completed && record.lastPositionMs > 0),
-        dismissals
-      };
-    }
-  );
+  const [input, dismissals] = await Promise.all([
+    database.transaction(
+      "r",
+      database.learningItems,
+      database.reviewRecords,
+      database.studiedContent,
+      database.contentProgressSnapshots,
+      database.contentResume,
+      async () => {
+        const [items, recentReviews, studiedContent, progressSnapshots, resume] = await Promise.all([
+          database.learningItems.toArray(),
+          database.reviewRecords.toArray(),
+          database.studiedContent.toArray(),
+          database.contentProgressSnapshots.toArray(),
+          database.contentResume.orderBy("updatedAt").reverse().toArray()
+        ]);
+        return {
+          dueItems: items.filter(
+            (item) => item.state === "learning" && typeof item.nextReviewAt === "string" && item.nextReviewAt <= now
+          ),
+          recentReviews,
+          studiedContent,
+          progressSnapshots,
+          resume: resume.find((record) => !record.completed && record.lastPositionMs > 0)
+        };
+      }
+    ),
+    database.recommendationDismissals.toArray()
+  ]);
+  return { ...input, dismissals };
 }
 
 export async function putRecommendationDismissal(
