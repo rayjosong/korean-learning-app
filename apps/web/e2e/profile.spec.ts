@@ -34,7 +34,7 @@ test("learner profile refreshes after saving a new item", async ({ page }) => {
   await page.locator("#segment-btn-fixture-2").click();
 
   const popover = page.getByRole("region", { name: "Sentence explanation popover" });
-  await popover.getByRole("button", { name: "그냥", exact: true }).click();
+  await popover.getByRole("button", { name: "걸어가려고요", exact: true }).click();
   await popover.getByRole("button", { name: "Learn this", exact: true }).click();
   await expect(popover.getByRole("status")).toContainText("Added to review");
 
