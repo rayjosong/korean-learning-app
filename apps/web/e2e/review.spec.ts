@@ -24,3 +24,11 @@ test("unavailable source playback never blocks contextual review actions", async
   await review.getByRole("button", { name: "Again" }).click();
   await expect(review).toContainText("Nothing is due right now.");
 });
+
+
+test("items without source context retain the compatible mixed review fallback", async ({ page }) => {
+  await openFixture(page, "review-no-context");
+  await page.locator("summary").click();
+  await expect(page.getByRole("region", { name: "Contextual review" })).toContainText("compatible mixed review below");
+  await expect(page.getByRole("region", { name: "Mixed review" })).toContainText("____ 그냥 걸어가려고요.");
+});
