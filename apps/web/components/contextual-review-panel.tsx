@@ -66,7 +66,7 @@ export function ContextualReviewPanel({
     } catch {
       setClipStatus("unavailable");
     }
-  }, [clipAdapter, session]);
+  }, [session?.context?.id]);
 
   async function finish(outcome: ReviewOutcome) {
     if (!database || !session || saving) return;
