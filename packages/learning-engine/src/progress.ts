@@ -12,6 +12,7 @@ export interface ReviewSuccessSummary {
   successful: number;
   total: number;
   percentage: number | null;
+  windowDays: number;
 }
 
 export interface ExplanationFrequencySummary {
@@ -27,20 +28,26 @@ export interface ProgressSnapshot {
   contentStudied: number;
 }
 
-const WINDOW_DAYS = 7;
+const REVIEW_WINDOW_DAYS = 30;
+const EXPLANATION_WINDOW_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function isWithinWindow(value: string, now: string): boolean {
+function isWithinWindow(value: string, now: string, windowDays: number): boolean {
   const timestamp = Date.parse(value);
   const end = Date.parse(now);
   return Number.isFinite(timestamp) && Number.isFinite(end) &&
-    timestamp >= end - WINDOW_DAYS * DAY_MS && timestamp <= end;
+    timestamp >= end - windowDays * DAY_MS && timestamp <= end;
 }
 
 export function aggregateProgressSnapshot(input: ProgressSnapshotInput): ProgressSnapshot {
-  const reviewTotal = input.reviews.length;
-  const successfulReviews = input.reviews.filter((review) => review.outcome === "success").length;
-  const explanationCount = input.explanations.filter((record) => isWithinWindow(record.createdAt, input.now)).length;
+  const recentReviews = input.reviews.filter((review) =>
+    isWithinWindow(review.reviewedAt, input.now, REVIEW_WINDOW_DAYS)
+  );
+  const reviewTotal = recentReviews.length;
+  const successfulReviews = recentReviews.filter((review) => review.outcome === "success").length;
+  const explanationCount = input.explanations.filter((record) =>
+    isWithinWindow(record.createdAt, input.now, EXPLANATION_WINDOW_DAYS)
+  ).length;
 
   return {
     knownItems: input.items.filter((item) => item.state === "known").length,
@@ -48,9 +55,10 @@ export function aggregateProgressSnapshot(input: ProgressSnapshotInput): Progres
     reviewSuccess: {
       successful: successfulReviews,
       total: reviewTotal,
-      percentage: reviewTotal ? Math.round((successfulReviews / reviewTotal) * 100) : null
+      percentage: reviewTotal ? Math.round((successfulReviews / reviewTotal) * 100) : null,
+      windowDays: REVIEW_WINDOW_DAYS
     },
-    explanationFrequency: { count: explanationCount, windowDays: WINDOW_DAYS },
-    contentStudied: new Set(input.studiedContent.map((record) => record.videoId).filter(Boolean)).size
+    explanationFrequency: { count: explanationCount, windowDays: EXPLANATION_WINDOW_DAYS },
+    contentStudied: new Set(input.studiedContent.map((record) => record.videoId.trim()).filter(Boolean)).size
   };
 }
