@@ -5,6 +5,7 @@ model: gpt-5
 trigger: user-prompt
 status: proposed
 ticket: no-ticket
+pr: 83
 ---
 
 # Keep revisit comparison local to a video session
