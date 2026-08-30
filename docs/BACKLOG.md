@@ -284,14 +284,16 @@ Depends on: #11, #12, #17
 
 ---
 
-### [ ] #19 Video difficulty estimate
+### [x] #19 Video difficulty estimate
 
 Acceptance criteria:
-- [ ] Approximate difficulty shown.
-- [ ] Approximate likely comprehension shown.
-- [ ] Estimate uses learner state when available.
-- [ ] New-learner fallback exists.
-- [ ] Difficult content remains accessible.
+- [x] Approximate difficulty shown.
+- [x] Approximate likely comprehension shown.
+- [x] Estimate uses learner state when available.
+- [x] New-learner fallback exists.
+- [x] Difficult content remains accessible.
+
+Verification evidence: [QA-19.md](QA-19.md).
 
 Depends on: #18
 
