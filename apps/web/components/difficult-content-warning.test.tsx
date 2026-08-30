@@ -24,3 +24,19 @@ test("warning explains the tradeoff and keeps a continue action available", () =
   assert.match(html, /Dismiss for this video/);
   assert.doesNotMatch(html, /not ready/);
 });
+
+test("warning identifies an estimate derived from learner state as personalized", () => {
+  const html = renderToString(<DifficultContentWarning
+    estimate={{
+      band: "challenging",
+      likelyComprehension: { min: 15, max: 35 },
+      source: "personalized",
+      reasonCodes: ["known-coverage"]
+    }}
+    onContinue={() => {}}
+    onDismiss={() => {}}
+  />).replaceAll("<!-- -->", "");
+
+  assert.match(html, /The personalized estimate suggests/);
+  assert.doesNotMatch(html, /The starter estimate suggests/);
+});
