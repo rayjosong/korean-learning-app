@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./learner-profile": "./src/learner-profile.ts",
     "./ai-settings": "./src/ai-settings.ts",
-    "./assistance-settings": "./src/assistance-settings.ts"
+    "./assistance-settings": "./src/assistance-settings.ts",
+    "./export": "./src/export.ts"
   },
   "scripts": {
     "lint": "node ./scripts/lint.mjs",

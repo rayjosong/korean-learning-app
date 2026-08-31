@@ -372,14 +372,14 @@ Depends on: #18, #23
 
 ## Milestone 6 — Portability
 
-### [ ] #25 Export learner data
+### [x] #25 Export learner data
 
 Acceptance criteria:
-- [ ] Versioned JSON format.
-- [ ] Learner items included.
-- [ ] History included.
-- [ ] Review state included.
-- [ ] API keys excluded.
+- [x] Versioned JSON format.
+- [x] Learner items included.
+- [x] History included.
+- [x] Review state included.
+- [x] API keys excluded.
 
 Depends on: #18
 
