@@ -23,8 +23,17 @@ export interface ExplanationRecord {
  * Cache key for a sentence explanation. Includes the prompt version so a
  * changed prompt invalidates previously cached explanations.
  */
-export function explanationCacheKey(promptVersion: string, sentence: string): string {
-  return `${promptVersion}:${sentence.replace(/\s+/g, " ").trim()}`;
+export function explanationCacheKey(
+  promptVersion: string,
+  sentence: string,
+  provider?: string,
+  model?: string
+): string {
+  const normalizedSentence = sentence.replace(/\s+/g, " ").trim();
+  if (provider && model) {
+    return `${promptVersion}:${provider}:${model}:${normalizedSentence}`;
+  }
+  return `${promptVersion}:${normalizedSentence}`;
 }
 
 export class ExplanationDatabase extends Dexie {
@@ -215,9 +224,15 @@ export interface WordExplanationRecord {
 export function wordExplanationCacheKey(
   promptVersion: string,
   word: string,
-  sentence: string
+  sentence: string,
+  provider?: string,
+  model?: string
 ): string {
-  return `${promptVersion}:${word.replace(/\s+/g, " ").trim()}:${sentence}`;
+  const normalizedWord = word.replace(/\s+/g, " ").trim();
+  if (provider && model) {
+    return `${promptVersion}:${provider}:${model}:${normalizedWord}:${sentence}`;
+  }
+  return `${promptVersion}:${normalizedWord}:${sentence}`;
 }
 
 export async function getCachedWordExplanation(

@@ -106,7 +106,7 @@ test("cached records carry prompt-version and model metadata but no credentials"
   }).explainSentence({ sentence: "안녕하세요." });
 
   const stored = await database.explanations.get(
-    explanationCacheKey(SENTENCE_EXPLANATION_PROMPT_VERSION, "안녕하세요.")
+    explanationCacheKey(SENTENCE_EXPLANATION_PROMPT_VERSION, "안녕하세요.", "openai-compatible", "test-model")
   );
 
   assert.ok(stored);
@@ -114,4 +114,29 @@ test("cached records carry prompt-version and model metadata but no credentials"
   assert.equal(stored.provider, "openai-compatible");
   assert.equal(stored.model, "test-model");
   assert.ok(!JSON.stringify(stored).includes("user-secret-key"), "API key must never be stored");
+});
+
+test("changing a model produces distinct cache keys and cannot reuse entries", async () => {
+  const { model, calls } = countingModel();
+  const database = new ExplanationDatabase("model-route-cache-test");
+
+  const modelA = withExplanationCache({
+    model,
+    database,
+    provider: "openai",
+    modelName: "gpt-4o-mini"
+  });
+
+  const modelB = withExplanationCache({
+    model,
+    database,
+    provider: "openai",
+    modelName: "gpt-4o"
+  });
+
+  await modelA.explainSentence({ sentence: "안녕하세요." });
+  assert.equal(calls(), 1);
+
+  await modelB.explainSentence({ sentence: "안녕하세요." });
+  assert.equal(calls(), 2, "different model route must call the provider instead of reusing cache");
 });

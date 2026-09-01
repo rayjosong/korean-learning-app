@@ -11,7 +11,11 @@ import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
-import { loadAiSettings, removeAiSettings, saveAiSettings, type AiSettings } from "@/lib/ai-settings";
+import {
+  loadAiProviderSettingsRecord,
+  resolveTaskRoute,
+  type AiProviderSettingsRecord
+} from "@/lib/ai-settings";
 import { loadAssistanceLevel, saveAssistanceLevel } from "@/lib/assistance-settings";
 import type { AssistanceLevel } from "@korean-learning/storage/assistance-settings";
 import { withExplanationCache } from "@/lib/explanation-cache";
@@ -35,9 +39,9 @@ export interface StudySessionProps {
 }
 
 export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = false, fixtureScenario, initialPositionMs = 0 }: StudySessionProps) {
-  const [settings, setSettings] = useState<AiSettings>({ apiKey: "", model: "gpt-4o-mini" });
-  const [settingsReady, setSettingsReady] = useState(false);
-  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [settingsRecord, setSettingsRecord] = useState<AiProviderSettingsRecord>();
+  const [settingsRevision, setSettingsRevision] = useState(0);
+
   const [mode, setMode] = useState<"watch" | "study">("watch");
   const [assistanceLevel, setAssistanceLevel] = useState<AssistanceLevel>("guided");
   const [assistanceReady, setAssistanceReady] = useState(false);
@@ -63,14 +67,12 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
   useEffect(() => {
     if (!cacheDatabase) return;
-    void loadAiSettings(cacheDatabase).then((stored) => {
+    void loadAiProviderSettingsRecord(cacheDatabase).then((stored) => {
       if (stored) {
-        setSettings(stored);
-        setSettingsSaved(true);
+        setSettingsRecord(stored);
       }
-      setSettingsReady(true);
     });
-  }, [cacheDatabase]);
+  }, [cacheDatabase, settingsRevision]);
 
   useEffect(() => {
     if (!cacheDatabase) return;
@@ -85,16 +87,45 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
     return () => { active = false; };
   }, [cacheDatabase]);
 
-  const languageModel = useMemo(() => {
+  const resolvedSentenceRoute = useMemo(() => {
+    if (!settingsRecord) return undefined;
+    try {
+      return resolveTaskRoute(settingsRecord, "sentence");
+    } catch {
+      return undefined;
+    }
+  }, [settingsRecord]);
+
+  const resolvedWordRoute = useMemo(() => {
+    if (!settingsRecord) return undefined;
+    try {
+      return resolveTaskRoute(settingsRecord, "word");
+    } catch {
+      return undefined;
+    }
+  }, [settingsRecord]);
+
+  const sentenceLanguageModel = useMemo(() => {
     if (fixture) return createFixtureLanguageModel(fixtureScenario);
-    if (!settings.apiKey.trim() || !settings.model.trim()) return null;
+    if (!resolvedSentenceRoute) return null;
     return withExplanationCache({
-      model: createLanguageModel(settings),
+      model: createLanguageModel(resolvedSentenceRoute),
       database: cacheDatabase,
-      provider: "openai-compatible",
-      modelName: settings.model.trim()
+      provider: resolvedSentenceRoute.provider,
+      modelName: resolvedSentenceRoute.model
     });
-  }, [fixture, fixtureScenario, settings, cacheDatabase]);
+  }, [fixture, fixtureScenario, resolvedSentenceRoute, cacheDatabase]);
+
+  const wordLanguageModel = useMemo(() => {
+    if (fixture) return createFixtureLanguageModel(fixtureScenario);
+    if (!resolvedWordRoute) return null;
+    return withExplanationCache({
+      model: createLanguageModel(resolvedWordRoute),
+      database: cacheDatabase,
+      provider: resolvedWordRoute.provider,
+      modelName: resolvedWordRoute.model
+    });
+  }, [fixture, fixtureScenario, resolvedWordRoute, cacheDatabase]);
 
   useEffect(() => {
     if (cacheDatabase && isReady) {
@@ -121,17 +152,17 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
     return () => window.clearInterval(interval);
   }, [cacheDatabase, getCurrentTime, initialPositionMs, isReady, videoId, videoUrl]);
 
-  const { state, explain } = useSentenceExplanation(languageModel);
+  const { state, explain } = useSentenceExplanation(sentenceLanguageModel);
   const {
     state: wordState,
     explain: explainWord,
     reset: resetWordExplanation
   } = useWordExplanation({
-    model: languageModel,
+    model: wordLanguageModel,
     database: cacheDatabase,
     videoId,
-    provider: "openai-compatible",
-    modelName: settings.model.trim()
+    provider: resolvedWordRoute?.provider,
+    modelName: resolvedWordRoute?.model
   });
   const {
     state: learnerState,
@@ -288,24 +319,8 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
           <div className="flex flex-col gap-6">
             <AiProviderSettings
-              settings={settings}
-              ready={settingsReady}
-              saved={settingsSaved}
-              onChange={(next) => {
-                setSettings(next);
-                setSettingsSaved(false);
-              }}
-              onSave={() => {
-                if (!cacheDatabase) return;
-                void saveAiSettings(cacheDatabase, settings).then(() => setSettingsSaved(true));
-              }}
-              onRemove={() => {
-                if (!cacheDatabase) return;
-                void removeAiSettings(cacheDatabase).then(() => {
-                  setSettings({ apiKey: "", model: "gpt-4o-mini" });
-                  setSettingsSaved(false);
-                });
-              }}
+              database={cacheDatabase}
+              onSettingsChanged={() => setSettingsRevision((r) => r + 1)}
             />
             <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Explanation cache settings">
               <button

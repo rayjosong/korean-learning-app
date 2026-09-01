@@ -55,7 +55,13 @@ export function useWordExplanation(options: UseWordExplanationOptions) {
       const request = ++latestRequestRef.current;
       const trimmedWord = word.replace(/\s+/g, " ").trim();
       const sentence = segment.text.replace(/\s+/g, " ").trim();
-      const key = wordExplanationCacheKey(WORD_EXPLANATION_PROMPT_VERSION, trimmedWord, sentence);
+      const key = wordExplanationCacheKey(
+        WORD_EXPLANATION_PROMPT_VERSION,
+        trimmedWord,
+        sentence,
+        options.provider,
+        options.modelName
+      );
 
       setState({ status: "loading", word: trimmedWord });
 
