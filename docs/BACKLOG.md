@@ -385,13 +385,13 @@ Depends on: #18
 
 ---
 
-### [ ] #26 Import learner data
+### [x] #26 Import learner data
 
 Acceptance criteria:
-- [ ] Zod validation.
-- [ ] Corrupt files safely rejected.
-- [ ] Conflict behavior documented.
-- [ ] Schema version checked.
+- [x] Zod validation.
+- [x] Corrupt files safely rejected.
+- [x] Conflict behavior documented.
+- [x] Schema version checked.
 
 Depends on: #25
 

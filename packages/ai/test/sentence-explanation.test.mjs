@@ -100,6 +100,15 @@ test("sentenceExplanationSchema invalid explanation (breakdown item missing mean
   assert.equal(result.success, false);
 });
 
+test("sentenceExplanationSchema invalid explanation (breakdown item wrong type for text)", () => {
+  const data = {
+    ...validMinimalData,
+    breakdown: [{ text: 123, meaning: "Hello." }]
+  };
+  const result = sentenceExplanationSchema.safeParse(data);
+  assert.equal(result.success, false);
+});
+
 test("sentenceExplanationSchema invalid explanation (breakdown item wrong type for role)", () => {
   const data = {
     ...validMinimalData,
@@ -123,6 +132,29 @@ test("sentenceExplanationSchema invalid explanation (grammar item missing explan
     ...validMinimalData,
     grammar: [{ form: "form" }]
   };
+  const result = sentenceExplanationSchema.safeParse(data);
+  assert.equal(result.success, false);
+});
+
+test("sentenceExplanationSchema invalid explanation (grammar item wrong type for explanation)", () => {
+  const data = {
+    ...validMinimalData,
+    grammar: [{ form: "하세요", explanation: 123 }]
+  };
+  const result = sentenceExplanationSchema.safeParse(data);
+  assert.equal(result.success, false);
+});
+
+test("sentenceExplanationSchema invalid explanation (invalid optional fields type)", () => {
+  const data = {
+    sentence: "안녕하세요",
+    naturalMeaning: "Hello.",
+    breakdown: [],
+    grammar: [],
+    nuance: 123, // nuance should be string
+    speechLevel: true // speechLevel should be string
+  };
+
   const result = sentenceExplanationSchema.safeParse(data);
   assert.equal(result.success, false);
 });
