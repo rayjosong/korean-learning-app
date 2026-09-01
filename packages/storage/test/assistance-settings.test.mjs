@@ -10,7 +10,7 @@ import {
   putAssistanceSettings
 } from "../src/assistance-settings.ts";
 import { ExplanationDatabase } from "../src/index.ts";
-import { getAiProviderSettings, putAiProviderSettings } from "../src/ai-settings.ts";
+import { getAiProviderSettings } from "../src/ai-settings.ts";
 
 test("assistance settings default to absent, round-trip, and clear independently", async () => {
   const database = new ExplanationDatabase("assistance-settings-round-trip");
@@ -67,12 +67,13 @@ test("version 8 upgrade preserves provider and unrelated data", async () => {
 
   const database = new ExplanationDatabase(name);
   await database.open();
-  assert.equal((await getAiProviderSettings(database))?.apiKey, "key");
+  const settings = await getAiProviderSettings(database);
+  assert.equal(settings?.profiles.openai?.apiKey, "key");
   assert.equal((await database.explanations.get("v1:test"))?.sentence, "test");
   assert.equal(await getAssistanceSettings(database), undefined);
 
   await putAssistanceSettings(database, { level: "full" });
   assert.equal((await getAssistanceSettings(database))?.level, "full");
-  assert.equal((await getAiProviderSettings(database))?.model, "model");
+  assert.equal((await getAiProviderSettings(database))?.profiles.openai?.defaultModel, "model");
   await database.delete();
 });

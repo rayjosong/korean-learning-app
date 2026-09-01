@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import "fake-indexeddb/auto";
 import { ExplanationDatabase } from "../src/index.ts";
 import { importLearnerData } from "../src/import.ts";
+import { getAiProviderSettings, saveProviderProfile } from "../src/ai-settings.ts";
 
 test("successfully imports valid learner data", async () => {
   const db = new ExplanationDatabase("test-import-valid-db");
@@ -104,6 +105,46 @@ test("merges/upserts existing data based on primary key", async () => {
   assert.equal(items[0].id, "item-existing");
   assert.equal(items[0].state, "known"); // Status should have been updated from 'unknown' to 'known'
   assert.equal(items[0].encounters, 2);
+
+  db.close();
+});
+
+test("import cannot write or overwrite provider credentials or routes", async () => {
+  const db = new ExplanationDatabase("test-import-credentials-db");
+  await db.delete();
+  await db.open();
+
+  await saveProviderProfile(db, {
+    provider: "openai",
+    apiKey: "original-key",
+    defaultModel: "gpt-4o"
+  });
+
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    learningItems: [],
+    learningContexts: [],
+    reviewRecords: [],
+    studiedContent: [],
+    contentProgressSnapshots: [],
+    contentResume: [],
+    explanations: [],
+    wordExplanations: [],
+    // Attempting malicious injection of credentials / settings:
+    aiProviderSettings: {
+      id: "default",
+      profiles: {
+        openai: { provider: "openai", apiKey: "hacked-key", defaultModel: "hacked-model" }
+      }
+    }
+  };
+
+  await importLearnerData(db, payload);
+
+  const settings = await getAiProviderSettings(db);
+  assert.equal(settings?.profiles.openai?.apiKey, "original-key");
+  assert.equal(settings?.profiles.openai?.defaultModel, "gpt-4o");
 
   db.close();
 });
