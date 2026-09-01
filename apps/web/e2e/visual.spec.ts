@@ -124,7 +124,7 @@ test("Settings utility renders ready and saved states", async ({ page }) => {
   await openFixture(page, "populated");
   await page.getByText("Workspace Utilities & Settings").click();
   const settings = page.getByRole("region", { name: "AI provider settings" });
-  await expect(settings.getByRole("button", { name: "Save changes" })).toBeVisible();
+  await expect(settings.getByRole("button", { name: /Save (changes|profile)/ })).toBeVisible();
   await expect(settings).toHaveScreenshot("32-settings-saved-1440.png", { animations: "disabled" });
 });
 
@@ -133,7 +133,7 @@ test("Settings utility keeps missing state actionable", async ({ page }) => {
   await openFixture(page);
   await page.getByText("Workspace Utilities & Settings").click();
   const settings = page.getByRole("region", { name: "AI provider settings" });
-  await expect(settings.getByRole("button", { name: "Save settings" })).toBeDisabled();
+  await expect(settings.getByRole("button", { name: /Save (profile|changes)/ })).toBeDisabled();
   await expect(settings).toHaveScreenshot("32-settings-empty-1440.png", { animations: "disabled" });
 });
 

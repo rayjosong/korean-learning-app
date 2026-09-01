@@ -223,7 +223,7 @@ export function AiProviderSettings({
       {/* Providers list */}
       <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="AI provider settings">
         <h2 className="mb-1 text-sm font-semibold text-ink">AI providers</h2>
-        <p className="mb-4 text-xs leading-5 text-ink-muted">
+        <p className="mb-4 text-xs leading-5 text-ink-secondary">
           Connect your AI providers using your own API keys. Saved settings stay in this browser and are never exported.
         </p>
 
@@ -248,7 +248,7 @@ export function AiProviderSettings({
                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                       profileConnected
                         ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-                        : "bg-surface-subtle text-ink-muted border border-hairline"
+                        : "bg-surface-subtle text-ink-secondary border border-hairline"
                     }`}
                   >
                     {profileConnected ? "connected" : "not connected"}
@@ -351,7 +351,7 @@ export function AiProviderSettings({
       {/* Task Routing Section */}
       <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Explanation models routing">
         <h2 className="mb-1 text-sm font-semibold text-ink">Explanation models</h2>
-        <p className="mb-4 text-xs leading-5 text-ink-muted">
+        <p className="mb-4 text-xs leading-5 text-ink-secondary">
           Select which connected provider and model to use for each task route.
         </p>
 
@@ -469,7 +469,7 @@ export function AiProviderSettings({
       </section>
 
       {/* Security Copy */}
-      <p className="text-xs leading-5 text-ink-muted">
+      <p className="text-xs leading-5 text-ink-secondary">
         Browser storage is local convenience, not a secure secret vault. Remove the key on shared or untrusted devices.
       </p>
 
