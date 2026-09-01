@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import type { AiSettings } from "@/lib/ai-settings";
 
@@ -22,7 +22,19 @@ export function AiProviderSettings({
   onRemove
 }: AiProviderSettingsProps) {
   const [message, setMessage] = useState<string>();
+  const [deploymentDefaultsConfigured, setDeploymentDefaultsConfigured] = useState(false);
   const canSave = settings.apiKey.trim().length > 0 && settings.model.trim().length > 0;
+
+  useEffect(() => {
+    fetch("/api/ai-defaults")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.configured) {
+          setDeploymentDefaultsConfigured(true);
+        }
+      })
+      .catch(() => { /* ignore */ });
+  }, []);
 
   function save() {
     if (!canSave) {
@@ -41,6 +53,25 @@ export function AiProviderSettings({
   return (
     <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="AI provider settings">
       <h2 className="mb-1 font-semibold text-ink">AI provider</h2>
+
+      {deploymentDefaultsConfigured && !saved && (
+         <div className="mb-4 rounded-lg bg-success-surface border border-success-border p-3 text-sm text-success-ink">
+          This deployment provides default AI credentials. You do not need to enter an API key to use the app.
+        </div>
+      )}
+
+      {deploymentDefaultsConfigured && saved && (
+         <div className="mb-4 rounded-lg bg-surface border border-hairline-strong p-3 text-sm text-ink">
+          You are currently overriding the deployment's default AI credentials with your own local settings.
+        </div>
+      )}
+
+      {!deploymentDefaultsConfigured && !saved && (
+        <div className="mb-4 rounded-lg bg-warning-surface border border-warning-border p-3 text-sm text-warning-ink">
+          Setup required: Provide your own OpenAI-compatible API key below. This deployment does not provide default AI credentials.
+        </div>
+      )}
+
       <p className="mb-3 text-xs leading-5 text-ink-muted">
         Bring your own key for an OpenAI-compatible provider. Saved settings stay in this browser and are never exported.
       </p>

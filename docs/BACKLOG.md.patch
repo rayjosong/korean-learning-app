@@ -1,0 +1,22 @@
+--- docs/BACKLOG.md
++++ docs/BACKLOG.md
+@@ -424,13 +424,13 @@
+
+ ---
+
+-### [ ] #28 Self-hosted deployment AI defaults
++### [x] #28 Self-hosted deployment AI defaults
+
+ Acceptance criteria:
+-- [ ] A self-hosted deployment can configure a default OpenAI-compatible endpoint through environment variables.
+-- [ ] Deployment configuration is never exposed in exportable learner data.
+-- [ ] Users can use deployment defaults without entering an API key.
+-- [ ] User-local BYOK settings override deployment defaults.
+-- [ ] Missing deployment configuration produces a clear setup message.
+-- [ ] Documentation covers environment variables and secret handling.
++- [x] A self-hosted deployment can configure a default OpenAI-compatible endpoint through environment variables.
++- [x] Deployment configuration is never exposed in exportable learner data.
++- [x] Users can use deployment defaults without entering an API key.
++- [x] User-local BYOK settings override deployment defaults.
++- [x] Missing deployment configuration produces a clear setup message.
++- [x] Documentation covers environment variables and secret handling.

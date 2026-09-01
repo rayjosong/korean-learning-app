@@ -11,7 +11,7 @@ import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
-import { loadAiSettings, removeAiSettings, saveAiSettings, type AiSettings } from "@/lib/ai-settings";
+import { getEffectiveAiSettings, loadAiSettings, removeAiSettings, saveAiSettings, type AiSettings } from "@/lib/ai-settings";
 import { loadAssistanceLevel, saveAssistanceLevel } from "@/lib/assistance-settings";
 import type { AssistanceLevel } from "@korean-learning/storage/assistance-settings";
 import { withExplanationCache } from "@/lib/explanation-cache";
@@ -36,6 +36,7 @@ export interface StudySessionProps {
 
 export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = false, fixtureScenario, initialPositionMs = 0 }: StudySessionProps) {
   const [settings, setSettings] = useState<AiSettings>({ apiKey: "", model: "gpt-4o-mini" });
+  const [effectiveSettings, setEffectiveSettings] = useState<AiSettings>();
   const [settingsReady, setSettingsReady] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [mode, setMode] = useState<"watch" | "study">("watch");
@@ -63,11 +64,15 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
   useEffect(() => {
     if (!cacheDatabase) return;
-    void loadAiSettings(cacheDatabase).then((stored) => {
-      if (stored) {
-        setSettings(stored);
+    Promise.all([
+      loadAiSettings(cacheDatabase),
+      getEffectiveAiSettings(cacheDatabase)
+    ]).then(([local, effective]) => {
+      if (local) {
+        setSettings(local);
         setSettingsSaved(true);
       }
+      setEffectiveSettings(effective);
       setSettingsReady(true);
     });
   }, [cacheDatabase]);
@@ -87,14 +92,14 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
   const languageModel = useMemo(() => {
     if (fixture) return createFixtureLanguageModel(fixtureScenario);
-    if (!settings.apiKey.trim() || !settings.model.trim()) return null;
+    if (!effectiveSettings || !effectiveSettings.apiKey.trim() || !effectiveSettings.model.trim()) return null;
     return withExplanationCache({
-      model: createLanguageModel(settings),
+      model: effectiveSettings ? createLanguageModel(effectiveSettings) : createLanguageModel(settings),
       database: cacheDatabase,
       provider: "openai-compatible",
-      modelName: settings.model.trim()
+      modelName: effectiveSettings.model.trim()
     });
-  }, [fixture, fixtureScenario, settings, cacheDatabase]);
+  }, [fixture, fixtureScenario, effectiveSettings, cacheDatabase]);
 
   useEffect(() => {
     if (cacheDatabase && isReady) {
@@ -297,13 +302,17 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
               }}
               onSave={() => {
                 if (!cacheDatabase) return;
-                void saveAiSettings(cacheDatabase, settings).then(() => setSettingsSaved(true));
+                void saveAiSettings(cacheDatabase, settings).then(() => {
+                  setSettingsSaved(true);
+                  void getEffectiveAiSettings(cacheDatabase).then(setEffectiveSettings);
+                });
               }}
               onRemove={() => {
                 if (!cacheDatabase) return;
                 void removeAiSettings(cacheDatabase).then(() => {
                   setSettings({ apiKey: "", model: "gpt-4o-mini" });
                   setSettingsSaved(false);
+                  void getEffectiveAiSettings(cacheDatabase).then(setEffectiveSettings);
                 });
               }}
             />
