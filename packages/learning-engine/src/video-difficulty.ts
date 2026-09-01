@@ -70,9 +70,17 @@ function coverage(
       const match = transcript.indexOf(candidate.text, offset);
       if (match < 0) break;
       const end = match + candidate.text.length;
-      const positions = [...Array(end - match).keys()].map((index) => match + index);
-      if (!positions.some((position) => occupied.has(position))) {
-        positions.forEach((position) => occupied.add(position));
+      let isOccupied = false;
+      for (let i = match; i < end; i++) {
+        if (occupied.has(i)) {
+          isOccupied = true;
+          break;
+        }
+      }
+      if (!isOccupied) {
+        for (let i = match; i < end; i++) {
+          occupied.add(i);
+        }
         const koreanLength = koreanCharacterCount(candidate.text);
         const confidence = candidate.item.state === "known"
           ? Math.max(0.8, Math.min(1, candidate.item.recognitionConfidence / 100))
