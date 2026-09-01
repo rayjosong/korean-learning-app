@@ -1,7 +1,8 @@
 import {
   clearAiProviderSettings,
   getAiProviderSettings,
-  putAiProviderSettings
+  saveProviderProfile,
+  setTaskRoute
 } from "@korean-learning/storage/ai-settings";
 import type { ExplanationDatabase } from "@korean-learning/storage";
 
@@ -18,7 +19,9 @@ export async function loadAiSettings(
 ): Promise<AiSettings | undefined> {
   const settings = await getAiProviderSettings(database);
   if (!settings) return undefined;
-  const { apiKey, model, baseUrl } = settings;
+  const profile = settings.profiles.openai ?? Object.values(settings.profiles)[0];
+  if (!profile) return undefined;
+  const { apiKey, defaultModel: model, baseUrl } = profile;
   return { apiKey, model, ...(baseUrl ? { baseUrl } : {}) };
 }
 
@@ -26,7 +29,14 @@ export async function saveAiSettings(
   database: ExplanationDatabase,
   settings: AiSettings
 ): Promise<void> {
-  await putAiProviderSettings(database, { ...settings, provider: "openai-compatible" });
+  await saveProviderProfile(database, {
+    provider: "openai",
+    apiKey: settings.apiKey,
+    defaultModel: settings.model,
+    ...(settings.baseUrl ? { baseUrl: settings.baseUrl } : {})
+  });
+  await setTaskRoute(database, "sentence", { provider: "openai", model: settings.model });
+  await setTaskRoute(database, "word", { provider: "openai", model: settings.model });
 }
 
 export async function removeAiSettings(database: ExplanationDatabase): Promise<void> {

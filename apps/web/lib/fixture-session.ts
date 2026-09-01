@@ -9,7 +9,7 @@ import {
   putReviewRecord,
   recordStudiedContent
 } from "@korean-learning/storage";
-import { putAiProviderSettings } from "@korean-learning/storage/ai-settings";
+import { saveProviderProfile, setTaskRoute } from "@korean-learning/storage/ai-settings";
 
 export type FixtureScenario = "watch-study" | "long" | "populated" | "review-unavailable" | "review-no-context" | "loading" | "error" | "home-empty" | "home-populated" | "home-due-only";
 
@@ -168,13 +168,15 @@ export async function seedFixtureStorage(scenario: FixtureScenario): Promise<voi
       studiedAt: "2026-01-14T00:00:00.000Z"
     });
   }
-  await putAiProviderSettings(database, {
-    provider: "openai-compatible",
+  await saveProviderProfile(database, {
+    provider: "openai",
     apiKey: "sk-fixture-only",
-    model: "fixture-model",
+    defaultModel: "fixture-model",
     baseUrl: "https://example.invalid/v1",
     updatedAt: FIXTURE_NOW
   });
+  await setTaskRoute(database, "sentence", { provider: "openai", model: "fixture-model" });
+  await setTaskRoute(database, "word", { provider: "openai", model: "fixture-model" });
   await database.contentProgressSnapshots.put({
     id: `${FIXTURE_VIDEO_ID}:previous-session`,
     videoId: FIXTURE_VIDEO_ID,
