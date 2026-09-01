@@ -244,13 +244,25 @@ export async function getRecentLearningItems(
 ): Promise<RecentLearningItem[]> {
   const items = await database.learningItems.orderBy("lastSeenAt").reverse().limit(limit).toArray();
 
-  return Promise.all(
-    items.map(async (item) => {
-      const contexts = await database.learningContexts.where("itemId").equals(item.id).toArray();
-      const context = contexts.sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0];
-      return context ? { item, context } : { item };
-    })
-  );
+  if (items.length === 0) {
+    return [];
+  }
+
+  const itemIds = items.map((item) => item.id);
+  const allContexts = await database.learningContexts.where("itemId").anyOf(itemIds).toArray();
+
+  const latestContexts = new Map<string, LearningContextRecord>();
+  for (const context of allContexts) {
+    const existing = latestContexts.get(context.itemId);
+    if (!existing || context.createdAt > existing.createdAt) {
+      latestContexts.set(context.itemId, context);
+    }
+  }
+
+  return items.map((item) => {
+    const context = latestContexts.get(item.id);
+    return context ? { item, context } : { item };
+  });
 }
 
 export async function deleteLearningContext(
