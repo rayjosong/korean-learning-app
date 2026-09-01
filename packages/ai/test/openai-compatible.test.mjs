@@ -314,3 +314,94 @@ test("rejects missing credentials and input before making a request", async () =
     (error) => error instanceof LanguageModelError && error.code === "INVALID_INPUT"
   );
 });
+
+function sseStreamResponse(chunks) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      for (const chunk of chunks) {
+        controller.enqueue(encoder.encode(chunk));
+      }
+      controller.close();
+    }
+  });
+  return new Response(stream, {
+    status: 200,
+    headers: { "Content-Type": "text/event-stream" }
+  });
+}
+
+test("streamSentenceExplanation parses OpenAI SSE chunks into explanation events", async () => {
+  let request;
+  const languageModel = model(async (url, init) => {
+    request = { url, init };
+    return sseStreamResponse([
+      `data: ${JSON.stringify({ choices: [{ delta: { content: '{"type": "meaning-delta", "text": "I am "}\n' } }] })}\n\n`,
+      `data: ${JSON.stringify({ choices: [{ delta: { content: '{"type": "meaning-delta", "text": "going now."}\n' } }] })}\n\n`,
+      `data: ${JSON.stringify({ choices: [{ delta: { content: '{"type": "phrase", "text": "지금", "meaning": "now"}\n' } }] })}\n\n`,
+      "data: [DONE]\n\n"
+    ]);
+  });
+
+  const events = [];
+  for await (const event of languageModel.streamSentenceExplanation({ sentence: "지금 가고 있어요." })) {
+    events.push(event);
+  }
+
+  assert.equal(request.init.body.includes('"stream":true'), true);
+  assert.equal(events.length, 4);
+  assert.deepEqual(events[0], { type: "meaning-delta", text: "I am " });
+  assert.deepEqual(events[1], { type: "meaning-delta", text: "going now." });
+  assert.deepEqual(events[2], { type: "phrase", text: "지금", meaning: "now" });
+  assert.equal(events[3].type, "complete");
+  assert.equal(events[3].explanation.naturalMeaning, "I am going now.");
+});
+
+test("streamSentenceExplanation supports AbortSignal cancellation", async () => {
+  const controller = new AbortController();
+  const languageModel = model(async (url, init) => {
+    return sseStreamResponse([
+      `data: ${JSON.stringify({ choices: [{ delta: { content: '{"type": "meaning-delta", "text": "I am "}\n' } }] })}\n\n`
+    ]);
+  });
+
+  const stream = languageModel.streamSentenceExplanation({ sentence: "지금 가고 있어요." }, { signal: controller.signal });
+
+  // Get first event then abort
+  const iterator = stream[Symbol.asyncIterator]();
+  const first = await iterator.next();
+  assert.deepEqual(first.value, { type: "meaning-delta", text: "I am " });
+
+  controller.abort();
+
+  await assert.rejects(
+    () => iterator.next(),
+    (error) => error instanceof LanguageModelError && error.code === "REQUEST_FAILED"
+  );
+});
+
+test("streamWordExplanation parses OpenAI SSE chunks into word events", async () => {
+  const languageModel = model(async () => {
+    return sseStreamResponse([
+      `data: ${JSON.stringify({ choices: [{ delta: { content: '{"type": "meaning-delta", "text": "to go"}\n' } }] })}\n\n`,
+      `data: ${JSON.stringify({ choices: [{ delta: { content: '{"type": "dictionaryForm", "text": "가다"}\n' } }] })}\n\n`,
+      "data: [DONE]\n\n"
+    ]);
+  });
+
+  const events = [];
+  for await (const event of languageModel.streamWordExplanation({ word: "가고 있어요", sentence: "지금 가고 있어요." })) {
+    events.push(event);
+  }
+
+  assert.equal(events.length, 2);
+  assert.deepEqual(events[0], { type: "meaning-delta", text: "to go" });
+  assert.deepEqual(events[1], {
+    type: "complete",
+    explanation: {
+      word: "가고 있어요",
+      meaning: "to go",
+      dictionaryForm: "가다"
+    }
+  });
+});

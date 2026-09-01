@@ -1,7 +1,22 @@
 import type { SentenceExplanation, WordExplanation } from "@korean-learning/korean";
-import type { ExplainSentenceInput, ExplainWordInput, LanguageModel } from "./index.js";
-import { SENTENCE_EXPLANATION_SYSTEM_PROMPT, sentenceExplanationSchema } from "./sentence-explanation.ts";
-import { WORD_EXPLANATION_SYSTEM_PROMPT, wordExplanationSchema } from "./word-explanation.ts";
+import type {
+  ExplainSentenceInput,
+  ExplainWordInput,
+  ExplanationStreamEvent,
+  LanguageModel,
+  StreamOptions
+} from "./index.js";
+import { processSentenceStream, processWordStream } from "./explanation-stream.ts";
+import {
+  SENTENCE_EXPLANATION_STREAM_SYSTEM_PROMPT,
+  SENTENCE_EXPLANATION_SYSTEM_PROMPT,
+  sentenceExplanationSchema
+} from "./sentence-explanation.ts";
+import {
+  WORD_EXPLANATION_STREAM_SYSTEM_PROMPT,
+  WORD_EXPLANATION_SYSTEM_PROMPT,
+  wordExplanationSchema
+} from "./word-explanation.ts";
 
 const DEFAULT_BASE_URL = "https://api.openai.com/v1";
 
@@ -83,6 +98,148 @@ export class OpenAICompatibleLanguageModel implements LanguageModel {
     return validateWordExplanation(content);
   }
 
+  async *streamSentenceExplanation(
+    input: ExplainSentenceInput,
+    options?: StreamOptions
+  ): AsyncIterable<ExplanationStreamEvent> {
+    if (!input.sentence.trim()) {
+      throw new LanguageModelError("INVALID_INPUT", "A Korean sentence is required.");
+    }
+
+    const context = input.context?.trim();
+    const messages: ChatMessage[] = [
+      { role: "system", content: SENTENCE_EXPLANATION_STREAM_SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `Explain this Korean sentence in context.${context ? ` Context: ${context}` : ""}\nSentence: ${input.sentence}`
+      }
+    ];
+
+    const textChunks = this.streamOpenAI(messages, options);
+    yield* processSentenceStream(input.sentence, textChunks, options);
+  }
+
+  async *streamWordExplanation(
+    input: ExplainWordInput,
+    options?: StreamOptions
+  ): AsyncIterable<ExplanationStreamEvent> {
+    if (!input.word.trim() || !input.sentence.trim()) {
+      throw new LanguageModelError("INVALID_INPUT", "A Korean word and source sentence are required.");
+    }
+
+    const messages: ChatMessage[] = [
+      { role: "system", content: WORD_EXPLANATION_STREAM_SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `Explain the Korean word or phrase "${input.word}" in this sentence: ${input.sentence}`
+      }
+    ];
+
+    const textChunks = this.streamOpenAI(messages, options);
+    yield* processWordStream(input.word, textChunks, options);
+  }
+
+  private async *streamOpenAI(
+    messages: readonly ChatMessage[],
+    options?: StreamOptions
+  ): AsyncGenerator<string> {
+    let response: Response;
+    try {
+      response = await this.request(this.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages,
+          stream: true
+        }),
+        signal: options?.signal
+      });
+    } catch (err: unknown) {
+      if (options?.signal?.aborted || (err instanceof Error && err.name === "AbortError")) {
+        throw new LanguageModelError("REQUEST_FAILED", "The request was cancelled.");
+      }
+      throw new LanguageModelError("REQUEST_FAILED", "The AI provider request failed.");
+    }
+
+    if (!response.ok) {
+      throw new LanguageModelError("REQUEST_FAILED", "The AI provider returned an error.", response.status);
+    }
+
+    if (!response.body) {
+      throw new LanguageModelError("INVALID_OUTPUT", "The AI provider returned an empty response body.");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    try {
+      while (true) {
+        if (options?.signal?.aborted) {
+          throw new LanguageModelError("REQUEST_FAILED", "The request was cancelled.");
+        }
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith(":")) continue; // Skip comments / empty lines
+
+          if (trimmed.startsWith("data: ")) {
+            const dataStr = trimmed.slice(6).trim();
+            if (dataStr === "[DONE]") {
+              return;
+            }
+            try {
+              const parsed = JSON.parse(dataStr) as unknown;
+              const deltaContent = getDeltaContent(parsed);
+              if (deltaContent) {
+                yield deltaContent;
+              }
+            } catch (err: unknown) {
+              if (err instanceof LanguageModelError) throw err;
+              throw new LanguageModelError("INVALID_OUTPUT", "The AI provider returned invalid stream SSE payload.");
+            }
+          }
+        }
+      }
+
+      if (buffer.trim().startsWith("data: ")) {
+        const dataStr = buffer.trim().slice(6).trim();
+        if (dataStr !== "[DONE]") {
+          try {
+            const parsed = JSON.parse(dataStr) as unknown;
+            const deltaContent = getDeltaContent(parsed);
+            if (deltaContent) {
+              yield deltaContent;
+            }
+          } catch (err: unknown) {
+            if (err instanceof LanguageModelError) throw err;
+            throw new LanguageModelError("INVALID_OUTPUT", "The AI provider returned invalid stream SSE payload.");
+          }
+        }
+      }
+    } catch (err: unknown) {
+      if (options?.signal?.aborted || (err instanceof Error && err.name === "AbortError")) {
+        throw new LanguageModelError("REQUEST_FAILED", "The request was cancelled.");
+      }
+      if (err instanceof LanguageModelError) {
+        throw err;
+      }
+      throw new LanguageModelError("REQUEST_FAILED", "The AI provider stream was interrupted.");
+    } finally {
+      reader.releaseLock?.();
+    }
+  }
+
   private async complete(messages: readonly ChatMessage[]): Promise<unknown> {
     let response: Response;
     try {
@@ -138,6 +295,19 @@ function getMessageContent(payload: unknown): string {
   }
 
   return firstChoice.message.content;
+}
+
+function getDeltaContent(payload: unknown): string | null {
+  if (!isRecord(payload) || !Array.isArray(payload.choices) || payload.choices.length === 0) {
+    return null;
+  }
+
+  const firstChoice = payload.choices[0];
+  if (!isRecord(firstChoice) || !isRecord(firstChoice.delta) || typeof firstChoice.delta.content !== "string") {
+    return null;
+  }
+
+  return firstChoice.delta.content;
 }
 
 function validateSentenceExplanation(value: unknown): SentenceExplanation {

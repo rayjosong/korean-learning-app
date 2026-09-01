@@ -34,10 +34,31 @@ export const SENTENCE_EXPLANATION_SYSTEM_PROMPT = [
 ].join("\n");
 
 /**
+ * System prompt for line-delimited streaming sentence explanations.
+ */
+export const SENTENCE_EXPLANATION_STREAM_SYSTEM_PROMPT = [
+  "You are a Korean tutor. Explain exactly one Korean sentence from real content.",
+  "Output line-delimited JSON objects (one JSON object per line). Do not wrap in markdown or code blocks.",
+  "Allowed JSON objects:",
+  '{"type": "meaning-delta", "text": "..."} - incremental parts of naturalMeaning (natural English meaning)',
+  '{"type": "phrase", "text": "...", "meaning": "...", "role": "..."} - breakdown items covering every word in order',
+  '{"type": "grammar", "title": "...", "explanation": "..."} - grammar forms appearing in sentence',
+  '{"type": "nuance", "text": "..."} - optional tone, implication, or register note',
+  '{"type": "speechLevel", "text": "..."} - optional speechLevel (e.g. 해요체, 반말)',
+  "Rules:",
+  "- naturalMeaning must read like natural English, never a word-by-word gloss;",
+  "- explain contractions by giving what they contract from, e.g. 뭐 = 무엇, -거야 = -것이야, 축약된 표현 all count;",
+  "- identify slang, fillers, and interjections (e.g. 응, 어, 야, 아, 느낌 표현) and explain them in the breakdown instead of skipping them;",
+  "- do not formalize casual speech: explain 반말/casual endings as casual and keep that tone in naturalMeaning;",
+  "- cover honorifics (e.g. -시-, 께서, honorific vocabulary) in grammar or nuance, and always state speechLevel;",
+  "- be concise by default: short meanings, short grammar notes, no extra commentary, no markdown, no fields beyond the schema."
+].join("\n");
+
+/**
  * Version of the sentence explanation prompt. Cached explanations are keyed
  * by this version, so bump it whenever the prompt changes meaningfully.
  */
-export const SENTENCE_EXPLANATION_PROMPT_VERSION = "1";
+export const SENTENCE_EXPLANATION_PROMPT_VERSION = "2";
 
 export const sentenceExplanationSchema: z.ZodType<SentenceExplanation> = z.object({
   sentence: z.string(),
