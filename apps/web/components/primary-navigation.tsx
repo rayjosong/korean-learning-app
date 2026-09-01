@@ -1,11 +1,12 @@
 const links = [
   { href: "/", label: "Home" },
-  { href: "/progress", label: "Progress" }
+  { href: "/progress", label: "Progress" },
+  { href: "/settings", label: "Settings" }
 ] as const;
 
-const upcoming = ["Library", "Review", "Settings"] as const;
+const upcoming = ["Library", "Review"] as const;
 
-export function PrimaryNavigation({ active }: { active: "home" | "progress" }) {
+export function PrimaryNavigation({ active }: { active: "home" | "progress" | "settings" }) {
   return (
     <nav className="mb-14 flex items-center justify-between border-b border-hairline pb-4" aria-label="Primary navigation">
       <a href="/" className="text-sm font-semibold tracking-tight text-ink">Korean</a>
