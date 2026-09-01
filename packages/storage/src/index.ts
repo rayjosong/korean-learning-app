@@ -121,6 +121,64 @@ export class ExplanationDatabase extends Dexie {
       contentResume: "videoId, updatedAt",
       recommendationDismissals: "fingerprint, dismissedUntil"
     });
+    // Implementation 33 reused this table without changing the Dexie version.
+    // Convert its new record shape back to the legacy shape during rollback.
+    this.version(12)
+      .stores({
+        explanations: "key, createdAt",
+        wordExplanations: "key",
+        learningItems: "id, text, lastSeenAt",
+        learningContexts: "id, itemId, createdAt",
+        reviewRecords: "id, itemId, reviewedAt, mode",
+        studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+        contentProgressSnapshots: "id, videoId, capturedAt",
+        aiProviderSettings: "id",
+        assistanceSettings: "id",
+        contentResume: "videoId, updatedAt",
+        recommendationDismissals: "fingerprint, dismissedUntil"
+      })
+      .upgrade(async (transaction) => {
+        const table = transaction.table("aiProviderSettings");
+        const record = await table.get("default");
+
+        if (!record) return;
+
+        // Already in the legacy format. Leave it untouched.
+        if (
+          typeof record.provider === "string" &&
+          typeof record.model === "string" &&
+          typeof record.apiKey === "string"
+        ) {
+          return;
+        }
+
+        // Preserve the OpenAI profile when it exists. The rolled-back app
+        // supports the legacy OpenAI-compatible provider only.
+        const profile = record.profiles?.openai;
+        if (
+          profile &&
+          typeof profile.apiKey === "string" &&
+          typeof profile.defaultModel === "string"
+        ) {
+          await table.put({
+            id: "default",
+            provider: "openai-compatible",
+            model: profile.defaultModel,
+            ...(typeof profile.baseUrl === "string" && profile.baseUrl.trim()
+              ? { baseUrl: profile.baseUrl.trim() }
+              : {}),
+            apiKey: profile.apiKey,
+            updatedAt:
+              typeof profile.updatedAt === "string"
+                ? profile.updatedAt
+                : new Date().toISOString()
+          });
+          return;
+        }
+
+        // Do not leave a record that the rolled-back code cannot interpret.
+        await table.delete("default");
+      });
   }
 }
 
