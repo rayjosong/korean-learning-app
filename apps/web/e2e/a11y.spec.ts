@@ -49,7 +49,7 @@ test("selected, expanded, and utility surfaces remain accessible", async ({ page
   const studyResults = await new AxeBuilder({ page }).analyze();
   expect(studyResults.violations, JSON.stringify(studyResults.violations, null, 2)).toEqual([]);
 
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   const utilityResults = await new AxeBuilder({ page }).analyze();
   expect(utilityResults.violations, JSON.stringify(utilityResults.violations, null, 2)).toEqual([]);
 });
@@ -68,7 +68,7 @@ test("selected and playing rows expose independent state", async ({ page }) => {
 
 test("contextual review recall, reveal, and unavailable-clip states are accessible", async ({ page }) => {
   await openFixture(page, "populated");
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   const review = page.getByRole("region", { name: "Contextual review" });
   let results = await new AxeBuilder({ page }).analyze();
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
@@ -78,7 +78,7 @@ test("contextual review recall, reveal, and unavailable-clip states are accessib
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 
   await openFixture(page, "review-unavailable");
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   results = await new AxeBuilder({ page }).analyze();
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 });
@@ -86,12 +86,12 @@ test("contextual review recall, reveal, and unavailable-clip states are accessib
 
 test("learner profile populated and empty states remain accessible", async ({ page }) => {
   await openFixture(page, "populated");
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   let results = await new AxeBuilder({ page }).analyze();
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 
   await openFixture(page);
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   results = await new AxeBuilder({ page }).analyze();
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 });

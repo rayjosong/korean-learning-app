@@ -104,7 +104,7 @@ test("Compact Watch and Study states remain usable", async ({ page }) => {
 test("Review utility renders truthful populated and empty states", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page, "populated");
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   const review = page.getByRole("region", { name: "Mixed review" });
   await expect(review).toContainText("____ 그냥 걸어가려고요.");
   await expect(review).toHaveScreenshot("32-review-populated-1440.png", { animations: "disabled" });
@@ -113,7 +113,7 @@ test("Review utility renders truthful populated and empty states", async ({ page
 test("Review utility has an honest empty state", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page);
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   const review = page.getByRole("region", { name: "Mixed review" });
   await expect(review).toContainText("Nothing is due right now.");
   await expect(review).toHaveScreenshot("32-review-empty-1440.png", { animations: "disabled" });
@@ -122,7 +122,7 @@ test("Review utility has an honest empty state", async ({ page }) => {
 test("Settings utility renders ready and saved states", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page, "populated");
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   const settings = page.getByRole("region", { name: "AI provider settings" });
   await expect(settings.getByRole("button", { name: "Save changes" })).toBeVisible();
   await expect(settings).toHaveScreenshot("32-settings-saved-1440.png", { animations: "disabled" });
@@ -131,7 +131,7 @@ test("Settings utility renders ready and saved states", async ({ page }) => {
 test("Settings utility keeps missing state actionable", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page);
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   const settings = page.getByRole("region", { name: "AI provider settings" });
   await expect(settings.getByRole("button", { name: "Save settings" })).toBeDisabled();
   await expect(settings).toHaveScreenshot("32-settings-empty-1440.png", { animations: "disabled" });
@@ -140,7 +140,7 @@ test("Settings utility keeps missing state actionable", async ({ page }) => {
 test("Utilities and guidance share the same surface system", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page, "populated");
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   await expect(page.getByRole("region", { name: "Learner profile" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Learning history" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Video difficulty estimate" })).toBeVisible();

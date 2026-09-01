@@ -3,7 +3,7 @@ import { openFixture } from "./fixture";
 
 test("populated learner profile reports local evidence without conflating channels", async ({ page }) => {
   await openFixture(page, "populated");
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
 
   const profile = page.getByRole("region", { name: "Learner profile" });
   await expect(profile).toBeVisible();
@@ -21,7 +21,7 @@ test("populated learner profile reports local evidence without conflating channe
 
 test("empty learner profile avoids fake confidence metrics", async ({ page }) => {
   await openFixture(page);
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
 
   const profile = page.getByRole("region", { name: "Learner profile" });
   await expect(profile).toContainText("Your profile will appear as you save words");
@@ -38,7 +38,7 @@ test("learner profile refreshes after saving a new item", async ({ page }) => {
   await popover.getByRole("button", { name: "Learn this", exact: true }).click();
   await expect(popover.getByRole("status")).toContainText("Added to review");
 
-  await page.locator("summary").click();
+  await page.getByText("Workspace Utilities & Settings").click();
   const profile = page.getByRole("region", { name: "Learner profile" });
   const learningMetric = profile.getByText("Learning", { exact: true }).locator("..");
   await expect(learningMetric.getByText("2", { exact: true })).toBeVisible();

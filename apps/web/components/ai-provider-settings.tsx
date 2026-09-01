@@ -221,7 +221,7 @@ export function AiProviderSettings({
   return (
     <div className="space-y-6">
       {/* Providers list */}
-      <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="AI provider profiles">
+      <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="AI provider settings">
         <h2 className="mb-1 text-sm font-semibold text-ink">AI providers</h2>
         <p className="mb-4 text-xs leading-5 text-ink-muted">
           Connect your AI providers using your own API keys. Saved settings stay in this browser and are never exported.
@@ -331,7 +331,7 @@ export function AiProviderSettings({
                 onClick={() => void handleSaveProfile()}
                 className="flex-1 rounded-lg bg-primary-hover px-3 py-1.5 text-sm font-medium text-on-primary transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Save profile
+                {isConnected ? "Save changes" : "Save profile"}
               </button>
               {isConnected ? (
                 <button
