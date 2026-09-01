@@ -8,7 +8,8 @@
     "./learner-profile": "./src/learner-profile.ts",
     "./ai-settings": "./src/ai-settings.ts",
     "./assistance-settings": "./src/assistance-settings.ts",
-    "./export": "./src/export.ts"
+    "./export": "./src/export.ts",
+    "./import": "./src/import.ts"
   },
   "scripts": {
     "lint": "node ./scripts/lint.mjs",
@@ -17,8 +18,9 @@
   },
   "dependencies": {
     "@korean-learning/korean": "workspace:*",
+    "@korean-learning/learning-engine": "workspace:*",
     "dexie": "^4.2.1",
-    "@korean-learning/learning-engine": "workspace:*"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.2.2",
