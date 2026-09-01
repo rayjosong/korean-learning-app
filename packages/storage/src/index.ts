@@ -249,16 +249,16 @@ export async function getRecentLearningItems(
   const itemIds = items.map((item) => item.id);
   const allContexts = await database.learningContexts.where("itemId").anyOf(itemIds).toArray();
 
-  const contextsByItemId = new Map<string, LearningContextRecord[]>();
+  const latestContexts = new Map<string, LearningContextRecord>();
   for (const context of allContexts) {
-    const existing = contextsByItemId.get(context.itemId) || [];
-    existing.push(context);
-    contextsByItemId.set(context.itemId, existing);
+    const existing = latestContexts.get(context.itemId);
+    if (!existing || context.createdAt > existing.createdAt) {
+      latestContexts.set(context.itemId, context);
+    }
   }
 
   return items.map((item) => {
-    const contexts = contextsByItemId.get(item.id) || [];
-    const context = contexts.sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0];
+    const context = latestContexts.get(item.id);
     return context ? { item, context } : { item };
   });
 }
@@ -485,16 +485,16 @@ export async function getDueReviewItems(
   const itemIds = items.map((item) => item.id);
   const allContexts = await database.learningContexts.where("itemId").anyOf(itemIds).toArray();
 
-  const contextsByItemId = new Map<string, LearningContextRecord[]>();
+  const latestContexts = new Map<string, LearningContextRecord>();
   for (const context of allContexts) {
-    const existing = contextsByItemId.get(context.itemId) || [];
-    existing.push(context);
-    contextsByItemId.set(context.itemId, existing);
+    const existing = latestContexts.get(context.itemId);
+    if (!existing || context.createdAt > existing.createdAt) {
+      latestContexts.set(context.itemId, context);
+    }
   }
 
   return items.map((item) => {
-    const contexts = contextsByItemId.get(item.id) || [];
-    const context = contexts.sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0];
+    const context = latestContexts.get(item.id);
     return context ? { item, context } : { item };
   });
 }
