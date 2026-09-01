@@ -50,6 +50,34 @@ test("calls an OpenAI-compatible endpoint with the BYO key and custom base URL",
   assert.equal(result.naturalMeaning, "I'm on my way now.");
 });
 
+test("handles network errors during completion", async () => {
+  const languageModel = model(async () => {
+    throw new TypeError("fetch failed");
+  });
+
+  await assert.rejects(
+    () => languageModel.explainSentence({ sentence: "안녕하세요." }),
+    (error) =>
+      error instanceof LanguageModelError &&
+      error.code === "REQUEST_FAILED" &&
+      error.message === "The AI provider request failed."
+  );
+});
+
+test("handles invalid JSON from provider", async () => {
+  const languageModel = model(async () => {
+    return new Response("Not valid JSON", { status: 200, headers: { "Content-Type": "text/plain" } });
+  });
+
+  await assert.rejects(
+    () => languageModel.explainSentence({ sentence: "안녕하세요." }),
+    (error) =>
+      error instanceof LanguageModelError &&
+      error.code === "INVALID_OUTPUT" &&
+      error.message === "The AI provider returned invalid JSON."
+  );
+});
+
 test("sentence explanation prompt covers real Korean and stays concise by default", () => {
   for (const term of [
     "naturalMeaning",
@@ -211,6 +239,24 @@ for (const [label, explanation] of [
   });
 }
 
+for (const [label, explanation] of [
+  ["missing word", { meaning: "meaning" }],
+  ["missing meaning", { word: "word" }],
+  ["non-string dictionaryForm", { word: "word", meaning: "meaning", dictionaryForm: 123 }]
+]) {
+  test(`rejects invalid word explanation structured output: ${label}`, async () => {
+    const languageModel = model(async () => contentResponse(explanation));
+
+    await assert.rejects(
+      () => languageModel.explainWord({ word: "word", sentence: "안녕하세요." }),
+      (error) =>
+        error instanceof LanguageModelError &&
+        error.code === "INVALID_OUTPUT" &&
+        error.message === "The AI provider returned an invalid word explanation."
+    );
+  });
+}
+
 test("does not include provider response bodies in request errors", async () => {
   const languageModel = model(async () => new Response("provider secret body", { status: 500 }));
 
@@ -224,13 +270,47 @@ test("does not include provider response bodies in request errors", async () => 
   );
 });
 
+for (const [label, payload, expectedMessage] of [
+  ["missing choices", {}, "The AI provider response had no choices."],
+  ["empty choices", { choices: [] }, "The AI provider response had no choices."],
+  ["null choice", { choices: [null] }, "The AI provider response had no message content."],
+  ["empty choice object", { choices: [{}] }, "The AI provider response had no message content."],
+  ["missing content", { choices: [{ message: {} }] }, "The AI provider response had no message content."],
+  ["non-string content", { choices: [{ message: { content: 123 } }] }, "The AI provider response had no message content."]
+]) {
+  test(`handles malformed response payload: ${label}`, async () => {
+    const languageModel = model(async () => Response.json(payload));
+
+    await assert.rejects(
+      () => languageModel.explainSentence({ sentence: "안녕하세요." }),
+      (error) =>
+        error instanceof LanguageModelError &&
+        error.code === "INVALID_OUTPUT" &&
+        error.message === expectedMessage
+    );
+  });
+}
+
 test("rejects missing credentials and input before making a request", async () => {
   assert.throws(
     () => new OpenAICompatibleLanguageModel({ apiKey: "", model: "test-model" }),
     (error) => error instanceof LanguageModelError && error.code === "INVALID_INPUT"
   );
+  assert.throws(
+    () => new OpenAICompatibleLanguageModel({ apiKey: "user-key", model: "" }),
+    (error) => error instanceof LanguageModelError && error.code === "INVALID_INPUT"
+  );
+  const m = new OpenAICompatibleLanguageModel({ apiKey: "user-key", model: "test-model" });
   await assert.rejects(
-    () => new OpenAICompatibleLanguageModel({ apiKey: "user-key", model: "test-model" }).explainSentence({ sentence: "" }),
+    () => m.explainSentence({ sentence: "" }),
+    (error) => error instanceof LanguageModelError && error.code === "INVALID_INPUT"
+  );
+  await assert.rejects(
+    () => m.explainWord({ word: "", sentence: "지금 가고 있어요." }),
+    (error) => error instanceof LanguageModelError && error.code === "INVALID_INPUT"
+  );
+  await assert.rejects(
+    () => m.explainWord({ word: "가고 있어요", sentence: "" }),
     (error) => error instanceof LanguageModelError && error.code === "INVALID_INPUT"
   );
 });
