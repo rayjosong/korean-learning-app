@@ -28,10 +28,26 @@ export const WORD_EXPLANATION_SYSTEM_PROMPT = [
 ].join("\n");
 
 /**
+ * System prompt for line-delimited streaming word explanations.
+ */
+export const WORD_EXPLANATION_STREAM_SYSTEM_PROMPT = [
+  "You are a Korean tutor. Explain exactly one Korean word or short phrase as it is used in one given sentence.",
+  "Output line-delimited JSON objects (one JSON object per line). Do not wrap in markdown or code blocks.",
+  "Allowed JSON objects:",
+  '{"type": "meaning-delta", "text": "..."} - incremental parts of word meaning',
+  '{"type": "dictionaryForm", "text": "..."} - optional dictionary form',
+  '{"type": "nuance", "text": "..."} - optional tone, implication, or register note',
+  "Rules:",
+  "- meaning must fit the sentence context, never a bare list of dictionary senses;",
+  "- explain contractions, slang, fillers, and casual or honorific usage instead of skipping them;",
+  "- be concise by default: one short meaning, no extra commentary, no markdown, no fields beyond the schema."
+].join("\n");
+
+/**
  * Version of the word explanation prompt. Cached explanations are keyed
  * by this version, so bump it whenever the prompt changes meaningfully.
  */
-export const WORD_EXPLANATION_PROMPT_VERSION = "1";
+export const WORD_EXPLANATION_PROMPT_VERSION = "2";
 
 export const wordExplanationSchema: z.ZodType<WordExplanation> = z.object({
   word: z.string(),

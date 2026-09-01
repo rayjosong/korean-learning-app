@@ -2,8 +2,10 @@ import {
   SENTENCE_EXPLANATION_PROMPT_VERSION,
   type ExplainSentenceInput,
   type ExplainWordInput,
+  type ExplanationStreamEvent,
   type LanguageModel,
   type SentenceExplanation,
+  type StreamOptions,
   type WordExplanation
 } from "@korean-learning/ai";
 import {
@@ -51,6 +53,12 @@ export function withExplanationCache(options: ExplanationCacheOptions): Language
 
       return explanation;
     },
-    explainWord: (input: ExplainWordInput): Promise<WordExplanation> => options.model.explainWord(input)
+    explainWord: (input: ExplainWordInput): Promise<WordExplanation> => options.model.explainWord(input),
+    streamSentenceExplanation: (input: ExplainSentenceInput, streamOptions?: StreamOptions): AsyncIterable<ExplanationStreamEvent> => {
+      return options.model.streamSentenceExplanation(input, streamOptions);
+    },
+    streamWordExplanation: (input: ExplainWordInput, streamOptions?: StreamOptions): AsyncIterable<ExplanationStreamEvent> => {
+      return options.model.streamWordExplanation(input, streamOptions);
+    }
   };
 }

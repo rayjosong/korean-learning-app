@@ -227,6 +227,25 @@ export function createFixtureLanguageModel(scenario: FixtureScenario = "watch-st
     },
     async explainWord({ word }) {
       return { word, meaning: word === "그래서" ? "so / therefore" : "a phrase from the sentence", dictionaryForm: word, nuance: "Fixture explanation for deterministic browser tests." };
+    },
+    async *streamSentenceExplanation(input) {
+      const explanation = await this.explainSentence(input);
+      yield { type: "meaning-delta", text: explanation.naturalMeaning };
+      for (const item of explanation.breakdown) {
+        yield { type: "phrase", ...item };
+      }
+      for (const item of explanation.grammar) {
+        yield { type: "grammar", title: item.form, explanation: item.explanation };
+      }
+      if (explanation.nuance) {
+        yield { type: "nuance", text: explanation.nuance };
+      }
+      yield { type: "complete", explanation };
+    },
+    async *streamWordExplanation(input) {
+      const explanation = await this.explainWord(input);
+      yield { type: "meaning-delta", text: explanation.meaning };
+      yield { type: "complete", explanation };
     }
   };
 }

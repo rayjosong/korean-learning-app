@@ -1,5 +1,11 @@
 import type { SentenceExplanation, WordExplanation } from "@korean-learning/korean";
-import type { ExplainSentenceInput, ExplainWordInput, LanguageModel } from "./index.js";
+import type {
+  ExplainSentenceInput,
+  ExplainWordInput,
+  ExplanationStreamEvent,
+  LanguageModel,
+  StreamOptions
+} from "./index.js";
 import { LanguageModelError } from "./openai-compatible.ts";
 import { SENTENCE_EXPLANATION_SYSTEM_PROMPT, sentenceExplanationSchema } from "./sentence-explanation.ts";
 import { WORD_EXPLANATION_SYSTEM_PROMPT, wordExplanationSchema } from "./word-explanation.ts";
@@ -59,6 +65,33 @@ export class AnthropicLanguageModel implements LanguageModel {
     );
 
     return validateWordExplanation(content);
+  }
+
+  async *streamSentenceExplanation(
+    input: ExplainSentenceInput,
+    _options?: StreamOptions
+  ): AsyncIterable<ExplanationStreamEvent> {
+    const explanation = await this.explainSentence(input);
+    yield { type: "meaning-delta", text: explanation.naturalMeaning };
+    for (const item of explanation.breakdown) {
+      yield { type: "phrase", ...item };
+    }
+    for (const item of explanation.grammar) {
+      yield { type: "grammar", title: item.form, explanation: item.explanation };
+    }
+    if (explanation.nuance) {
+      yield { type: "nuance", text: explanation.nuance };
+    }
+    yield { type: "complete", explanation };
+  }
+
+  async *streamWordExplanation(
+    input: ExplainWordInput,
+    _options?: StreamOptions
+  ): AsyncIterable<ExplanationStreamEvent> {
+    const explanation = await this.explainWord(input);
+    yield { type: "meaning-delta", text: explanation.meaning };
+    yield { type: "complete", explanation };
   }
 
   private async complete(systemPrompt: string, userPrompt: string): Promise<unknown> {
