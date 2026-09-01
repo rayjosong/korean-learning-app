@@ -1,0 +1,3 @@
+## 2023-10-27 - Add Focus States to Primary Navigation
+**Learning:** Found that primary navigation links (`<a>` tags) lacked explicit keyboard focus indicators, making it hard for keyboard users to track their focus in the main menu.
+**Action:** Applied the app's standard `focus-visible` ring utility classes (`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`) along with `rounded` to ensure clear, consistent keyboard accessibility across the main navigation. Checked for other instances and this pattern seems to be the standard way to fix it for custom links.
