@@ -3,6 +3,15 @@ import test from "node:test";
 
 import { sentenceExplanationSchema } from "../src/sentence-explanation.ts";
 
+const validMinimalData = {
+  sentence: "안녕하세요",
+  naturalMeaning: "Hello.",
+  breakdown: [
+    { text: "안녕하세요", meaning: "Hello." }
+  ],
+  grammar: []
+};
+
 test("sentenceExplanationSchema valid explanation", () => {
   const data = {
     sentence: "안녕하세요",
@@ -24,95 +33,114 @@ test("sentenceExplanationSchema valid explanation", () => {
 });
 
 test("sentenceExplanationSchema valid explanation with minimal fields", () => {
-  const data = {
-    sentence: "안녕하세요",
-    naturalMeaning: "Hello.",
-    breakdown: [
-      { text: "안녕하세요", meaning: "Hello." }
-    ],
-    grammar: []
-  };
-
-  const result = sentenceExplanationSchema.safeParse(data);
+  const result = sentenceExplanationSchema.safeParse(validMinimalData);
   assert.equal(result.success, true);
-  assert.deepEqual(result.data, data);
+  assert.deepEqual(result.data, validMinimalData);
 });
 
-test("sentenceExplanationSchema invalid explanation (missing required field)", () => {
-  const data = {
-    sentence: "안녕하세요",
-    breakdown: [],
-    grammar: []
-  };
+for (const field of ["sentence", "naturalMeaning", "breakdown", "grammar"]) {
+  test(`sentenceExplanationSchema invalid explanation (missing ${field})`, () => {
+    const data = { ...validMinimalData };
+    delete data[field];
 
-  const result = sentenceExplanationSchema.safeParse(data);
-  assert.equal(result.success, false);
-});
+    const result = sentenceExplanationSchema.safeParse(data);
+    assert.equal(result.success, false);
+  });
+}
 
-test("sentenceExplanationSchema invalid explanation (wrong type)", () => {
+test("sentenceExplanationSchema invalid explanation (wrong type for string field)", () => {
   const data = {
-    sentence: "안녕하세요",
+    ...validMinimalData,
     naturalMeaning: 123, // should be string
-    breakdown: [],
-    grammar: []
   };
 
   const result = sentenceExplanationSchema.safeParse(data);
   assert.equal(result.success, false);
 });
 
-test("sentenceExplanationSchema invalid explanation (invalid breakdown item missing required field)", () => {
-  const data = {
-    sentence: "안녕하세요",
-    naturalMeaning: "Hello.",
-    breakdown: [
-      { meaning: "Hello." } // missing text
-    ],
-    grammar: []
-  };
+for (const field of ["nuance", "speechLevel"]) {
+  test(`sentenceExplanationSchema invalid explanation (wrong type for optional field ${field})`, () => {
+    const data = {
+      ...validMinimalData,
+      [field]: 123, // should be string
+    };
 
+    const result = sentenceExplanationSchema.safeParse(data);
+    assert.equal(result.success, false);
+  });
+}
+
+for (const field of ["breakdown", "grammar"]) {
+  test(`sentenceExplanationSchema invalid explanation (${field} is not an array)`, () => {
+    const data = {
+      ...validMinimalData,
+      [field]: {}, // should be array
+    };
+
+    const result = sentenceExplanationSchema.safeParse(data);
+    assert.equal(result.success, false);
+  });
+}
+
+test("sentenceExplanationSchema invalid explanation (breakdown item missing text)", () => {
+  const data = {
+    ...validMinimalData,
+    breakdown: [{ meaning: "Hello." }]
+  };
   const result = sentenceExplanationSchema.safeParse(data);
   assert.equal(result.success, false);
 });
 
-test("sentenceExplanationSchema invalid explanation (invalid breakdown item type)", () => {
+test("sentenceExplanationSchema invalid explanation (breakdown item missing meaning)", () => {
   const data = {
-    sentence: "안녕하세요",
-    naturalMeaning: "Hello.",
-    breakdown: [
-      { text: 123, meaning: "Hello." } // text should be string
-    ],
-    grammar: []
+    ...validMinimalData,
+    breakdown: [{ text: "안녕하세요" }]
   };
-
   const result = sentenceExplanationSchema.safeParse(data);
   assert.equal(result.success, false);
 });
 
-test("sentenceExplanationSchema invalid explanation (invalid grammar item missing required field)", () => {
+test("sentenceExplanationSchema invalid explanation (breakdown item wrong type for text)", () => {
   const data = {
-    sentence: "안녕하세요",
-    naturalMeaning: "Hello.",
-    breakdown: [],
-    grammar: [
-      { form: "하세요" } // missing explanation
-    ]
+    ...validMinimalData,
+    breakdown: [{ text: 123, meaning: "Hello." }]
   };
-
   const result = sentenceExplanationSchema.safeParse(data);
   assert.equal(result.success, false);
 });
 
-test("sentenceExplanationSchema invalid explanation (invalid grammar item type)", () => {
+test("sentenceExplanationSchema invalid explanation (breakdown item wrong type for role)", () => {
   const data = {
-    sentence: "안녕하세요",
-    naturalMeaning: "Hello.",
-    breakdown: [],
-    grammar: [
-      { form: "하세요", explanation: 123 } // explanation should be string
-    ]
+    ...validMinimalData,
+    breakdown: [{ text: "안녕하세요", meaning: "Hello.", role: 123 }]
   };
+  const result = sentenceExplanationSchema.safeParse(data);
+  assert.equal(result.success, false);
+});
 
+test("sentenceExplanationSchema invalid explanation (grammar item missing form)", () => {
+  const data = {
+    ...validMinimalData,
+    grammar: [{ explanation: "explanation" }]
+  };
+  const result = sentenceExplanationSchema.safeParse(data);
+  assert.equal(result.success, false);
+});
+
+test("sentenceExplanationSchema invalid explanation (grammar item missing explanation)", () => {
+  const data = {
+    ...validMinimalData,
+    grammar: [{ form: "form" }]
+  };
+  const result = sentenceExplanationSchema.safeParse(data);
+  assert.equal(result.success, false);
+});
+
+test("sentenceExplanationSchema invalid explanation (grammar item wrong type for explanation)", () => {
+  const data = {
+    ...validMinimalData,
+    grammar: [{ form: "하세요", explanation: 123 }]
+  };
   const result = sentenceExplanationSchema.safeParse(data);
   assert.equal(result.success, false);
 });
