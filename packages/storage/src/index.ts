@@ -121,6 +121,47 @@ export class ExplanationDatabase extends Dexie {
       contentResume: "videoId, updatedAt",
       recommendationDismissals: "fingerprint, dismissedUntil"
     });
+    this.version(12)
+      .stores({
+        explanations: "key, createdAt",
+        wordExplanations: "key",
+        learningItems: "id, text, lastSeenAt",
+        learningContexts: "id, itemId, createdAt",
+        reviewRecords: "id, itemId, reviewedAt, mode",
+        studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+        contentProgressSnapshots: "id, videoId, capturedAt",
+        aiProviderSettings: "id",
+        assistanceSettings: "id",
+        contentResume: "videoId, updatedAt",
+        recommendationDismissals: "fingerprint, dismissedUntil"
+      })
+      .upgrade(async (tx) => {
+        const table = tx.table("aiProviderSettings");
+        const legacy = await table.get("default");
+        if (legacy && (legacy.provider || legacy.apiKey)) {
+          const apiKey = legacy.apiKey ?? "";
+          const model = legacy.model ?? "";
+          const baseUrl = legacy.baseUrl;
+          const updatedAt = legacy.updatedAt ?? new Date().toISOString();
+          await table.put({
+            id: "default",
+            profiles: {
+              openai: {
+                provider: "openai",
+                apiKey,
+                defaultModel: model,
+                ...(typeof baseUrl === "string" && baseUrl.trim() ? { baseUrl: baseUrl.trim() } : {}),
+                updatedAt
+              }
+            },
+            routes: {
+              sentence: { provider: "openai", model },
+              word: { provider: "openai", model }
+            },
+            updatedAt
+          });
+        }
+      });
   }
 }
 

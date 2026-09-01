@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import "fake-indexeddb/auto";
 import { ExplanationDatabase } from "../src/index.ts";
 import { exportLearnerData } from "../src/export.ts";
-import { putAiProviderSettings } from "../src/ai-settings.ts";
+import { saveProviderProfile, setTaskRoute } from "../src/ai-settings.ts";
 
-test("exports learner data while excluding provider credentials", async () => {
+test("exports learner data while excluding provider credentials and task routes", async () => {
   const db = new ExplanationDatabase("test-export-db");
   await db.delete();
   await db.open();
@@ -19,7 +19,19 @@ test("exports learner data while excluding provider credentials", async () => {
     explanation: { naturalMeaning: "Hello", breakdown: [], grammar: [] },
   });
 
-  await putAiProviderSettings(db, { type: "openai-compatible", apiKey: "secret-key", model: "gpt-4o" });
+  await saveProviderProfile(db, {
+    provider: "openai",
+    apiKey: "secret-key-openai",
+    defaultModel: "gpt-4o",
+    baseUrl: "https://secret-base-url.example.com"
+  });
+  await saveProviderProfile(db, {
+    provider: "gemini",
+    apiKey: "secret-key-gemini",
+    defaultModel: "gemini-1.5-pro"
+  });
+  await setTaskRoute(db, "sentence", { provider: "openai", model: "gpt-4o" });
+  await setTaskRoute(db, "word", { provider: "gemini", model: "gemini-1.5-pro" });
 
   const exported = await exportLearnerData(db);
 
@@ -30,7 +42,12 @@ test("exports learner data while excluding provider credentials", async () => {
 
   // Ensure aiProviderSettings is not in the exported data
   assert.ok(!("aiProviderSettings" in exported));
-  assert.ok(!JSON.stringify(exported).includes("secret-key"));
+  assert.ok(!("profiles" in exported));
+  assert.ok(!("routes" in exported));
+  const serialized = JSON.stringify(exported);
+  assert.ok(!serialized.includes("secret-key-openai"));
+  assert.ok(!serialized.includes("secret-key-gemini"));
+  assert.ok(!serialized.includes("secret-base-url.example.com"));
 
   assert.ok(typeof exported.exportedAt === "string");
   assert.ok(Array.isArray(exported.learningContexts));
