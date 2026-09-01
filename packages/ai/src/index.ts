@@ -30,3 +30,16 @@ export {
   OpenAICompatibleLanguageModel,
   type OpenAICompatibleLanguageModelOptions
 } from "./openai-compatible.ts";
+export {
+  GeminiLanguageModel,
+  type GeminiLanguageModelOptions
+} from "./gemini.ts";
+export {
+  AnthropicLanguageModel,
+  type AnthropicLanguageModelOptions
+} from "./anthropic.ts";
+export {
+  createLanguageModel,
+  type CreateLanguageModelOptions,
+  type ProviderId
+} from "./provider-factory.ts";
