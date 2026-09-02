@@ -4,11 +4,18 @@ import test from "node:test";
 
 import {
   clearAiProviderSettings,
+  disableProvider,
+  getActiveModelSelection,
   getAiProviderSettings,
   getProviderSettings,
+  listAiProviderSettings,
   putAiProviderSettings,
+  removeProvider,
+  saveAndSelectProvider,
+  saveProvider,
   saveProviderSettings,
   saveSelectedModelReference,
+  selectActiveModel,
   setProviderEnabled
 } from "../src/ai-settings.ts";
 import { ExplanationDatabase } from "../src/index.ts";
@@ -38,8 +45,12 @@ test("AI provider settings persist and normalize user input", async () => {
 
 test("AI provider settings can be updated and removed", async () => {
   const database = new ExplanationDatabase("ai-settings-update-test");
-  await putAiProviderSettings(database, settings);
-  await putAiProviderSettings(database, { ...settings, apiKey: "new-key", model: "new-model" });
+  // Save an alternative provider and select it so OpenAI is not the active provider during removal
+  await saveProvider(database, { provider: "claude_cli", model: "sonnet" });
+  await saveProvider(database, settings);
+  await selectActiveModel(database, "claude_cli:sonnet");
+
+  await saveProvider(database, { ...settings, apiKey: "new-key", model: "new-model" });
   assert.equal((await getAiProviderSettings(database)).apiKey, "new-key");
 
   await clearAiProviderSettings(database);
@@ -58,11 +69,89 @@ test("AI provider settings reject missing credentials", async () => {
 
 test("CLI settings have no API key and support qualified selection", async () => {
   const database = new ExplanationDatabase("ai-settings-cli-test");
-  await saveProviderSettings(database, { provider: "claude_cli", model: "sonnet" });
-  await saveProviderSettings(database, { provider: "codex_cli", model: "gpt-5-codex", enabled: false });
+  await saveProvider(database, { provider: "claude_cli", model: "sonnet" });
+  await saveProvider(database, { provider: "codex_cli", model: "gpt-5-codex", enabled: false });
   assert.equal((await getProviderSettings(database, "claude_cli")).apiKey, undefined);
-  await setProviderEnabled(database, "claude_cli", false);
+
+  // Switch active selection away before disabling claude_cli if it was selected
+  await saveAndSelectProvider(database, { provider: "claude_cli", model: "sonnet" });
+  await saveProvider(database, { provider: "openai-compatible", apiKey: "sk-key", model: "gpt-4o" });
+  await selectActiveModel(database, "openai-compatible:gpt-4o");
+
+  await disableProvider(database, "claude_cli");
   assert.equal((await getProviderSettings(database, "claude_cli")).enabled, false);
-  await saveSelectedModelReference(database, "codex_cli:gpt-5-codex");
-  assert.equal((await database.aiModelSelection.get("selected")).reference, "codex_cli:gpt-5-codex");
+});
+
+test("selectActiveModel enforces qualification, selectability, and configuration invariants", async () => {
+  const database = new ExplanationDatabase("ai-settings-invariants-test");
+
+  // Cannot select unqualified
+  await assert.rejects(
+    selectActiveModel(database, "gpt-4o"),
+    /qualified/
+  );
+
+  // Cannot select Antigravity
+  await assert.rejects(
+    selectActiveModel(database, "antigravity_cli:agy"),
+    /cannot be selected/
+  );
+
+  // Cannot select unconfigured provider
+  await assert.rejects(
+    selectActiveModel(database, "claude_cli:sonnet"),
+    /Configure and save/
+  );
+
+  // Configure disabled provider -> cannot select
+  await saveProvider(database, { provider: "claude_cli", model: "sonnet", enabled: false });
+  await assert.rejects(
+    selectActiveModel(database, "claude_cli:sonnet"),
+    /disabled/
+  );
+
+  // Enable and select
+  await setProviderEnabled(database, "claude_cli", true);
+  await selectActiveModel(database, "claude_cli:sonnet");
+  assert.equal(await getActiveModelSelection(database), "claude_cli:sonnet");
+});
+
+test("active provider cannot be disabled or removed without selecting a replacement", async () => {
+  const database = new ExplanationDatabase("ai-settings-active-protection-test");
+  await saveAndSelectProvider(database, { provider: "claude_cli", model: "sonnet" });
+  await saveProvider(database, { provider: "codex_cli", model: "gpt-5-codex" });
+
+  assert.equal(await getActiveModelSelection(database), "claude_cli:sonnet");
+
+  // Attempt to disable active provider
+  await assert.rejects(
+    disableProvider(database, "claude_cli"),
+    /active provider cannot be disabled/
+  );
+
+  // Attempt to remove active provider
+  await assert.rejects(
+    removeProvider(database, "claude_cli"),
+    /active provider cannot be removed/
+  );
+
+  // Select replacement first -> disable and remove now succeed
+  await selectActiveModel(database, "codex_cli:gpt-5-codex");
+  await disableProvider(database, "claude_cli");
+  assert.equal((await getProviderSettings(database, "claude_cli")).enabled, false);
+
+  await removeProvider(database, "claude_cli");
+  assert.equal(await getProviderSettings(database, "claude_cli"), undefined);
+});
+
+test("saveAndSelectProvider and initial saveProvider establish active selection", async () => {
+  const database = new ExplanationDatabase("ai-settings-autoselect-test");
+
+  // First save establishes active model if none existed
+  await saveProvider(database, { provider: "openai-compatible", apiKey: "sk-test", model: "gpt-4o-mini" });
+  assert.equal(await getActiveModelSelection(database), "openai-compatible:gpt-4o-mini");
+
+  // saveAndSelectProvider changes active selection
+  await saveAndSelectProvider(database, { provider: "codex_cli", model: "gpt-5.6-codex" });
+  assert.equal(await getActiveModelSelection(database), "codex_cli:gpt-5.6-codex");
 });

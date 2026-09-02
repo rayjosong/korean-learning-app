@@ -1,17 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { ClozeReviewPanel } from "@/components/cloze-review-panel";
 import { ContextualReviewPanel } from "@/components/contextual-review-panel";
-import { AiProviderSettings } from "@/components/ai-provider-settings";
+import { ModelPicker } from "@/components/model-picker";
 import { LearnerProfilePanel } from "@/components/learner-profile-panel";
 import { RevisitNotice } from "@/components/revisit-notice";
 import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
-import { loadAiSettings, removeAiSettings, saveAiSettings, loadProviderSettings, loadSelectedModel, saveCliProviderSettings, selectQualifiedModel, setCliProviderEnabled, type AiSettings, type AiProviderSettingsRecord, type CliAiProvider } from "@/lib/ai-settings";
+import { loadAiSettings, loadProviderSettings, loadSelectedModel, selectModelReference, type AiSettings, type AiProviderSettingsRecord } from "@/lib/ai-settings";
 import { loadProviderStatus, type ProviderStatusResponse } from "@/lib/provider-status";
 import { parseModelReference } from "@korean-learning/ai";
 import { loadAssistanceLevel, saveAssistanceLevel } from "@/lib/assistance-settings";
@@ -298,41 +299,32 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
           </div>
 
           <div className="flex flex-col gap-6">
-            <AiProviderSettings
-              settings={settings}
-              ready={settingsReady}
-              saved={settingsSaved}
-              onChange={(next) => {
-                setSettings(next);
-                setSettingsSaved(false);
-              }}
-              onSave={() => {
-                if (!cacheDatabase) return;
-                void saveAiSettings(cacheDatabase, settings).then(() => setSettingsSaved(true));
-              }}
-              onRemove={() => {
-                if (!cacheDatabase) return;
-                void removeAiSettings(cacheDatabase).then(() => {
-                  setSettings({ apiKey: "", model: "gpt-4o-mini" });
-                  setSettingsSaved(false);
-                });
-              }}
-              providerSettings={providerSettings}
-              providerStatus={providerStatus}
-              selectedModel={selectedModel}
-              onSaveCli={(provider: CliAiProvider, model) => {
-                if (!cacheDatabase) return;
-                void saveCliProviderSettings(cacheDatabase, { provider, model }).then(() => loadProviderSettings(cacheDatabase)).then(setProviderSettings);
-              }}
-              onEnabledChange={(provider: CliAiProvider, enabled) => {
-                if (!cacheDatabase) return;
-                void setCliProviderEnabled(cacheDatabase, provider, enabled).then(() => loadProviderSettings(cacheDatabase)).then(setProviderSettings);
-              }}
-              onSelectedModelChange={(reference) => {
-                if (!cacheDatabase || !reference) return;
-                void selectQualifiedModel(cacheDatabase, reference).then(() => setSelectedModel(reference));
-              }}
-            />
+            <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Explanation model switcher">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-ink">Explanation model</h3>
+                  <p className="mt-0.5 text-xs text-ink-muted">Active AI provider for sentence and word breakdowns.</p>
+                </div>
+                <ModelPicker
+                  settings={providerSettings}
+                  status={providerStatus}
+                  value={selectedModel}
+                  onChange={(reference) => {
+                    if (!cacheDatabase || !reference) return;
+                    void selectModelReference(cacheDatabase, reference).then(() => setSelectedModel(reference));
+                  }}
+                  disabled={!settingsReady}
+                />
+              </div>
+              <div className="mt-3 border-t border-hairline pt-2 text-xs">
+                <Link
+                  href="/settings"
+                  className="font-medium text-primary hover:underline focus-visible:outline-primary"
+                >
+                  Manage AI providers in Settings →
+                </Link>
+              </div>
+            </section>
             <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Explanation cache settings">
               <button
                 type="button"

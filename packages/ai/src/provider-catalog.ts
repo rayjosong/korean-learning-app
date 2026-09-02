@@ -7,6 +7,7 @@ export const PROVIDER_KEYS = [
 
 export type ProviderKey = (typeof PROVIDER_KEYS)[number];
 export type ProviderTransport = "api" | "cli";
+export type ProviderSetupKind = "byok" | "cli_auth" | "experimental";
 
 export type CliProviderStatus =
   | "not_installed"
@@ -19,6 +20,8 @@ export interface ProviderCatalogEntry {
   key: ProviderKey;
   displayName: string;
   transport: ProviderTransport;
+  setupKind: ProviderSetupKind;
+  selectable: boolean;
   apiKeyRequired: boolean;
   runtimeEnabled: boolean;
   defaultExecutable?: string;
@@ -34,34 +37,42 @@ export interface QualifiedModelReference {
 export const PROVIDER_CATALOG: Readonly<Record<ProviderKey, ProviderCatalogEntry>> = {
   "openai-compatible": {
     key: "openai-compatible",
-    displayName: "OpenAI-compatible API",
+    displayName: "OpenAI",
     transport: "api",
+    setupKind: "byok",
+    selectable: true,
     apiKeyRequired: true,
     runtimeEnabled: true,
-    bootstrapModelAliases: []
+    bootstrapModelAliases: ["gpt-4o-mini", "gpt-4o"]
   },
   claude_cli: {
     key: "claude_cli",
-    displayName: "Claude Code CLI",
+    displayName: "Claude Code",
     transport: "cli",
+    setupKind: "cli_auth",
+    selectable: true,
     apiKeyRequired: false,
     runtimeEnabled: true,
     defaultExecutable: "claude",
-    bootstrapModelAliases: ["sonnet"]
+    bootstrapModelAliases: ["sonnet", "haiku", "opus"]
   },
   codex_cli: {
     key: "codex_cli",
-    displayName: "Codex CLI",
+    displayName: "Codex",
     transport: "cli",
+    setupKind: "cli_auth",
+    selectable: true,
     apiKeyRequired: false,
     runtimeEnabled: true,
     defaultExecutable: "codex",
-    bootstrapModelAliases: ["gpt-5-codex"]
+    bootstrapModelAliases: ["gpt-5.6-codex", "gpt-5-codex"]
   },
   antigravity_cli: {
     key: "antigravity_cli",
-    displayName: "Antigravity CLI",
+    displayName: "Antigravity",
     transport: "cli",
+    setupKind: "experimental",
+    selectable: false,
     apiKeyRequired: false,
     runtimeEnabled: false,
     defaultExecutable: "agy",
@@ -71,6 +82,29 @@ export const PROVIDER_CATALOG: Readonly<Record<ProviderKey, ProviderCatalogEntry
 
 export function isProviderKey(value: string): value is ProviderKey {
   return (PROVIDER_KEYS as readonly string[]).includes(value);
+}
+
+export function isProviderSelectable(provider: ProviderKey): boolean {
+  return PROVIDER_CATALOG[provider]?.selectable ?? false;
+}
+
+export function getProviderDisplayName(
+  provider: ProviderKey,
+  options?: { hasCustomBaseUrl?: boolean }
+): string {
+  if (provider === "openai-compatible") {
+    return options?.hasCustomBaseUrl ? "OpenAI-compatible" : "OpenAI";
+  }
+  return PROVIDER_CATALOG[provider]?.displayName ?? provider;
+}
+
+export function formatProviderModelLabel(
+  provider: ProviderKey,
+  model: string,
+  options?: { hasCustomBaseUrl?: boolean }
+): string {
+  const providerLabel = getProviderDisplayName(provider, options);
+  return `${model} · ${providerLabel}`;
 }
 
 export function parseModelReference(reference: string): QualifiedModelReference {

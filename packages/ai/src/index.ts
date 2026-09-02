@@ -20,11 +20,15 @@ export {
   PROVIDER_CATALOG,
   PROVIDER_KEYS,
   formatModelReference,
+  formatProviderModelLabel,
+  getProviderDisplayName,
   isProviderKey,
+  isProviderSelectable,
   parseModelReference,
   type CliProviderStatus,
   type ProviderCatalogEntry,
   type ProviderKey,
+  type ProviderSetupKind,
   type ProviderTransport,
   type QualifiedModelReference
 } from "./provider-catalog.ts";

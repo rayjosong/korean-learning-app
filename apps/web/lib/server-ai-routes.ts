@@ -7,16 +7,27 @@ const maxRequestBytes = 32_768;
 
 export async function handleSentenceExplanationRequest(
   request: Request,
-  createModel: (reference: string) => LanguageModel
+  createModel: (
+    reference: string,
+    options?: { credentials?: { apiKey?: string; baseUrl?: string } }
+  ) => LanguageModel
 ): Promise<Response> {
   const body = await parseRequest(request);
   if (!body.ok) return body.response;
-  const { model, sentence, context } = body.value;
+  const { model, sentence, context, apiKey, baseUrl } = body.value;
   if (!isShortString(model) || !isShortString(sentence) || (context !== undefined && !isShortString(context))) {
     return errorResponse("INVALID_INPUT", "A model and Korean sentence are required.", 400);
   }
+  const credentials =
+    typeof apiKey === "string" && apiKey.trim()
+      ? { apiKey: apiKey.trim(), ...(typeof baseUrl === "string" && baseUrl.trim() ? { baseUrl: baseUrl.trim() } : {}) }
+      : undefined;
+
   try {
-    const explanation = await createModel(model).explainSentence({ sentence, ...(context ? { context } : {}) } satisfies ExplainSentenceInput);
+    const explanation = await createModel(model, { credentials }).explainSentence({
+      sentence,
+      ...(context ? { context } : {})
+    } satisfies ExplainSentenceInput);
     const parsed = sentenceExplanationSchema.safeParse(explanation);
     if (!parsed.success) return errorResponse("INVALID_OUTPUT", "The AI provider returned an invalid explanation.", 502);
     return Response.json(parsed.data);
@@ -27,16 +38,27 @@ export async function handleSentenceExplanationRequest(
 
 export async function handleWordExplanationRequest(
   request: Request,
-  createModel: (reference: string) => LanguageModel
+  createModel: (
+    reference: string,
+    options?: { credentials?: { apiKey?: string; baseUrl?: string } }
+  ) => LanguageModel
 ): Promise<Response> {
   const body = await parseRequest(request);
   if (!body.ok) return body.response;
-  const { model, word, sentence } = body.value;
+  const { model, word, sentence, apiKey, baseUrl } = body.value;
   if (!isShortString(model) || !isShortString(word) || !isShortString(sentence)) {
     return errorResponse("INVALID_INPUT", "A model, Korean word, and source sentence are required.", 400);
   }
+  const credentials =
+    typeof apiKey === "string" && apiKey.trim()
+      ? { apiKey: apiKey.trim(), ...(typeof baseUrl === "string" && baseUrl.trim() ? { baseUrl: baseUrl.trim() } : {}) }
+      : undefined;
+
   try {
-    const explanation = await createModel(model).explainWord({ word, sentence } satisfies ExplainWordInput);
+    const explanation = await createModel(model, { credentials }).explainWord({
+      word,
+      sentence
+    } satisfies ExplainWordInput);
     const parsed = wordExplanationSchema.safeParse(explanation);
     if (!parsed.success) return errorResponse("INVALID_OUTPUT", "The AI provider returned an invalid explanation.", 502);
     return Response.json(parsed.data);

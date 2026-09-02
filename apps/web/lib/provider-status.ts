@@ -38,6 +38,46 @@ export function parseProviderStatusResponse(value: unknown): ProviderStatusRespo
   return value as unknown as ProviderStatusResponse;
 }
 
+export interface ProviderValidationResult {
+  ok: boolean;
+  status:
+    | "ready"
+    | "needs_setup"
+    | "not_installed"
+    | "sign_in_required"
+    | "auth_failed"
+    | "unreachable"
+    | "runtime_disabled";
+  message: string;
+  version?: string;
+}
+
+export async function validateProvider(
+  provider: string,
+  options: { apiKey?: string; baseUrl?: string } = {},
+  request: typeof fetch = fetch
+): Promise<ProviderValidationResult> {
+  const response = await request("/api/model-config/validate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ provider, ...options })
+  });
+  if (!response.ok) {
+    try {
+      const err = await response.json();
+      if (isRecord(err) && typeof err.message === "string") {
+        return {
+          ok: false,
+          status: (err.status as ProviderValidationResult["status"]) || "unreachable",
+          message: err.message
+        };
+      }
+    } catch {}
+    return { ok: false, status: "unreachable", message: "Validation request failed." };
+  }
+  return response.json();
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
