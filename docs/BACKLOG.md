@@ -539,6 +539,12 @@ Depends on: #29
 
 ## Later — not V0.1
 
+### [ ] #33 Local CLI AI providers
+
+Allow server-side Claude Code and Codex CLI explanations through qualified provider/model references. Detection must be independent of browser persistence and authentication. Claude/Codex invocation must use direct process arguments, stdin prompts, empty temporary directories, filtered environments, output/concurrency/timeout bounds, validated structured output, and cleanup. Antigravity may be detected but is runtime-disabled and excluded from model selection. Existing OpenAI-compatible settings must migrate safely to provider-specific records. Deterministic CI must use fake executables, not provider accounts.
+
+Depends on: #6, #7, #9
+
 - AI conversation missions.
 - Post-conversation correction and retry.
 - Pronunciation flagging only when misunderstanding is likely.

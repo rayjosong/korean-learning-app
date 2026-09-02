@@ -1,9 +1,16 @@
 import {
   clearAiProviderSettings,
   getAiProviderSettings,
-  putAiProviderSettings
+  getSelectedModelReference,
+  listAiProviderSettings,
+  putAiProviderSettings,
+  removeApiProviderCredentials,
+  saveProviderSettings,
+  saveSelectedModelReference,
+  setProviderEnabled
 } from "@korean-learning/storage/ai-settings";
 import type { ExplanationDatabase } from "@korean-learning/storage";
+import type { AiProvider, AiProviderSettingsRecord, CliAiProvider } from "@korean-learning/storage/ai-settings";
 
 export type { ExplanationDatabase };
 
@@ -12,6 +19,8 @@ export interface AiSettings {
   model: string;
   baseUrl?: string;
 }
+
+export type { AiProvider, AiProviderSettingsRecord, CliAiProvider };
 
 export async function loadAiSettings(
   database: ExplanationDatabase
@@ -32,3 +41,11 @@ export async function saveAiSettings(
 export async function removeAiSettings(database: ExplanationDatabase): Promise<void> {
   await clearAiProviderSettings(database);
 }
+
+export async function loadProviderSettings(database: ExplanationDatabase): Promise<AiProviderSettingsRecord[]> { return listAiProviderSettings(database); }
+export async function loadSelectedModel(database: ExplanationDatabase): Promise<string | undefined> { return getSelectedModelReference(database); }
+export async function saveOpenAiCompatibleSettings(database: ExplanationDatabase, settings: AiSettings & { enabled?: boolean }): Promise<void> { await saveProviderSettings(database, { provider: "openai-compatible", ...settings }); }
+export async function saveCliProviderSettings(database: ExplanationDatabase, settings: { provider: CliAiProvider; model: string; enabled?: boolean }): Promise<void> { await saveProviderSettings(database, settings); }
+export async function setCliProviderEnabled(database: ExplanationDatabase, provider: CliAiProvider, enabled: boolean): Promise<void> { await setProviderEnabled(database, provider, enabled); }
+export async function selectQualifiedModel(database: ExplanationDatabase, reference: string): Promise<void> { await saveSelectedModelReference(database, reference); }
+export async function removeOpenAiCompatibleCredentials(database: ExplanationDatabase): Promise<void> { await removeApiProviderCredentials(database); }

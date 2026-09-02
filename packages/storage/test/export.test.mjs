@@ -19,7 +19,7 @@ test("exports learner data while excluding provider credentials", async () => {
     explanation: { naturalMeaning: "Hello", breakdown: [], grammar: [] },
   });
 
-  await putAiProviderSettings(db, { type: "openai-compatible", apiKey: "secret-key", model: "gpt-4o" });
+  await putAiProviderSettings(db, { provider: "openai-compatible", apiKey: "secret-key", model: "gpt-4o" });
 
   const exported = await exportLearnerData(db);
 

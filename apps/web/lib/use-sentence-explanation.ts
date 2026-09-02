@@ -21,7 +21,7 @@ export function useSentenceExplanation(model: LanguageModel | null) {
       if (!model) {
         setState({
           status: "error",
-          error: "Add your AI provider key and model to get explanations."
+          error: "Choose a ready AI provider to get explanations."
         });
         return;
       }

@@ -15,7 +15,11 @@ export interface OpenAICompatibleLanguageModelOptions {
 export type LanguageModelErrorCode =
   | "INVALID_INPUT"
   | "REQUEST_FAILED"
-  | "INVALID_OUTPUT";
+  | "INVALID_OUTPUT"
+  | "PROVIDER_NOT_INSTALLED"
+  | "RUNTIME_DISABLED"
+  | "AUTHENTICATION_FAILED"
+  | "TIMEOUT";
 
 export class LanguageModelError extends Error {
   readonly code: LanguageModelErrorCode;

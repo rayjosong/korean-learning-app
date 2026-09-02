@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./server": "./src/server/index.ts"
   },
   "scripts": {
     "lint": "node ./scripts/lint.mjs",
@@ -16,6 +17,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/node": "^24.3.0",
     "typescript": "5.9.2"
   }
 }

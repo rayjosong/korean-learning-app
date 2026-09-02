@@ -145,6 +145,10 @@ Do not create a top-level destination for every capability.
 - **Progress** shows comprehension-oriented progress.
 - **Settings** holds AI provider, data, appearance, and assistance preferences.
 
+### AI provider settings
+
+Settings presents compact provider rows rather than a provider-branded chat surface. CLI rows show a current server-side status, the resolved executable path, an enabled control, and a model input. `Ready`, `Not installed`, and `Unavailable` describe installation/invocation state only; each row says that detection does not prove authentication and that the login belongs to the app-server OS user. Antigravity is labelled `Experimental` with `Detected - runtime disabled pending security verification` and is excluded from the model picker. The model picker groups enabled ready providers and stores a qualified `provider:model` reference.
+
 ## Canonical desktop screens
 
 ASCII layouts are hierarchy references, not exact pixel specs.

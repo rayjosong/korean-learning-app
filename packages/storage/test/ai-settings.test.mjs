@@ -5,7 +5,11 @@ import test from "node:test";
 import {
   clearAiProviderSettings,
   getAiProviderSettings,
-  putAiProviderSettings
+  getProviderSettings,
+  putAiProviderSettings,
+  saveProviderSettings,
+  saveSelectedModelReference,
+  setProviderEnabled
 } from "../src/ai-settings.ts";
 import { ExplanationDatabase } from "../src/index.ts";
 
@@ -22,8 +26,9 @@ test("AI provider settings persist and normalize user input", async () => {
 
   const stored = await getAiProviderSettings(new ExplanationDatabase(name));
   assert.deepEqual(stored, {
-    id: "default",
+    id: "openai-compatible",
     provider: "openai-compatible",
+    enabled: true,
     apiKey: "sk-test-key",
     model: "test-model",
     baseUrl: "https://example.test/v1",
@@ -47,6 +52,17 @@ test("AI provider settings reject missing credentials", async () => {
       ...settings,
       apiKey: " "
     }),
-    /API key and model are required/
+    /API key is required/
   );
+});
+
+test("CLI settings have no API key and support qualified selection", async () => {
+  const database = new ExplanationDatabase("ai-settings-cli-test");
+  await saveProviderSettings(database, { provider: "claude_cli", model: "sonnet" });
+  await saveProviderSettings(database, { provider: "codex_cli", model: "gpt-5-codex", enabled: false });
+  assert.equal((await getProviderSettings(database, "claude_cli")).apiKey, undefined);
+  await setProviderEnabled(database, "claude_cli", false);
+  assert.equal((await getProviderSettings(database, "claude_cli")).enabled, false);
+  await saveSelectedModelReference(database, "codex_cli:gpt-5-codex");
+  assert.equal((await database.aiModelSelection.get("selected")).reference, "codex_cli:gpt-5-codex");
 });

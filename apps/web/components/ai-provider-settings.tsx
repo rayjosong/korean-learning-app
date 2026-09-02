@@ -3,6 +3,10 @@
 import { useState } from "react";
 
 import type { AiSettings } from "@/lib/ai-settings";
+import type { AiProviderSettingsRecord, CliAiProvider } from "@/lib/ai-settings";
+import type { ProviderStatusResponse } from "@/lib/provider-status";
+import { AiProviderRow } from "./ai-provider-row";
+import { ModelPicker } from "./model-picker";
 
 export interface AiProviderSettingsProps {
   settings: AiSettings;
@@ -11,6 +15,12 @@ export interface AiProviderSettingsProps {
   onChange: (settings: AiSettings) => void;
   onSave: () => void;
   onRemove: () => void;
+  providerSettings?: AiProviderSettingsRecord[];
+  providerStatus?: ProviderStatusResponse;
+  selectedModel?: string;
+  onSaveCli?: (provider: CliAiProvider, model: string) => void;
+  onEnabledChange?: (provider: CliAiProvider, enabled: boolean) => void;
+  onSelectedModelChange?: (reference: string) => void;
 }
 
 export function AiProviderSettings({
@@ -19,7 +29,13 @@ export function AiProviderSettings({
   saved,
   onChange,
   onSave,
-  onRemove
+  onRemove,
+  providerSettings,
+  providerStatus,
+  selectedModel,
+  onSaveCli,
+  onEnabledChange,
+  onSelectedModelChange
 }: AiProviderSettingsProps) {
   const [message, setMessage] = useState<string>();
   const canSave = settings.apiKey.trim().length > 0 && settings.model.trim().length > 0;
@@ -86,6 +102,11 @@ export function AiProviderSettings({
         </button>
       </div>
       {message ? <p className="mt-2 text-xs text-ink-secondary" role="status">{message}</p> : null}
+      {providerStatus && onSaveCli && onEnabledChange ? <div className="mt-6 space-y-3 border-t border-hairline pt-4">
+        <h3 className="text-sm font-medium text-ink">Local CLI providers</h3>
+        {(["claude_cli", "codex_cli", "antigravity_cli"] as const).map((provider) => <AiProviderRow key={provider} provider={provider} label={provider === "claude_cli" ? "Claude Code" : provider === "codex_cli" ? "Codex" : "Antigravity"} probe={providerStatus.probes[provider]} path={providerStatus.detected_cli_paths[provider]} settings={providerSettings?.find((item) => item.provider === provider)} onSave={onSaveCli} onEnabledChange={onEnabledChange} />)}
+        {onSelectedModelChange ? <ModelPicker settings={providerSettings ?? []} status={providerStatus} value={selectedModel} onChange={onSelectedModelChange} /> : null}
+      </div> : null}
     </section>
   );
 }

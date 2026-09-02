@@ -11,7 +11,9 @@ import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
-import { loadAiSettings, removeAiSettings, saveAiSettings, type AiSettings } from "@/lib/ai-settings";
+import { loadAiSettings, removeAiSettings, saveAiSettings, loadProviderSettings, loadSelectedModel, saveCliProviderSettings, selectQualifiedModel, setCliProviderEnabled, type AiSettings, type AiProviderSettingsRecord, type CliAiProvider } from "@/lib/ai-settings";
+import { loadProviderStatus, type ProviderStatusResponse } from "@/lib/provider-status";
+import { parseModelReference } from "@korean-learning/ai";
 import { loadAssistanceLevel, saveAssistanceLevel } from "@/lib/assistance-settings";
 import type { AssistanceLevel } from "@korean-learning/storage/assistance-settings";
 import { withExplanationCache } from "@/lib/explanation-cache";
@@ -38,6 +40,9 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
   const [settings, setSettings] = useState<AiSettings>({ apiKey: "", model: "gpt-4o-mini" });
   const [settingsReady, setSettingsReady] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
+  const [providerSettings, setProviderSettings] = useState<AiProviderSettingsRecord[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>();
+  const [providerStatus, setProviderStatus] = useState<ProviderStatusResponse>();
   const [mode, setMode] = useState<"watch" | "study">("watch");
   const [assistanceLevel, setAssistanceLevel] = useState<AssistanceLevel>("guided");
   const [assistanceReady, setAssistanceReady] = useState(false);
@@ -63,11 +68,14 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
   useEffect(() => {
     if (!cacheDatabase) return;
-    void loadAiSettings(cacheDatabase).then((stored) => {
+    void Promise.all([loadAiSettings(cacheDatabase), loadProviderSettings(cacheDatabase), loadSelectedModel(cacheDatabase), loadProviderStatus().catch(() => undefined)]).then(([stored, all, selected, status]) => {
       if (stored) {
         setSettings(stored);
         setSettingsSaved(true);
       }
+      setProviderSettings(all);
+      setSelectedModel(selected);
+      setProviderStatus(status);
       setSettingsReady(true);
     });
   }, [cacheDatabase]);
@@ -87,14 +95,17 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
   const languageModel = useMemo(() => {
     if (fixture) return createFixtureLanguageModel(fixtureScenario);
-    if (!settings.apiKey.trim() || !settings.model.trim()) return null;
+    const reference = selectedModel ?? (settings.apiKey.trim() && settings.model.trim() ? `openai-compatible:${settings.model.trim()}` : undefined);
+    if (!reference) return null;
+    const selected = parseModelReference(reference);
+    if (selected.provider === "openai-compatible" && !settings.apiKey.trim()) return null;
     return withExplanationCache({
-      model: createLanguageModel(settings),
+      model: createLanguageModel({ ...settings, selectedModel: reference }),
       database: cacheDatabase,
-      provider: "openai-compatible",
-      modelName: settings.model.trim()
+      provider: selected.provider,
+      modelName: selected.model
     });
-  }, [fixture, fixtureScenario, settings, cacheDatabase]);
+  }, [fixture, fixtureScenario, settings, selectedModel, cacheDatabase]);
 
   useEffect(() => {
     if (cacheDatabase && isReady) {
@@ -130,8 +141,8 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
     model: languageModel,
     database: cacheDatabase,
     videoId,
-    provider: "openai-compatible",
-    modelName: settings.model.trim()
+    provider: selectedModel ? parseModelReference(selectedModel).provider : "openai-compatible",
+    modelName: selectedModel ? parseModelReference(selectedModel).model : settings.model.trim()
   });
   const {
     state: learnerState,
@@ -305,6 +316,21 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
                   setSettings({ apiKey: "", model: "gpt-4o-mini" });
                   setSettingsSaved(false);
                 });
+              }}
+              providerSettings={providerSettings}
+              providerStatus={providerStatus}
+              selectedModel={selectedModel}
+              onSaveCli={(provider: CliAiProvider, model) => {
+                if (!cacheDatabase) return;
+                void saveCliProviderSettings(cacheDatabase, { provider, model }).then(() => loadProviderSettings(cacheDatabase)).then(setProviderSettings);
+              }}
+              onEnabledChange={(provider: CliAiProvider, enabled) => {
+                if (!cacheDatabase) return;
+                void setCliProviderEnabled(cacheDatabase, provider, enabled).then(() => loadProviderSettings(cacheDatabase)).then(setProviderSettings);
+              }}
+              onSelectedModelChange={(reference) => {
+                if (!cacheDatabase || !reference) return;
+                void selectQualifiedModel(cacheDatabase, reference).then(() => setSelectedModel(reference));
               }}
             />
             <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Explanation cache settings">

@@ -47,7 +47,7 @@ export function useWordExplanation(options: UseWordExplanationOptions) {
       if (!options.model) {
         setState({
           status: "error",
-          error: "Add your AI provider key and model to look up words."
+          error: "Choose a ready AI provider to look up words."
         });
         return;
       }

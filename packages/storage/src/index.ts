@@ -34,6 +34,7 @@ export class ExplanationDatabase extends Dexie {
   learningContexts!: Table<LearningContextRecord, string>;
   reviewRecords!: Table<ReviewRecord, string>;
   aiProviderSettings!: Table<import("./ai-settings.ts").AiProviderSettingsRecord, string>;
+  aiModelSelection!: Table<import("./ai-settings.ts").AiModelSelectionRecord, string>;
   assistanceSettings!: Table<import("./assistance-settings.ts").AssistanceSettingsRecord, string>;
   studiedContent!: Table<StudiedContentRecord, string>;
   contentProgressSnapshots!: Table<ContentProgressSnapshot, string>;
@@ -177,6 +178,36 @@ export class ExplanationDatabase extends Dexie {
         }
 
         // Do not leave a record that the rolled-back code cannot interpret.
+        await table.delete("default");
+      });
+    this.version(13)
+      .stores({
+        explanations: "key, createdAt",
+        wordExplanations: "key",
+        learningItems: "id, text, lastSeenAt",
+        learningContexts: "id, itemId, createdAt",
+        reviewRecords: "id, itemId, reviewedAt, mode",
+        studiedContent: "videoId, firstStudiedAt, lastStudiedAt",
+        contentProgressSnapshots: "id, videoId, capturedAt",
+        aiProviderSettings: "id",
+        aiModelSelection: "id",
+        assistanceSettings: "id",
+        contentResume: "videoId, updatedAt",
+        recommendationDismissals: "fingerprint, dismissedUntil"
+      })
+      .upgrade(async (transaction) => {
+        const table = transaction.table("aiProviderSettings");
+        const legacy = await table.get("default");
+        if (!legacy || typeof legacy.model !== "string" || typeof legacy.apiKey !== "string") return;
+        await table.put({
+          id: "openai-compatible",
+          provider: "openai-compatible",
+          enabled: typeof legacy.enabled === "boolean" ? legacy.enabled : true,
+          model: legacy.model,
+          apiKey: legacy.apiKey,
+          ...(typeof legacy.baseUrl === "string" && legacy.baseUrl.trim() ? { baseUrl: legacy.baseUrl.trim() } : {}),
+          updatedAt: typeof legacy.updatedAt === "string" ? legacy.updatedAt : new Date().toISOString()
+        });
         await table.delete("default");
       });
   }

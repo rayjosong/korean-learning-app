@@ -208,8 +208,10 @@ Required:
 - basic contextual SRS;
 - review tied to original media context when available;
 - Guided assistance as the default presentation model;
-- BYO AI key;
+- BYO OpenAI-compatible key or a locally authenticated Claude Code/Codex CLI;
 - OpenAI-compatible provider first;
+- qualified provider/model selection so a CLI choice cannot fall back to an API provider;
+- Antigravity installation detection only until its runtime security contract is verified;
 - locally persistent AI provider settings after first setup;
 - export/import;
 - desktop-first responsive web implementation.

@@ -183,6 +183,8 @@ player loads
 
 Do not make the full PR test suite dependent on live provider availability.
 
+Local CLI provider tests use temporary fake executables. They cover path overrides, PATH lookup, bounded process execution, event parsing, output/schema errors, and disabled-runtime behavior without real CLI accounts. Authentication scenarios remain manual service-user checks.
+
 If live integration is too unstable or requires secrets, run it separately from the deterministic required CI gate (for example scheduled, manual, or post-deploy), and make failures visible/actionable.
 
 ---

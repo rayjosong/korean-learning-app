@@ -38,6 +38,12 @@ restored on later visits. The key is not included in exports or explanation reco
 Browser persistence is local convenience, not a secure secret vault. Remove the key
 from shared or untrusted devices.
 
+Claude Code and Codex CLI providers are detected from the environment of the Next.js server, never from the browser user's machine. Install and authenticate each CLI for the OS user running the app. Service managers and containers often have a different `PATH`; use `CLAUDE_CLI_PATH` or `CODEX_CLI_PATH` when required. `CLAUDE_CLI_HOME` may point at the account home used only for Claude authentication.
+
+Codex uses an application-owned `CODEX_CLI_HOME`. Create that directory with permissions restricted to the application user, set `CODEX_CLI_HOME` in the server environment, then run `CODEX_HOME=<that directory> codex login` as that user. Do not copy a personal general `CODEX_HOME` into the service. Docker deployments must install the CLIs and provide their authentication state inside the container.
+
+CLI execution is application-level isolation, not an OS sandbox. Detection reports installation/version availability only and does not prove authentication. Antigravity can be detected but is intentionally unavailable for runtime explanations.
+
 ## Verification commands
 
 ```bash
