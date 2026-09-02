@@ -73,7 +73,7 @@ test("version 10 -> 11 preserves existing records and provider settings", async 
   const database = new ExplanationDatabase(name);
   await database.open();
   assert.equal((await database.studiedContent.get("existing"))?.videoId, "existing");
-  assert.equal((await database.aiProviderSettings.get("default"))?.apiKey, "keep-local-only");
+  assert.equal((await database.aiProviderSettings.get("openai-compatible"))?.apiKey, "keep-local-only");
   await putRecommendationDismissal(database, {
     fingerprint: "review:v1:test",
     dismissedAt: "2026-08-29T00:00:00.000Z",

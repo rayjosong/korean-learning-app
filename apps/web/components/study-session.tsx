@@ -1,17 +1,20 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { ClozeReviewPanel } from "@/components/cloze-review-panel";
 import { ContextualReviewPanel } from "@/components/contextual-review-panel";
-import { AiProviderSettings } from "@/components/ai-provider-settings";
+import { ModelPicker } from "@/components/model-picker";
 import { LearnerProfilePanel } from "@/components/learner-profile-panel";
 import { RevisitNotice } from "@/components/revisit-notice";
 import { LearningHistoryPanel } from "@/components/learning-history-panel";
 import { VideoDifficultyEstimate } from "@/components/video-difficulty-estimate";
 import { VideoTranscriptViewer } from "@/components/video-transcript-viewer";
 import { createLanguageModel } from "@/lib/ai";
-import { loadAiSettings, removeAiSettings, saveAiSettings, type AiSettings } from "@/lib/ai-settings";
+import { loadAiSettings, loadProviderSettings, loadSelectedModel, selectModelReference, type AiSettings, type AiProviderSettingsRecord } from "@/lib/ai-settings";
+import { loadProviderStatus, type ProviderStatusResponse } from "@/lib/provider-status";
+import { parseModelReference } from "@korean-learning/ai";
 import { loadAssistanceLevel, saveAssistanceLevel } from "@/lib/assistance-settings";
 import type { AssistanceLevel } from "@korean-learning/storage/assistance-settings";
 import { withExplanationCache } from "@/lib/explanation-cache";
@@ -38,6 +41,9 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
   const [settings, setSettings] = useState<AiSettings>({ apiKey: "", model: "gpt-4o-mini" });
   const [settingsReady, setSettingsReady] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
+  const [providerSettings, setProviderSettings] = useState<AiProviderSettingsRecord[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>();
+  const [providerStatus, setProviderStatus] = useState<ProviderStatusResponse>();
   const [mode, setMode] = useState<"watch" | "study">("watch");
   const [assistanceLevel, setAssistanceLevel] = useState<AssistanceLevel>("guided");
   const [assistanceReady, setAssistanceReady] = useState(false);
@@ -63,11 +69,14 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
   useEffect(() => {
     if (!cacheDatabase) return;
-    void loadAiSettings(cacheDatabase).then((stored) => {
+    void Promise.all([loadAiSettings(cacheDatabase), loadProviderSettings(cacheDatabase), loadSelectedModel(cacheDatabase), loadProviderStatus().catch(() => undefined)]).then(([stored, all, selected, status]) => {
       if (stored) {
         setSettings(stored);
         setSettingsSaved(true);
       }
+      setProviderSettings(all);
+      setSelectedModel(selected);
+      setProviderStatus(status);
       setSettingsReady(true);
     });
   }, [cacheDatabase]);
@@ -87,14 +96,17 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
 
   const languageModel = useMemo(() => {
     if (fixture) return createFixtureLanguageModel(fixtureScenario);
-    if (!settings.apiKey.trim() || !settings.model.trim()) return null;
+    const reference = selectedModel ?? (settings.apiKey.trim() && settings.model.trim() ? `openai-compatible:${settings.model.trim()}` : undefined);
+    if (!reference) return null;
+    const selected = parseModelReference(reference);
+    if (selected.provider === "openai-compatible" && !settings.apiKey.trim()) return null;
     return withExplanationCache({
-      model: createLanguageModel(settings),
+      model: createLanguageModel({ ...settings, selectedModel: reference }),
       database: cacheDatabase,
-      provider: "openai-compatible",
-      modelName: settings.model.trim()
+      provider: selected.provider,
+      modelName: selected.model
     });
-  }, [fixture, fixtureScenario, settings, cacheDatabase]);
+  }, [fixture, fixtureScenario, settings, selectedModel, cacheDatabase]);
 
   useEffect(() => {
     if (cacheDatabase && isReady) {
@@ -130,8 +142,8 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
     model: languageModel,
     database: cacheDatabase,
     videoId,
-    provider: "openai-compatible",
-    modelName: settings.model.trim()
+    provider: selectedModel ? parseModelReference(selectedModel).provider : "openai-compatible",
+    modelName: selectedModel ? parseModelReference(selectedModel).model : settings.model.trim()
   });
   const {
     state: learnerState,
@@ -287,26 +299,32 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
           </div>
 
           <div className="flex flex-col gap-6">
-            <AiProviderSettings
-              settings={settings}
-              ready={settingsReady}
-              saved={settingsSaved}
-              onChange={(next) => {
-                setSettings(next);
-                setSettingsSaved(false);
-              }}
-              onSave={() => {
-                if (!cacheDatabase) return;
-                void saveAiSettings(cacheDatabase, settings).then(() => setSettingsSaved(true));
-              }}
-              onRemove={() => {
-                if (!cacheDatabase) return;
-                void removeAiSettings(cacheDatabase).then(() => {
-                  setSettings({ apiKey: "", model: "gpt-4o-mini" });
-                  setSettingsSaved(false);
-                });
-              }}
-            />
+            <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Explanation model switcher">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-ink">Explanation model</h3>
+                  <p className="mt-0.5 text-xs text-ink-muted">Active AI provider for sentence and word breakdowns.</p>
+                </div>
+                <ModelPicker
+                  settings={providerSettings}
+                  status={providerStatus}
+                  value={selectedModel}
+                  onChange={(reference) => {
+                    if (!cacheDatabase || !reference) return;
+                    void selectModelReference(cacheDatabase, reference).then(() => setSelectedModel(reference));
+                  }}
+                  disabled={!settingsReady}
+                />
+              </div>
+              <div className="mt-3 border-t border-hairline pt-2 text-xs">
+                <Link
+                  href="/settings"
+                  className="font-medium text-primary hover:underline focus-visible:outline-primary"
+                >
+                  Manage AI providers in Settings →
+                </Link>
+              </div>
+            </section>
             <section className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Explanation cache settings">
               <button
                 type="button"

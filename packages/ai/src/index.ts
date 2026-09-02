@@ -17,8 +17,25 @@ export interface LanguageModel {
 
 export type { SentenceExplanation, WordExplanation } from "@korean-learning/korean";
 export {
+  PROVIDER_CATALOG,
+  PROVIDER_KEYS,
+  formatModelReference,
+  formatProviderModelLabel,
+  getProviderDisplayName,
+  isProviderKey,
+  isProviderSelectable,
+  parseModelReference,
+  type CliProviderStatus,
+  type ProviderCatalogEntry,
+  type ProviderKey,
+  type ProviderSetupKind,
+  type ProviderTransport,
+  type QualifiedModelReference
+} from "./provider-catalog.ts";
+export {
   SENTENCE_EXPLANATION_PROMPT_VERSION,
-  SENTENCE_EXPLANATION_SYSTEM_PROMPT
+  SENTENCE_EXPLANATION_SYSTEM_PROMPT,
+  sentenceExplanationSchema
 } from "./sentence-explanation.ts";
 export {
   WORD_EXPLANATION_PROMPT_VERSION,

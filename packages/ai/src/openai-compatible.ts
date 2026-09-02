@@ -9,13 +9,18 @@ export interface OpenAICompatibleLanguageModelOptions {
   apiKey: string;
   model: string;
   baseUrl?: string;
+  timeoutMs?: number;
   fetch?: typeof globalThis.fetch;
 }
 
 export type LanguageModelErrorCode =
   | "INVALID_INPUT"
   | "REQUEST_FAILED"
-  | "INVALID_OUTPUT";
+  | "INVALID_OUTPUT"
+  | "PROVIDER_NOT_INSTALLED"
+  | "RUNTIME_DISABLED"
+  | "AUTHENTICATION_FAILED"
+  | "TIMEOUT";
 
 export class LanguageModelError extends Error {
   readonly code: LanguageModelErrorCode;
@@ -33,6 +38,7 @@ export class OpenAICompatibleLanguageModel implements LanguageModel {
   private readonly apiKey: string;
   private readonly model: string;
   private readonly endpoint: string;
+  private readonly timeoutMs: number;
   private readonly request: typeof globalThis.fetch;
 
   constructor(options: OpenAICompatibleLanguageModelOptions) {
@@ -46,6 +52,7 @@ export class OpenAICompatibleLanguageModel implements LanguageModel {
     this.apiKey = options.apiKey;
     this.model = options.model;
     this.endpoint = `${(options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "")}/chat/completions`;
+    this.timeoutMs = options.timeoutMs ?? 30_000;
     // Bind the ambient fetch: an unbound native fetch throws "Illegal invocation" in browsers.
     this.request = (options.fetch ?? globalThis.fetch).bind(globalThis);
   }
@@ -84,6 +91,9 @@ export class OpenAICompatibleLanguageModel implements LanguageModel {
   }
 
   private async complete(messages: readonly ChatMessage[]): Promise<unknown> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+
     let response: Response;
     try {
       response = await this.request(this.endpoint, {
@@ -96,13 +106,22 @@ export class OpenAICompatibleLanguageModel implements LanguageModel {
           model: this.model,
           messages,
           response_format: { type: "json_object" }
-        })
+        }),
+        signal: controller.signal
       });
-    } catch {
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new LanguageModelError("TIMEOUT", "The AI provider request timed out.");
+      }
       throw new LanguageModelError("REQUEST_FAILED", "The AI provider request failed.");
+    } finally {
+      clearTimeout(timeout);
     }
 
     if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new LanguageModelError("AUTHENTICATION_FAILED", "The AI provider authentication failed.", response.status);
+      }
       throw new LanguageModelError("REQUEST_FAILED", "The AI provider returned an error.", response.status);
     }
 

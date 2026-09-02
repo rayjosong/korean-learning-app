@@ -236,6 +236,18 @@ Use IndexedDB/Dexie for:
 - settings.
 
 AI provider settings are stored in the storage package behind application-level helpers.
+
+### Local CLI providers
+
+```text
+Browser UI
+  -> Next.js AI route
+  -> server provider factory
+  -> isolated CLI adapter
+  -> local executable
+```
+
+The browser sends only a qualified model reference and explanation input. It cannot select an executable. The server resolves provider binaries from its `PATH` or operator-controlled provider-specific overrides. Each request receives a fresh empty working directory, filtered environment, stdin prompt, bounded output, timeout, process termination, and cleanup. CLI adapters validate JSON event output against the existing Korean schemas and never return raw stderr. This is application-level process isolation rather than an OS sandbox. Claude and Codex have separate adapters; the factory never silently falls back between providers.
 The current local-first credential resolution order is:
 
 ```text
