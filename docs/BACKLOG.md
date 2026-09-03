@@ -329,13 +329,13 @@ Depends on: #18
 
 ---
 
-### [ ] #22 Revisit old content
+### [x] #22 Revisit old content
 
 Acceptance criteria:
-- [ ] Previously studied content detected.
-- [ ] Progress can be compared across time.
-- [ ] Replay offered.
-- [ ] Comparison can communicate `Then` vs `Now` comprehension when data supports it.
+- [x] Previously studied content detected.
+- [x] Progress can be compared across time.
+- [x] Replay offered.
+- [x] Comparison can communicate `Then` vs `Now` comprehension when data supports it.
 
 Depends on: #19, #21
 

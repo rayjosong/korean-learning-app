@@ -15,7 +15,8 @@ const EMPTY_SNAPSHOT: ProgressSnapshot = {
   learningItems: 0,
   reviewSuccess: { successful: 0, total: 0, percentage: null, windowDays: 30 },
   explanationFrequency: { count: 0, windowDays: 7 },
-  contentStudied: 0
+  contentStudied: 0,
+  revisits: []
 };
 
 function isFullyEmpty(snapshot: ProgressSnapshot): boolean {
@@ -62,6 +63,22 @@ export function ProgressDashboardView({ state }: { state: ProgressDashboardState
             ? `Complete reviews to create recall evidence for this ${review.windowDays}-day window.`
             : `Successful reviews out of all completed reviews in the last ${review.windowDays} days. This is recall evidence, not a measure of total Korean comprehension.`}
         </p>
+
+        {snapshot.revisits.length > 0 ? (
+          <div className="mt-8 space-y-4">
+            {snapshot.revisits.map((revisit) => (
+              <article key={revisit.videoId} className="rounded-xl border border-hairline bg-surface-elevated p-5">
+                <p className="text-sm font-medium text-ink">
+                  You watched {revisit.title ? `"${revisit.title}"` : "this video"} {revisit.comparison.elapsedDays} {revisit.comparison.elapsedDays === 1 ? "day" : "days"} ago.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-8 text-sm text-ink-secondary">
+                  <p><span className="font-medium text-ink">Then:</span> {revisit.comparison.previous?.likelyComprehension.min}–{revisit.comparison.previous?.likelyComprehension.max}% understood</p>
+                  <p><span className="font-medium text-ink">Now:</span> {revisit.comparison.current.likelyComprehension.min}–{revisit.comparison.current.likelyComprehension.max}% understood</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section aria-labelledby="learning-state-title">
@@ -78,7 +95,6 @@ export function ProgressDashboardView({ state }: { state: ProgressDashboardState
           <EvidenceTerm label={`Explanations in the last ${snapshot.explanationFrequency.windowDays} days`} value={snapshot.explanationFrequency.count} />
           <EvidenceTerm label="Distinct content studied" value={snapshot.contentStudied} />
         </dl>
-        <p className="mt-6 max-w-2xl text-sm leading-6 text-ink-muted">Content-level Then vs Now comparisons need revisit evidence and will appear separately when they are meaningful.</p>
       </section>
     </div>
   );

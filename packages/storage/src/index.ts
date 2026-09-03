@@ -493,6 +493,7 @@ export interface ProgressSnapshotInput {
   reviews: ReviewRecord[];
   explanations: ExplanationRecord[];
   studiedContent: StudiedContentRecord[];
+  contentProgressSnapshots: ContentProgressSnapshot[];
 }
 
 /** Reads all progress inputs in one read transaction for a consistent snapshot. */
@@ -505,11 +506,13 @@ export async function getProgressSnapshotInput(
     database.reviewRecords,
     database.explanations,
     database.studiedContent,
+    database.contentProgressSnapshots,
     async () => ({
       items: await database.learningItems.toArray(),
       reviews: await database.reviewRecords.toArray(),
       explanations: await database.explanations.toArray(),
-      studiedContent: await database.studiedContent.toArray()
+      studiedContent: await database.studiedContent.toArray(),
+      contentProgressSnapshots: await database.contentProgressSnapshots.toArray()
     })
   );
 }
