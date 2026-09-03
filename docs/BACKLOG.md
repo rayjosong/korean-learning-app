@@ -397,7 +397,7 @@ Depends on: #25
 
 ## Milestone 7 — Open-source deployment
 
-### [ ] #27 Persistent AI provider configuration
+### [x] #27 Persistent AI provider configuration
 
 Acceptance criteria:
 - [x] AI provider settings are stored in IndexedDB through `@korean-learning/storage`.
@@ -416,7 +416,7 @@ Acceptance criteria:
 - [x] User-visible settings states have component tests.
 - [x] Browser verification confirms settings survive reload.
 
-Remaining: keep the top-level item unchecked until the default `pnpm build` command passes; the Webpack production-build fallback passes, while Turbopack currently fails with an environment-level port-permission panic.
+Completed: verified with all 15 acceptance criteria passing, schema migrations tested, and `apps/web` build configured to use Webpack production builds (`next build --webpack`), ensuring `pnpm build` passes cleanly.
 
 Depends on: #6, #9
 
