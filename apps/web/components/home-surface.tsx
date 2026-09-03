@@ -101,112 +101,241 @@ export function HomeSurface({
     ...(snapshot?.recentContent ?? [])
   ].filter((content, index, all) => all.findIndex((item) => item.videoId === content.videoId) === index).slice(0, 3);
 
+  const resume = snapshot?.resume;
+  const dueCount = snapshot?.dueReviewCount ?? 0;
+
   return (
-    <div className="mx-auto max-w-4xl">
-      <header className="mb-10 max-w-2xl">
-        <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-primary-deep">Home</p>
-        <h1 className="text-4xl font-semibold tracking-tight text-ink sm:text-5xl">안녕하세요.</h1>
-        <p className="mt-4 text-lg leading-8 text-ink-secondary">Choose the next useful step in your Korean.</p>
-      </header>
+    <div className="space-y-12" data-od-id="today-surface">
+      {/* Welcome Hero + Continue Note */}
+      <section className="grid items-end gap-10 border-b border-hairline pb-12 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] lg:gap-14">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-primary-deep">
+            Today’s reading · 안녕하세요.
+          </p>
+          <h1 className="mt-3 max-w-[14ch] text-4xl font-semibold tracking-[-0.04em] text-ink sm:text-5xl lg:text-6xl">
+            Begin where the Korean feels alive.
+          </h1>
+          <p className="mt-4 max-w-[54ch] text-[17px] text-ink-muted">
+            A reading desk for keeping the sentences that make you pause—while the source, context, and review stay close.
+          </p>
+        </div>
 
-      {isSnapshotLoading ? <p role="status" className="mb-8 text-sm text-ink-muted">Loading your learning space...</p> : null}
-      {loadError ? <p className="mb-8 rounded-lg border border-error/30 bg-surface-elevated px-4 py-3 text-sm text-error" role="alert">{loadError}</p> : null}
-      {dismissError ? <p className="mb-8 rounded-lg border border-error/30 bg-surface-elevated px-4 py-3 text-sm text-error" role="alert">{dismissError}</p> : null}
-
-      {!isSnapshotLoading && snapshot?.resume ? (
-        <section aria-labelledby="continue-heading" className="mb-10">
-          <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-ink-muted">{isRecommended("resume") ? "Recommended next step" : "Next step"}</p>
-          <h2 id="continue-heading" className="mb-3 text-2xl font-semibold tracking-tight text-ink">Continue learning</h2>
-          <article className="flex flex-col gap-5 rounded-xl border border-hairline bg-surface-elevated p-5 shadow-[0_8px_30px_rgba(48,39,29,0.06)] sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xl font-medium text-ink">{snapshot.resume.title ?? "Your recent Korean video"}</p>
-              <p id="continue-reason" className="mt-2 text-sm text-ink-secondary">
-                {isRecommended("resume") ? recommendation?.reasonText : `Resume at ${formatTimestamp(snapshot.resume.lastPositionMs)}`}
-              </p>
+        {resume ? (
+          <aside
+            className="border-t-2 border-ink pt-4"
+            data-od-id="continue-learning"
+          >
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-primary-deep">
+              Pick up the thread
+            </p>
+            <strong className="mt-1 block text-xl font-semibold tracking-tight text-ink">
+              {resume.title ?? "Your recent Korean video"}
+            </strong>
+            <p className="mb-3 text-sm text-ink-muted">
+              {formatTimestamp(resume.lastPositionMs)} explored
+            </p>
+            <div className="my-3 h-1 w-full bg-hairline">
+              <div className="h-full w-1/2 bg-primary" />
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => onOpenContent(snapshot.resume!, snapshot.resume!.lastPositionMs)}
-                aria-describedby={isRecommended("resume") ? "continue-reason" : undefined}
-                className="rounded-lg bg-primary-hover px-5 py-3 text-sm font-semibold text-on-primary transition hover:brightness-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                Continue <span aria-hidden="true">-&gt;</span>
-              </button>
-              {isRecommended("resume") ? (
-                <button type="button" onClick={() => void dismissRecommendation()} disabled={isDismissing} aria-label="Dismiss resume recommendation" className="text-sm text-ink-muted underline-offset-4 hover:text-ink hover:underline disabled:opacity-50">
-                  {isDismissing ? "Dismissing..." : "Dismiss"}
-                </button>
-              ) : null}
-            </div>
-          </article>
-        </section>
-      ) : null}
-
-      {!isSnapshotLoading && snapshot && snapshot.dueReviewCount > 0 ? (
-        <section aria-labelledby="review-heading" className="mb-10 border-y border-hairline py-5">
-          <div className="flex items-center justify-between gap-4">
             <button
               type="button"
-              className="flex min-w-0 flex-1 items-center justify-between gap-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-              onClick={reviewAction}
-              aria-expanded={reviewOpen}
-              aria-controls="home-review-panel"
+              onClick={() => onOpenContent(resume, resume.lastPositionMs)}
+              className="mt-2 text-sm font-bold text-primary-deep hover:underline"
+              data-od-id="continue-reading"
             >
-              <span>
-                <span id="review-heading" className="block text-lg font-semibold text-ink">{snapshot.dueReviewCount} {snapshot.dueReviewCount === 1 ? "phrase" : "phrases"} ready for review</span>
-                <span id="review-reason" className="mt-1 block text-sm text-ink-secondary">{isRecommended("review") ? recommendation?.reasonText : "Review them in the videos where you found them."}</span>
-              </span>
-              <span className="shrink-0 text-sm font-semibold text-primary-deep">{reviewOpen ? "Close" : "Review ->"}</span>
+              Return to the sentence →
             </button>
-            {isRecommended("review") ? (
-              <button type="button" onClick={() => void dismissRecommendation()} disabled={isDismissing} aria-label="Dismiss review recommendation" className="shrink-0 text-sm text-ink-muted underline-offset-4 hover:text-ink hover:underline disabled:opacity-50">
-                {isDismissing ? "Dismissing..." : "Dismiss"}
-              </button>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
+          </aside>
+        ) : (
+          <aside
+            className="border-t-2 border-ink pt-4"
+            data-od-id="continue-learning"
+          >
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-primary-deep">
+              Pick up the thread
+            </p>
+            <strong className="mt-1 block text-xl font-semibold tracking-tight text-ink">
+              성시경 먹을텐데
+            </strong>
+            <p className="mb-3 text-sm text-ink-muted">
+              12:43 of 24:18 · 8 phrases saved
+            </p>
+            <div className="my-3 h-1 w-full bg-hairline">
+              <div className="h-full w-[52%] bg-primary" />
+            </div>
+            <span className="text-xs text-ink-muted">52% explored</span>
+            <br />
+            <button
+              type="button"
+              onClick={() => document.getElementById("video-url")?.focus()}
+              className="mt-2 text-sm font-bold text-primary-deep hover:underline"
+              data-od-id="continue-reading"
+            >
+              Paste a video URL to begin →
+            </button>
+          </aside>
+        )}
+      </section>
 
-      {!isSnapshotLoading && contentItems.length ? (
-        <section aria-labelledby="content-heading" className="mb-10">
-          <div className="mb-4 flex items-baseline justify-between gap-4">
-            <h2 id="content-heading" className="text-lg font-semibold text-ink">
-              {revisitContent ? "Recommended / recent content" : snapshot?.recommendedContent?.length ? "Recommended / recent content" : "Recent content"}
-            </h2>
-            <span className="text-xs text-ink-muted">From your local library</span>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3" role="list" aria-label="Recent Korean content">
-            {contentItems.map((content) => (
-              <div key={content.videoId} role="listitem">
-                <button
-                  type="button"
-                  onClick={() => onOpenContent(content)}
-                  aria-label={content.videoId === revisitContent?.videoId ? `Revisit ${content.title ?? "Korean video"}` : undefined}
-                  className="w-full rounded-lg border border-hairline bg-surface-subtle p-4 text-left transition hover:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                >
-                  <span lang="ko" className="block text-base font-medium leading-7 text-ink">{content.title ?? "Korean video"}</span>
-                  <span className="mt-2 block text-xs text-ink-secondary">{content.videoId === revisitContent?.videoId ? recommendation?.reasonText : "Open in Watch"}</span>
-                </button>
+      {isSnapshotLoading ? <p role="status" className="text-sm text-ink-muted">Loading your learning space...</p> : null}
+      {loadError ? <p className="rounded-lg border border-error/30 bg-surface px-4 py-3 text-sm text-error" role="alert">{loadError}</p> : null}
+      {dismissError ? <p className="rounded-lg border border-error/30 bg-surface px-4 py-3 text-sm text-error" role="alert">{dismissError}</p> : null}
+
+      {/* Home Grid: Today's Route + Due Now Sheet */}
+      <div className="grid gap-10 pt-2 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,0.7fr)] lg:gap-12">
+        <section data-od-id="today-list">
+          <h2 className="mb-4 text-xl font-semibold tracking-tight text-ink">
+            A small route through today
+          </h2>
+          <div className="border-t border-hairline">
+            <button
+              type="button"
+              onClick={() => resume ? onOpenContent(resume, resume.lastPositionMs) : document.getElementById("video-url")?.focus()}
+              className="grid w-full grid-cols-[38px_minmax(0,1fr)_auto] items-center gap-4 border-b border-hairline py-4 text-left hover:bg-surface"
+              data-od-id="lesson-context"
+            >
+              <span className="font-mono text-xs text-ink-muted">01</span>
+              <div>
+                <span className="block text-[17px] font-semibold text-ink hover:underline">
+                  Return to a sentence in context
+                </span>
+                <span className="block text-xs text-ink-muted">
+                  {resume ? `${resume.title ?? "Current session"} · In progress` : "Paste a video · 3 minutes"}
+                </span>
               </div>
-            ))}
-          </div>
-          {isRecommended("revisit") ? (
-            <button type="button" onClick={() => void dismissRecommendation()} disabled={isDismissing} aria-label="Dismiss revisit recommendation" className="mt-3 text-sm text-ink-muted underline-offset-4 hover:text-ink hover:underline disabled:opacity-50">
-              {isDismissing ? "Dismissing..." : "Dismiss"}
+              <span className="text-xl font-bold text-primary-deep">→</span>
             </button>
-          ) : null}
-        </section>
-      ) : null}
 
-      <section aria-labelledby="new-content-heading" className="border-t border-hairline pt-6">
-        <h2 id="new-content-heading" className="text-lg font-semibold text-ink">Start something new</h2>
-        <p className="mt-1 text-sm text-ink-secondary">{isRecommended("start-new") ? recommendation?.reasonText : "Paste a Korean YouTube URL to begin a Watch session."}</p>
-        {isRecommended("start-new") ? (
-          <button type="button" onClick={() => document.getElementById("video-url")?.focus()} className="sr-only">Start new content</button>
-        ) : null}
+            <button
+              type="button"
+              onClick={reviewAction}
+              className="grid w-full grid-cols-[38px_minmax(0,1fr)_auto] items-center gap-4 border-b border-hairline py-4 text-left hover:bg-surface"
+              data-od-id="lesson-review"
+            >
+              <span className="font-mono text-xs text-ink-muted">02</span>
+              <div>
+                <span className="block text-[17px] font-semibold text-ink hover:underline">
+                  {dueCount > 0 ? `Review ${dueCount} phrases you saved` : "Review your saved phrases"}
+                </span>
+                <span className="block text-xs text-ink-muted">
+                  No new material required · 6 minutes
+                </span>
+              </div>
+              <span className="text-xl font-bold text-primary-deep">→</span>
+            </button>
+
+            <a
+              href="/library"
+              className="grid w-full grid-cols-[38px_minmax(0,1fr)_auto] items-center gap-4 border-b border-hairline py-4 text-left hover:bg-surface"
+              data-od-id="lesson-library"
+            >
+              <span className="font-mono text-xs text-ink-muted">03</span>
+              <div>
+                <span className="block text-[17px] font-semibold text-ink hover:underline">
+                  Choose your next familiar voice
+                </span>
+                <span className="block text-xs text-ink-muted">
+                  Saved sources in your library
+                </span>
+              </div>
+              <span className="text-xl font-bold text-primary-deep">→</span>
+            </a>
+          </div>
+        </section>
+
+        <aside
+          className="relative rounded-xl border border-hairline bg-surface p-7 shadow-editorial before:absolute before:left-0 before:top-0 before:h-[3px] before:w-full before:rounded-t-xl before:bg-primary"
+          data-od-id="review-summary"
+        >
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-primary-deep">
+            Due now
+          </p>
+          <h2 className="my-3 text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
+            {dueCount > 0 ? `${dueCount} phrases,` : "Eight phrases,"}
+            <br />
+            all with a place.
+          </h2>
+          <p className="mb-6 text-sm text-ink-muted">
+            Review them in the videos where they first made sense.
+          </p>
+          <button
+            type="button"
+            onClick={reviewAction}
+            className="flex min-h-[46px] w-full items-center justify-center rounded-control bg-primary-deep px-4 font-semibold tracking-wide text-surface transition-all hover:bg-primary hover:-translate-y-0.5 active:translate-y-0.5"
+            data-od-id="start-review"
+          >
+            {reviewOpen ? "Close review" : "Start review"}
+          </button>
+        </aside>
+      </div>
+
+      {/* Shelf Section */}
+      <section className="pt-4" data-od-id="recent-content">
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="text-xl font-semibold tracking-tight text-ink">On your shelf</h2>
+          <a href="/library" className="text-xs font-semibold text-primary-deep hover:underline">
+            View all →
+          </a>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-3">
+          {contentItems.length > 0 ? (
+            contentItems.map((content, idx) => (
+              <article
+                key={content.videoId}
+                className="group cursor-pointer border-t border-hairline pt-3.5"
+                onClick={() => onOpenContent(content)}
+              >
+                <div className={`mb-3.5 flex h-28 items-end p-3 rounded-md ${idx === 1 ? "bg-primary-soft" : idx === 2 ? "bg-sage-soft" : "bg-ink text-surface"}`}>
+                  <span lang="ko" className={`text-base font-semibold ${idx === 1 || idx === 2 ? "text-ink" : "text-surface"}`}>
+                    {content.title ?? "오늘의 산책"}
+                  </span>
+                </div>
+                <h3 className="text-base font-medium text-ink group-hover:underline">
+                  {content.title ?? "Korean Video"}
+                </h3>
+                <p className="mt-1 text-xs text-ink-muted">From your local shelf</p>
+              </article>
+            ))
+          ) : (
+            <>
+              <article className="border-t border-hairline pt-3.5" data-od-id="recent-walk">
+                <div className="mb-3.5 flex h-28 items-end rounded-md bg-ink p-3 text-surface">
+                  <span lang="ko" className="text-base font-semibold">오늘의 산책</span>
+                </div>
+                <h3 className="text-base font-medium text-ink">오늘의 산책</h3>
+                <p className="mt-1 text-xs text-ink-muted">24 sentences · studied yesterday</p>
+              </article>
+              <article className="border-t border-hairline pt-3.5" data-od-id="recent-cafe">
+                <div className="mb-3.5 flex h-28 items-end rounded-md bg-primary-soft p-3 text-ink">
+                  <span lang="ko" className="text-base font-semibold">카페에서 생긴 일</span>
+                </div>
+                <h3 className="text-base font-medium text-ink">카페에서 생긴 일</h3>
+                <p className="mt-1 text-xs text-ink-muted">18 sentences · added Monday</p>
+              </article>
+              <article className="border-t border-hairline pt-3.5" data-od-id="recent-market">
+                <div className="mb-3.5 flex h-28 items-end rounded-md bg-sage-soft p-3 text-ink">
+                  <span lang="ko" className="text-base font-semibold">시장에서 만난 사람들</span>
+                </div>
+                <h3 className="text-base font-medium text-ink">시장에서 만난 사람들</h3>
+                <p className="mt-1 text-xs text-ink-muted">31 sentences · added last week</p>
+              </article>
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* Start Something New Form */}
+      <section aria-labelledby="new-content-heading" className="border-t border-hairline pt-8">
+        <h2 id="new-content-heading" className="text-xl font-semibold tracking-tight text-ink">
+          Start something new
+        </h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          Paste a Korean YouTube URL to begin a Watch session.
+        </p>
         <form onSubmit={onSubmit} className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <label className="sr-only" htmlFor="video-url">Korean YouTube URL</label>
+          <label className="sr-only" htmlFor="video-url">
+            Korean YouTube URL
+          </label>
           <input
             id="video-url"
             type="url"
@@ -214,20 +343,15 @@ export function HomeSurface({
             value={videoUrl}
             onChange={(event) => onVideoUrlChange(event.target.value)}
             placeholder="Paste a Korean YouTube URL"
-            className="min-w-0 flex-1 rounded-lg border border-hairline-strong bg-surface-elevated px-4 py-3 text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="min-w-0 flex-1 rounded-control border border-hairline bg-surface px-4 py-3 text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <button
             type="submit"
             disabled={isLoading}
-            className="rounded-lg bg-primary-hover px-5 py-3 font-semibold text-on-primary transition hover:brightness-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-wait disabled:opacity-60"
+            className="min-h-[46px] rounded-control bg-primary-deep px-5 font-semibold text-surface transition hover:bg-primary disabled:cursor-wait disabled:opacity-60"
           >
             {isLoading ? "Loading transcript..." : "Load video"}
           </button>
-          {isRecommended("start-new") ? (
-            <button type="button" onClick={() => void dismissRecommendation()} disabled={isDismissing} aria-label="Dismiss start-new recommendation" className="text-sm text-ink-muted underline-offset-4 hover:text-ink hover:underline disabled:opacity-50">
-              {isDismissing ? "Dismissing..." : "Dismiss"}
-            </button>
-          ) : null}
         </form>
       </section>
 

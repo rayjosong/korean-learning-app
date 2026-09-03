@@ -69,7 +69,7 @@ export function SentenceBreakdownPopover({
 
   return (
     <section
-      className="relative mr-1 mb-3 rounded-lg border border-hairline-strong bg-surface-elevated p-5 shadow-lg"
+      className="relative mr-1 mb-3 rounded-xl border border-hairline bg-surface p-6 shadow-editorial"
       aria-label="Sentence explanation popover"
     >
       <button
