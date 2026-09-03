@@ -189,7 +189,19 @@ export function StudySession({ videoId, segments, videoUrl, onReplay, fixture = 
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6" data-od-id="reading-desk-surface">
+      {/* Workspace Header */}
+      <header className="mb-2 flex flex-wrap items-start justify-between gap-4 border-b border-hairline pb-5">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-primary-deep">
+            {videoUrl ? "Korean Source · Active session" : "Source Media · Reading desk"}
+          </p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-[-0.035em] text-ink sm:text-4xl">
+            Reading desk
+          </h1>
+        </div>
+      </header>
+
       {/* Primary Video / Transcript Workspace */}
       <div className="flex flex-col gap-6">
         <RevisitNotice

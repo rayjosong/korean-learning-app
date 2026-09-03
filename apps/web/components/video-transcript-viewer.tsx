@@ -116,9 +116,9 @@ export function VideoTranscriptViewer({
             onSelect={onSegmentClick}
           />
         ) : (
-          <div className="rounded-xl border border-hairline bg-surface-elevated p-4 lg:col-start-1 lg:row-start-2">
-          <div className="mb-3 flex items-baseline justify-between gap-4">
-            <h2 className="font-semibold text-ink">{title}</h2>
+          <div className="rounded-xl border border-hairline bg-surface p-6 shadow-editorial lg:col-start-1 lg:row-start-2">
+          <div className="mb-4 flex items-baseline justify-between gap-4">
+            <h2 className="text-xl font-semibold tracking-tight text-ink">{title}</h2>
             <span className="text-xs text-ink-muted">{segments.length} segments</span>
           </div>
           <div className="max-h-[28rem] overflow-y-auto pr-1" role="list" aria-label="Timestamped transcript">
@@ -202,17 +202,17 @@ export function VideoTranscriptViewer({
       </section>
 
       {/* Workspace mode and settings bar */}
-      <div className="flex items-center justify-between rounded-xl border border-hairline bg-surface-elevated px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-xl border border-hairline bg-surface px-5 py-3 shadow-editorial">
         <div className="flex items-center gap-2" role="tablist" aria-label="Workspace mode">
           <button
             type="button"
             role="tab"
             aria-selected={mode === "watch"}
             onClick={() => onModeChange?.("watch")}
-            className={`rounded-lg px-4 py-1.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
+            className={`rounded-control px-4 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
               mode === "watch"
                 ? "bg-primary-soft font-semibold text-primary-deep"
-                : "text-ink-muted hover:bg-surface-subtle hover:text-ink"
+                : "text-ink-muted hover:bg-surface hover:text-ink"
             }`}
           >
             Watch
@@ -222,10 +222,10 @@ export function VideoTranscriptViewer({
             role="tab"
             aria-selected={mode === "study"}
             onClick={() => onModeChange?.("study")}
-            className={`rounded-lg px-4 py-1.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
+            className={`rounded-control px-4 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
               mode === "study"
                 ? "bg-primary-soft font-semibold text-primary-deep"
-                : "text-ink-muted hover:bg-surface-subtle hover:text-ink"
+                : "text-ink-muted hover:bg-surface hover:text-ink"
             }`}
           >
             Study
@@ -258,7 +258,7 @@ function StudyTranscriptContext({
   const nearby = segments.slice(start, start + 3);
 
   return (
-    <div className="rounded-xl border border-hairline bg-surface-elevated p-4" aria-label="Nearby transcript">
+    <div className="rounded-xl border border-hairline bg-surface p-6 shadow-editorial" aria-label="Nearby transcript">
       <div className="mb-3 flex items-baseline justify-between gap-4">
         <h2 className="font-semibold text-ink">Nearby transcript</h2>
         <span className="text-xs text-ink-muted">Study context</span>

@@ -40,7 +40,7 @@ export function ExplanationPanel({
 }: ExplanationPanelProps) {
   const [openSection, setOpenSection] = useState<"grammar" | "nuance" | "examples">();
   return (
-    <section className="rounded-xl border border-hairline bg-surface-elevated p-5" aria-label="Sentence explanation">
+    <section className="rounded-xl border border-hairline bg-surface p-6 shadow-editorial" aria-label="Sentence explanation">
       <h2 className="mb-3 font-semibold text-ink">Explanation</h2>
 
       {state.status === "idle" ? (
