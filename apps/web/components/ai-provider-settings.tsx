@@ -22,7 +22,7 @@ export function AiProviderSettings({
   onRemove
 }: AiProviderSettingsProps) {
   const [message, setMessage] = useState<string>();
-  const canSave = settings.apiKey.trim().length > 0 && settings.model.trim().length > 0;
+  const canSave = (settings.apiKey || "").trim().length > 0 && (settings.model || "").trim().length > 0;
 
   function save() {
     if (!canSave) {
@@ -49,7 +49,7 @@ export function AiProviderSettings({
         id="ai-api-key"
         type="password"
         autoComplete="off"
-        value={settings.apiKey}
+        value={settings.apiKey || ""}
         onChange={(event) => onChange({ ...settings, apiKey: event.target.value })}
         placeholder="sk-…"
         className="mt-1 w-full rounded-lg border border-hairline-strong bg-surface-elevated px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -58,7 +58,7 @@ export function AiProviderSettings({
       <input
         id="ai-model"
         type="text"
-        value={settings.model}
+        value={settings.model || ""}
         onChange={(event) => onChange({ ...settings, model: event.target.value })}
         placeholder="gpt-4o-mini"
         className="mt-1 w-full rounded-lg border border-hairline-strong bg-surface-elevated px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"

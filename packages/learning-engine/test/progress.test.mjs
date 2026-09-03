@@ -29,6 +29,7 @@ test("aggregates current learning state, recent recall, activity, and unique con
       { createdAt: "2026-08-10T10:00:00.000Z" }
     ],
     studiedContent: [{ videoId: "a" }, { videoId: " a " }, { videoId: "b" }, { videoId: " " }],
+    contentProgressSnapshots: [],
     now: "2026-08-26T12:00:00.000Z"
   });
 
@@ -37,6 +38,7 @@ test("aggregates current learning state, recent recall, activity, and unique con
   assert.deepEqual(snapshot.reviewSuccess, { successful: 1, total: 2, percentage: 50, windowDays: 30 });
   assert.deepEqual(snapshot.explanationFrequency, { count: 1, windowDays: 7 });
   assert.equal(snapshot.contentStudied, 2);
+  assert.deepEqual(snapshot.revisits, []);
 });
 
 test("includes exact rolling-window boundaries and excludes future or invalid records", () => {
@@ -53,6 +55,7 @@ test("includes exact rolling-window boundaries and excludes future or invalid re
       { createdAt: "2026-08-26T00:00:00.001Z" }
     ],
     studiedContent: [],
+    contentProgressSnapshots: [],
     now: "2026-08-26T00:00:00.000Z"
   });
 
@@ -62,13 +65,14 @@ test("includes exact rolling-window boundaries and excludes future or invalid re
 
 test("empty data uses honest empty metrics", () => {
   assert.deepEqual(aggregateProgressSnapshot({
-    items: [], reviews: [], explanations: [], studiedContent: [],
+    items: [], reviews: [], explanations: [], studiedContent: [], contentProgressSnapshots: [],
     now: "2026-08-26T12:00:00.000Z"
   }), {
     knownItems: 0,
     learningItems: 0,
     reviewSuccess: { successful: 0, total: 0, percentage: null, windowDays: 30 },
     explanationFrequency: { count: 0, windowDays: 7 },
-    contentStudied: 0
+    contentStudied: 0,
+    revisits: []
   });
 });

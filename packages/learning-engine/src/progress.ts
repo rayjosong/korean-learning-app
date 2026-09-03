@@ -1,10 +1,12 @@
-import type { LearningItem, ReviewOutcome } from "./index";
+import type { LearningItem, ReviewOutcome } from "./index.ts";
+import { compareContentProgress, type ContentProgressComparison, type ContentProgressSnapshot } from "./revisit.ts";
 
 export interface ProgressSnapshotInput {
   items: readonly LearningItem[];
   reviews: readonly { outcome: ReviewOutcome; reviewedAt: string }[];
   explanations: readonly { createdAt: string }[];
-  studiedContent: readonly { videoId: string }[];
+  studiedContent: readonly { videoId: string; title?: string }[];
+  contentProgressSnapshots: readonly ContentProgressSnapshot[];
   now: string;
 }
 
@@ -20,12 +22,19 @@ export interface ExplanationFrequencySummary {
   windowDays: number;
 }
 
+export interface ProgressRevisitItem {
+  videoId: string;
+  title?: string;
+  comparison: ContentProgressComparison;
+}
+
 export interface ProgressSnapshot {
   knownItems: number;
   learningItems: number;
   reviewSuccess: ReviewSuccessSummary;
   explanationFrequency: ExplanationFrequencySummary;
   contentStudied: number;
+  revisits: ProgressRevisitItem[];
 }
 
 const REVIEW_WINDOW_DAYS = 30;
@@ -49,6 +58,40 @@ export function aggregateProgressSnapshot(input: ProgressSnapshotInput): Progres
     isWithinWindow(record.createdAt, input.now, EXPLANATION_WINDOW_DAYS)
   ).length;
 
+  const contentTitles = new Map<string, string>();
+  for (const content of input.studiedContent) {
+    if (content.title) contentTitles.set(content.videoId, content.title);
+  }
+
+  const snapshotsByVideo = new Map<string, ContentProgressSnapshot[]>();
+  for (const snapshot of input.contentProgressSnapshots) {
+    let list = snapshotsByVideo.get(snapshot.videoId);
+    if (!list) {
+      list = [];
+      snapshotsByVideo.set(snapshot.videoId, list);
+    }
+    list.push(snapshot);
+  }
+
+  const revisits: ProgressRevisitItem[] = [];
+  for (const [videoId, snapshots] of snapshotsByVideo.entries()) {
+    if (snapshots.length < 2) continue;
+    const sorted = [...snapshots].sort((left, right) => left.capturedAt.localeCompare(right.capturedAt));
+    const oldest = sorted[0];
+    const newest = sorted[sorted.length - 1];
+    const comparison = compareContentProgress(newest, oldest);
+    
+    if (comparison.status !== "insufficient-history") {
+      revisits.push({
+        videoId,
+        title: contentTitles.get(videoId),
+        comparison
+      });
+    }
+  }
+
+  revisits.sort((left, right) => right.comparison.current.capturedAt.localeCompare(left.comparison.current.capturedAt));
+
   return {
     knownItems: input.items.filter((item) => item.state === "known").length,
     learningItems: input.items.filter((item) => item.state === "learning").length,
@@ -59,6 +102,7 @@ export function aggregateProgressSnapshot(input: ProgressSnapshotInput): Progres
       windowDays: REVIEW_WINDOW_DAYS
     },
     explanationFrequency: { count: explanationCount, windowDays: EXPLANATION_WINDOW_DAYS },
-    contentStudied: new Set(input.studiedContent.map((record) => record.videoId.trim()).filter(Boolean)).size
+    contentStudied: new Set(input.studiedContent.map((record) => record.videoId.trim()).filter(Boolean)).size,
+    revisits
   };
 }

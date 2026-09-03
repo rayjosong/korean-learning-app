@@ -5,3 +5,11 @@ coverage/
 *.tsbuildinfo
 .env*
 !.env.example
+
+.DS_Store
+playwright-report/
+test-results/
+qa/
+docs/research/
+docs/agdr/
+docs/IMPLEMENTATION-CONTEXT-FIRST-EXPLANATIONS.md
